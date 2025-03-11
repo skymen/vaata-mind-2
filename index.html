@@ -1763,7 +1763,9 @@
 
       function saveCurrentNote(closeAfterSave = false) {
         const content = noteEditor.value;
-
+        if (content === "" && closeAfterSave) {
+          return;
+        }
         if (currentNoteId) {
           database.updateNote(currentNoteId, content);
         } else {
