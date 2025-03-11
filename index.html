@@ -33,7 +33,7 @@
         justify-content: center;
         align-items: center;
         z-index: 9999;
-        transition: opacity 0.3s ease-out, visibility 0.3s ease-out;
+        opacity: 0;
       }
 
       .loading-container {
@@ -1264,6 +1264,43 @@
     <!-- Scripts -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
     <script>
+      let appLoadStartTime = Date.now();
+
+      function setupLoadingScreen() {
+        window.addEventListener("load", hideLoadingScreen);
+        loadingScreen.style.opacity = "0";
+        loadingScreen.style.visibility = "hidden";
+        setTimeout(() => {
+          loadingScreen.style.transition =
+            "opacity 0.3s ease-out, visibility 0.3s ease-out";
+          loadingScreen.style.opacity = "1";
+          loadingScreen.style.visibility = "visible";
+        }, 100);
+      }
+
+      function hideLoadingScreen() {
+        const loadingScreen = document.getElementById("loading-screen");
+        const loadTime = Date.now() - appLoadStartTime;
+
+        // If the app loaded in less than 300ms, skip the transition animation
+        if (loadTime < 300) {
+          // Apply styles directly without transition
+          loadingScreen.style.transition = "none";
+          loadingScreen.style.opacity = "0";
+          loadingScreen.style.visibility = "hidden";
+          // Force a reflow to ensure the 'none' transition takes effect immediately
+          loadingScreen.offsetHeight;
+        } else {
+          // Regular fade-out transition for slower loads
+          loadingScreen.style.transition =
+            "opacity 0.3s ease-out, visibility 0.3s ease-out";
+          loadingScreen.style.opacity = "0";
+          loadingScreen.style.visibility = "hidden";
+          loadingScreen.offsetHeight;
+        }
+      }
+    </script>
+    <script>
       // DOM Elements
       const editorView = document.getElementById("editor-view");
       const menuView = document.getElementById("menu-view");
@@ -1763,7 +1800,7 @@
 
       function saveCurrentNote(closeAfterSave = false) {
         const content = noteEditor.value;
-        if (content === "" && closeAfterSave) {
+        if (content === "" && closeAfterSave && !currentNoteId) {
           return;
         }
         if (currentNoteId) {
@@ -3537,12 +3574,6 @@
       });
 
       updateEditorUI();
-
-      function hideLoadingScreen() {
-        const loadingScreen = document.getElementById("loading-screen");
-        loadingScreen.style.opacity = "0";
-        loadingScreen.style.visibility = "hidden";
-      }
 
       // Handle window resize for graph visualization
       window.addEventListener("resize", () => {
