@@ -34,7 +34,7 @@ function copyDir(src, dest) {
 }
 
 removeDir(tauriAppPath);
-copyDir(srcPath, taurjsonaiAppPath);
+copyDir(srcPath, tauriAppPath);
 
 // remove service-worker.js from tauri-app/src
 fs.unlinkSync(path.join(tauriAppPath, "service-worker.js"));
