@@ -41,7 +41,7 @@
         align-items: center;
         justify-content: center;
         opacity: 0;
-        transition: opacity 0.1s;
+        transition: opacity 0.2s ease-in;
       }
 
       .logo-container {
@@ -1268,11 +1268,9 @@
       let appLoadStartTime = Date.now();
 
       function setupLoadingScreen() {
-        document.querySelector(".loading-container").style.opacity = "1";
         setTimeout(() => {
-          loadingScreen.style.transition =
-            "opacity 0.3s ease-out, visibility 0.3s ease-out";
-        }, 100);
+          document.querySelector(".loading-container").style.opacity = "1";
+        }, 20);
       }
 
       function hideLoadingScreen() {
@@ -1282,7 +1280,8 @@
         // If the app loaded in less than 300ms, skip the transition animation
         if (loadTime < 300) {
           // Apply styles directly without transition
-          loadingScreen.style.transition = "none";
+          loadingScreen.style.transition =
+            "opacity 0.07s ease-out, visibility 0.07s ease-out";
           loadingScreen.style.opacity = "0";
           loadingScreen.style.visibility = "hidden";
           // Force a reflow to ensure the 'none' transition takes effect immediately
@@ -1296,6 +1295,8 @@
           loadingScreen.offsetHeight;
         }
       }
+
+      setupLoadingScreen();
     </script>
     <script>
       // DOM Elements
