@@ -1,0 +1,15 @@
+{
+  "name": "vaata-mind",
+  "version": "1.0.0",
+  "description": "A minimalist note-taking and mind-mapping application",
+  "main": "index.html",
+  "scripts": {
+    "package-tauri": "node package-tauri.js . ./tauri-build",
+    "build-tauri": "cd tauri-build && npm run build"
+  },
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {
+    "@tauri-apps/cli": "^1.5.0"
+  }
+}
