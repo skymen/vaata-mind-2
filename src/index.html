@@ -3246,6 +3246,9 @@
               }
               updateBulkActionButtons();
             });
+            checkbox.addEventListener("click", (e) => {
+              e.stopPropagation();
+            });
             checkboxCell.appendChild(checkbox);
             row.appendChild(checkboxCell);
 
