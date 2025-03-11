@@ -33,7 +33,6 @@
         justify-content: center;
         align-items: center;
         z-index: 9999;
-        opacity: 0;
       }
 
       .loading-container {
@@ -41,6 +40,8 @@
         flex-direction: column;
         align-items: center;
         justify-content: center;
+        opacity: 0;
+        transition: opacity 0.1s;
       }
 
       .logo-container {
@@ -1267,14 +1268,10 @@
       let appLoadStartTime = Date.now();
 
       function setupLoadingScreen() {
-        window.addEventListener("load", hideLoadingScreen);
-        loadingScreen.style.opacity = "0";
-        loadingScreen.style.visibility = "hidden";
+        document.querySelector(".loading-container").style.opacity = "1";
         setTimeout(() => {
           loadingScreen.style.transition =
             "opacity 0.3s ease-out, visibility 0.3s ease-out";
-          loadingScreen.style.opacity = "1";
-          loadingScreen.style.visibility = "visible";
         }, 100);
       }
 
