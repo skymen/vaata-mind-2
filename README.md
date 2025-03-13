@@ -44,6 +44,19 @@ A powerful, cross-platform application built with Tauri.
 - 💻 **Cross-Platform**: Available for Windows, macOS, and Linux
 - 🔄 **Automatic Updates**: Stay current with the latest features
 
+## Screenshots
+
+<div align="center">
+
+<img src="images/screenshot (1).png" alt="Screenshot 1" width="240"/>
+<img src="images/screenshot (2).png" alt="Screenshot 2" width="240"/>
+<img src="images/screenshot (3).png" alt="Screenshot 3" width="240"/>
+<img src="images/screenshot (4).png" alt="Screenshot 4" width="240"/>
+<img src="images/screenshot (5).png" alt="Screenshot 5" width="240"/>
+<img src="images/screenshot (6).png" alt="Screenshot 6" width="240"/>
+
+</div>
+
 ## Contributing
 
 Contributions are welcome! Please feel free to submit a Pull Request.
