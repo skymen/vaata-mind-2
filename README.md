@@ -8,11 +8,15 @@ A powerful, cross-platform application built with Tauri.
 
 ## Use Online PWA
 
+<div align="center">
+
 [<img src="images/Online PWA.svg" alt="Online PWA" width="240"/>](https://vaata-mind.netlify.app/)
+
+</div>
 
 ## Download Offline App
 
-<!-- <div align="center"> -->
+<div align="center">
 
 ### Windows
 
@@ -30,7 +34,7 @@ A powerful, cross-platform application built with Tauri.
 [<img src="images/Linux DEB.svg" alt="Linux DEB" width="240"/>](https://github.com/skymen/vaata-mind-2/releases/download/vaata-mind-v0.3.1/vaata-mind_0.3.1_amd64.deb)
 [<img src="images/Linux RPM.svg" alt="Linux RPM" width="240"/>](https://github.com/skymen/vaata-mind-2/releases/download/vaata-mind-v0.3.1/vaata-mind-0.3.1-1.x86_64.rpm)
 
-<!-- </div> -->
+</div>
 
 <sub> [See all releases](https://github.com/skymen/vaata-mind-2/releases) </sub>
 
