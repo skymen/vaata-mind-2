@@ -21,8 +21,8 @@ Choose your platform below to download:
 
 ### Windows
 
-[<img src="https://img.shields.io/badge/-Windows%20Installer-0078D6?style=for-the-badge&logo=microsoft&logoColor=white" height="40" width="240"/>](https://github.com/yourusername/vaata-mind/releases/download/v0.1.0/vaata-mind_0.1.0_x64-setup.exe)
-[<img src="https://img.shields.io/badge/-Windows%20MSI-5E5E5E?style=for-the-badge&logo=microsoft&logoColor=white" height="40" width="240"/>](https://github.com/yourusername/vaata-mind/releases/download/v0.1.0/vaata-mind_0.1.0_x64_en-US.msi)
+[<img src="https://img.shields.io/badge/-Windows%20Installer-0078D6?style=for-the-badge&logo=windows&logoColor=white" height="40" width="240"/>](https://github.com/yourusername/vaata-mind/releases/download/v0.1.0/vaata-mind_0.1.0_x64-setup.exe)
+[<img src="https://img.shields.io/badge/-Windows%20MSI-5E5E5E?style=for-the-badge&logo=windows&logoColor=white" height="40" width="240"/>](https://github.com/yourusername/vaata-mind/releases/download/v0.1.0/vaata-mind_0.1.0_x64_en-US.msi)
 
 ### macOS
 
