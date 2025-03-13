@@ -23,6 +23,53 @@
     />
     <title>Vaata Mind</title>
     <style>
+      /* Add this to your existing styles */
+      .settings-btn {
+        position: absolute;
+        top: 20px;
+        right: 20px;
+        background-color: rgba(255, 255, 255, 0.8);
+        color: var(--accent-color);
+        border: none;
+        border-radius: 50%;
+        width: 40px;
+        height: 40px;
+        display: flex;
+        font-size: 1.2em;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        z-index: 10;
+        box-shadow: 0 0 8px rgba(0, 0, 0, 0.1);
+        transition: background-color 0.2s, box-shadow 0.2s,
+          transform 0.2s ease-out;
+      }
+
+      .settings-btn:hover {
+        background-color: white;
+        box-shadow: 0 0 12px 2px rgba(0, 0, 0, 0.3);
+        transform: translate(0, -3px);
+      }
+
+      .settings-container {
+        max-width: 600px;
+        margin: 0 auto;
+        padding: 20px;
+      }
+
+      .settings-section {
+        background-color: white;
+        border-radius: 8px;
+        padding: 20px;
+        margin-bottom: 20px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+      }
+
+      .settings-actions {
+        display: flex;
+        gap: 10px;
+        margin-top: 10px;
+      }
       #version-number {
         font-size: 12px;
         color: #777;
@@ -868,7 +915,38 @@
     </style>
   </head>
   <body>
-    <!-- Main Editor View -->
+    <!-- Add this as a new view after the table-view div -->
+    <div id="settings-view" class="container hidden">
+      <button class="back-btn" id="settings-back">←</button>
+      <div class="settings-container">
+        <h2>Settings</h2>
+
+        <div class="settings-section">
+          <h3>Storage</h3>
+          <button id="request-storage-btn" class="btn btn-primary">
+            Request Persistent Storage
+          </button>
+        </div>
+
+        <div class="settings-section">
+          <h3>Data Management</h3>
+          <div class="settings-actions">
+            <button id="export-data-btn" class="btn btn-secondary">
+              Export Data
+            </button>
+            <label for="import-data-input" class="btn btn-secondary"
+              >Import Data</label
+            >
+            <input
+              type="file"
+              id="import-data-input"
+              accept=".json"
+              class="hidden"
+            />
+          </div>
+        </div>
+      </div>
+    </div>
     <div id="loading-screen">
       <div class="loading-container">
         <div class="logo-container">
@@ -944,6 +1022,8 @@
 
     <!-- Menu View (shown after pressing Escape) -->
     <div id="menu-view" class="container menu-view hidden">
+      <!-- Add this inside the menu-view div, near the top -->
+      <button id="settings-button" class="settings-btn">⚙️</button>
       <!-- ./logo.svg -->
       <img class="app-logo" src="./logo.svg" alt="Vaata Mind Logo" />
       <h1 class="app-title">Vaata Mind</h1>
@@ -3057,6 +3137,14 @@
         }
       }
 
+      function handleSettingsViewKeydown(e) {
+        if (settingsView.classList.contains("hidden")) return;
+        if (e.key === "Escape") {
+          e.preventDefault();
+          showView(menuView);
+        }
+      }
+
       // Event Listeners
       document.addEventListener("keydown", (e) => {
         // Only respond if we're in the editor view
@@ -3066,7 +3154,8 @@
           return handleEditorViewKeydown(e);
         if (!exploreView.classList.contains("hidden"))
           return handleExploreViewKeydown(e);
-
+        if (!settingsView.classList.contains("hidden"))
+          return handleSettingsViewKeydown(e);
         if (!tableView.classList.contains("hidden"))
           return handleTableViewKeydown(e);
         if (!menuView.classList.contains("hidden")) return handleMenuKeydown(e);
@@ -3748,6 +3837,150 @@
         .then((data) => {
           document.getElementById("version-number").textContent = `v${data[0]}`;
         });
+
+      // Add these DOM elements to the existing declarations
+      const settingsView = document.getElementById("settings-view");
+      const settingsButton = document.getElementById("settings-button");
+      const settingsBackBtn = document.getElementById("settings-back");
+      const requestStorageBtn = document.getElementById("request-storage-btn");
+      const exportDataBtn = document.getElementById("export-data-btn");
+      const importDataInput = document.getElementById("import-data-input");
+
+      // Show settings view
+      settingsButton.addEventListener("click", () => {
+        showView(settingsView);
+        checkPersistentStorage();
+      });
+
+      // Back button for settings
+      settingsBackBtn.addEventListener("click", () => {
+        showView(menuView);
+      });
+
+      // Check if persistent storage is already granted
+      async function checkPersistentStorage() {
+        try {
+          if (navigator.storage && navigator.storage.persist) {
+            const isPersisted = await navigator.storage.persisted();
+
+            if (isPersisted) {
+              showStatus("Persistent storage is already granted");
+              requestStorageBtn.disabled = true;
+            } else {
+              requestStorageBtn.disabled = false;
+            }
+          } else {
+            showStatus("Persistent storage is not supported in this browser");
+            requestStorageBtn.disabled = true;
+          }
+        } catch (error) {
+          showStatus("Error checking storage permission: " + error.message);
+        }
+      }
+
+      // Request persistent storage
+      requestStorageBtn.addEventListener("click", async () => {
+        try {
+          if (navigator.storage && navigator.storage.persist) {
+            const isPersisted = await navigator.storage.persist();
+
+            if (isPersisted) {
+              showStatus("Successfully granted persistent storage!");
+              playFlashAnimation();
+              requestStorageBtn.disabled = true;
+            } else {
+              showStatus("Permission was denied for persistent storage");
+            }
+          } else {
+            showStatus("Persistent storage is not supported in this browser");
+          }
+        } catch (error) {
+          showStatus("Error requesting storage permission: " + error.message);
+        }
+      });
+
+      // Export data to JSON file
+      exportDataBtn.addEventListener("click", () => {
+        try {
+          const dataToExport = JSON.stringify(
+            {
+              notes: database.notes,
+              version: 1,
+            },
+            null,
+            2
+          );
+
+          const blob = new Blob([dataToExport], { type: "application/json" });
+          const url = URL.createObjectURL(blob);
+
+          const a = document.createElement("a");
+          a.href = url;
+          a.download = `vaata-mind-export-${new Date()
+            .toISOString()
+            .slice(0, 10)}.json`;
+          a.click();
+
+          URL.revokeObjectURL(url);
+
+          showStatus("Data exported successfully!");
+          playFlashAnimation();
+        } catch (error) {
+          showStatus("Error exporting data: " + error.message);
+        }
+      });
+
+      // Import data from JSON file
+      importDataInput.addEventListener("change", (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+
+        reader.onload = (event) => {
+          try {
+            const importedData = JSON.parse(event.target.result);
+
+            // Validate import data has necessary structure
+            if (!importedData.notes || !Array.isArray(importedData.notes)) {
+              throw new Error("Invalid data format: missing notes array");
+            }
+
+            // Process imported notes
+            database.notes = importedData.notes;
+
+            // Ensure all notes have progress status, due date, and importance
+            database.notes.forEach((note) => {
+              if (!note.progress) {
+                note.progress = PROGRESS_STATES.NOT_STARTED;
+              }
+              if (note.dueDate === undefined) {
+                note.dueDate = null;
+              }
+              if (note.important === undefined) {
+                note.important = false;
+              }
+            });
+
+            // Save to localStorage
+            database.save();
+
+            showStatus(`Successfully imported ${database.notes.length} notes!`);
+            playFlashAnimation();
+
+            // Reset file input
+            importDataInput.value = "";
+          } catch (error) {
+            showStatus("Error importing data: " + error.message);
+          }
+        };
+
+        reader.onerror = () => {
+          showStatus("Error reading the file");
+        };
+
+        reader.readAsText(file);
+      });
     </script>
     <script src="/service-worker-registration.js"></script>
   </body>
