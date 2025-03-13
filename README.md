@@ -6,25 +6,25 @@ A powerful, cross-platform application built with Tauri.
 
 ## Download
 
-### Latest Version: 0.1.0
+### Latest Version: 0.3.0
 
 <div align="center">
 
 ### Windows
 
-[<img src="images/Windows Installer.svg" alt="Windows Installer" width="240"/>](https://github.com/yourusername/vaata-mind/releases/download/v0.1.0/vaata-mind_0.1.0_x64-setup.exe)
-[<img src="images/Windows MSI.svg" alt="Windows MSI" width="240"/>](https://github.com/yourusername/vaata-mind/releases/download/v0.1.0/vaata-mind_0.1.0_x64_en-US.msi)
+[<img src="images/Windows Installer.svg" alt="Windows Installer" width="240"/>](https://github.com/yourusername/vaata-mind/releases/download/v0.3.0/vaata-mind_0.3.0_x64-setup.exe)
+[<img src="images/Windows MSI.svg" alt="Windows MSI" width="240"/>](https://github.com/yourusername/vaata-mind/releases/download/v0.3.0/vaata-mind_0.3.0_x64_en-US.msi)
 
 ### macOS
 
-[<img src="images/macOS Apple Silicon.svg" alt="macOS Apple Silicon" width="240"/>](https://github.com/yourusername/vaata-mind/releases/download/v0.1.0/vaata-mind_0.1.0_aarch64.dmg)
-[<img src="images/macOS Intel.svg" alt="macOS Intel" width="240"/>](https://github.com/yourusername/vaata-mind/releases/download/v0.1.0/vaata-mind_aarch64.app.tar.gz)
+[<img src="images/macOS Apple Silicon.svg" alt="macOS Apple Silicon" width="240"/>](https://github.com/yourusername/vaata-mind/releases/download/v0.3.0/vaata-mind_0.3.0_aarch64.dmg)
+[<img src="images/macOS Intel.svg" alt="macOS Intel" width="240"/>](https://github.com/yourusername/vaata-mind/releases/download/v0.3.0/vaata-mind_aarch64.app.tar.gz)
 
 ### Linux
 
-[<img src="images/Linux AppImage.svg" alt="Linux AppImage" width="240"/>](https://github.com/yourusername/vaata-mind/releases/download/v0.1.0/vaata-mind_0.1.0_amd64.AppImage)
-[<img src="images/Linux DEB.svg" alt="Linux DEB" width="240"/>](https://github.com/yourusername/vaata-mind/releases/download/v0.1.0/vaata-mind_0.1.0_amd64.deb)
-[<img src="images/Linux RPM.svg" alt="Linux RPM" width="240"/>](https://github.com/yourusername/vaata-mind/releases/download/v0.1.0/vaata-mind-0.1.0-1.x86_64.rpm)
+[<img src="images/Linux AppImage.svg" alt="Linux AppImage" width="240"/>](https://github.com/yourusername/vaata-mind/releases/download/v0.3.0/vaata-mind_0.3.0_amd64.AppImage)
+[<img src="images/Linux DEB.svg" alt="Linux DEB" width="240"/>](https://github.com/yourusername/vaata-mind/releases/download/v0.3.0/vaata-mind_0.3.0_amd64.deb)
+[<img src="images/Linux RPM.svg" alt="Linux RPM" width="240"/>](https://github.com/yourusername/vaata-mind/releases/download/v0.3.0/vaata-mind-0.1.0-1.x86_64.rpm)
 
 </div>
 
