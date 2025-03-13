@@ -10,7 +10,7 @@ A powerful, cross-platform application built with Tauri.
 
 <div align="center">
 
-[<img src="images/Online PWA.svg" alt="Online PWA" width="240"/>](https://vaata-mind.netlify.app/)
+<a href="https://vaata-mind.netlify.app/" target="_blank"><img src="images/Online PWA.svg" alt="Online PWA" width="240"/></a>
 
 </div>
 
