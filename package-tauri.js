@@ -47,7 +47,7 @@ function viteBuild() {
         lib: {
           entry: updaterPath,
           name: "TauriUpdater",
-          fileName: "tauri-updater",
+          fileName: (format) => `tauri-updater.js`,
           formats: ["es"],
         },
         outDir: tauriAppPath,
@@ -57,6 +57,8 @@ function viteBuild() {
           output: {
             inlineDynamicImports: true,
             manualChunks: undefined,
+            entryFileNames: "tauri-updater.js",
+            format: "es",
           },
         },
       },
