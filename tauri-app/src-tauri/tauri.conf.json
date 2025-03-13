@@ -9,6 +9,8 @@
     "windows": [
       {
         "title": "vaata-mind",
+        "backgroundColor": "#6C63FF",
+        "titleBarStyle": "Transparent",
         "width": 1280,
         "height": 720,
         "maximized": true
