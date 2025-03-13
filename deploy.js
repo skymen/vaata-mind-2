@@ -107,6 +107,11 @@ function updateReadme(newVersion) {
   }
 }
 
+function packageTauri() {
+  execSync("node package-tauri.js");
+  success("Tauri app packaged successfully!");
+}
+
 // Calculate the new version based on the version type
 function calculateNewVersion(currentVersion, type) {
   if (type === "major" || type === "minor" || type === "patch") {
@@ -149,6 +154,7 @@ function deploy(type) {
   step(`Deploying version: ${newVersion}`);
 
   // Update files
+  packageTauri();
   updateCargoToml(newVersion);
   updateReadme(newVersion);
 
