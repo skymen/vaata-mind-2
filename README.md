@@ -4,13 +4,13 @@
 
 A powerful, cross-platform application built with Tauri.
 
+### Latest Version: 0.3.1
+
 ## Use Online PWA
 
 [<img src="images/Online PWA.svg" alt="Online PWA" width="240"/>](https://vaata-mind.netlify.app/)
 
 ## Download Offline App
-
-### Latest Version: 0.3.1
 
 <div align="center">
 
