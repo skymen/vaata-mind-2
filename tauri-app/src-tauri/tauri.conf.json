@@ -1,6 +1,4 @@
 {
-  "productName": "vaata-mind",
-  "version": "0.1.0",
   "identifier": "com.vaata-mind.app",
   "app": {
     "withGlobalTauri": true,

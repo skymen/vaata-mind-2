@@ -33,11 +33,16 @@ function copyDir(src, dest) {
   });
 }
 
+console.log("removing tauri-app/src");
 removeDir(tauriAppPath);
+
+console.log("Copying files from src to tauri-app/src");
 copyDir(srcPath, tauriAppPath);
 
 // remove service-worker.js from tauri-app/src
+console.log("Removing service-worker.js from tauri-app/src");
 fs.unlinkSync(path.join(tauriAppPath, "service-worker.js"));
 
 //empty content of service-worker-registration.js
+console.log("Emptying service-worker-registration.js");
 fs.writeFileSync(path.join(tauriAppPath, "service-worker-registration.js"), "");
