@@ -51,3 +51,17 @@ fs.writeFileSync(path.join(tauriAppPath, "service-worker-registration.js"), "");
 //copy tauri-extra/ to tauri-app/src-tauri/
 console.log("Copying tauri-extra/ to tauri-app/src-tauri/");
 copyDir(extraPath, tauriAppPath);
+
+// in the new index.html, add a module script at the end of the body tag to load the tauri-updater.js
+console.log("Adding module script to load tauri-updater.js");
+let indexHtml;
+try {
+  indexHtml = fs.readFileSync(path.join(tauriAppPath, "index.html"), "utf8");
+} catch (error) {
+  console.error("Error reading index.html", error);
+  process.exit(1);
+}
+
+const scriptTag = `<script type="module" src="tauri-updater.js"></script>`;
+const newHtml = indexHtml.replace("</body>", `${scriptTag}</body>`);
+fs.writeFileSync(path.join(tauriAppPath, "index.html"), newHtml);
