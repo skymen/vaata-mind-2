@@ -5,6 +5,7 @@ const CACHE_NAME = "vaata-mind-v1";
 const STATIC_ASSETS = [
   "/",
   "/index.html",
+  "/version.json",
   "/logo.svg",
   "/favicon.ico",
   "/favicon.svg",

@@ -140,6 +140,13 @@ function calculateNewVersion(currentVersion, type) {
   );
 }
 
+function updateVersionJSON(newVersion) {
+  // write to src/version.json
+  const versionPath = path.resolve("./src/version.json");
+  let versionJSON = [newVersion];
+  fs.writeFileSync(versionPath, JSON.stringify(versionJSON));
+}
+
 // Main deploy function
 function deploy(type) {
   step("Starting deployment process");
@@ -154,9 +161,10 @@ function deploy(type) {
   step(`Deploying version: ${newVersion}`);
 
   // Update files
-  packageTauri();
+  updateVersionJSON(newVersion);
   updateCargoToml(newVersion);
   updateReadme(newVersion);
+  packageTauri();
 
   // Git operations
   try {
