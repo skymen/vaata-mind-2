@@ -1,4 +1,4 @@
-# Vaata Mind <img src="https://placehold.co/24x24/6c63ff/FFFFFF?text=V&font=montserrat" alt="Vaata Mind Logo" width="24"/>
+# Vaata Mind <img src="src/logo.svg" alt="Vaata Mind Logo" width="24"/>
 
 ![Vaata Mind Banner](https://placehold.co/1200x300/6c63ff/FFFFFF?text=Vaata+Mind&font=montserrat)
 
@@ -19,43 +19,25 @@ A powerful, cross-platform application built with Tauri.
 
 ### Windows
 
-[<img src="https://placehold.co/240x40/0078D6/FFFFFF?text=Windows+Installer&font=montserrat" alt="Windows Installer" width="240" height="40"/>](https://github.com/yourusername/vaata-mind/releases/download/v0.1.0/vaata-mind_0.1.0_x64-setup.exe)
-[<img src="https://placehold.co/240x40/5E5E5E/FFFFFF?text=Windows+MSI&font=montserrat" alt="Windows MSI" width="240" height="40"/>](https://github.com/yourusername/vaata-mind/releases/download/v0.1.0/vaata-mind_0.1.0_x64_en-US.msi)
+[<img src="images/Windows Installer.svg" alt="Windows Installer" width="240"/>](https://github.com/yourusername/vaata-mind/releases/download/v0.1.0/vaata-mind_0.1.0_x64-setup.exe)
+[<img src="images/Windows MSI.svg" alt="Windows MSI" width="240"/>](https://github.com/yourusername/vaata-mind/releases/download/v0.1.0/vaata-mind_0.1.0_x64_en-US.msi)
 
 ### macOS
 
-[<img src="https://placehold.co/240x40/000000/FFFFFF?text=macOS+Intel&font=montserrat" alt="macOS Intel" width="240" height="40"/>](https://github.com/yourusername/vaata-mind/releases/download/v0.1.0/vaata-mind_aarch64.app.tar.gz)
-[<img src="https://placehold.co/240x40/000000/FFFFFF?text=macOS+Apple+Silicon&font=montserrat" alt="macOS Apple Silicon" width="240" height="40"/>](https://github.com/yourusername/vaata-mind/releases/download/v0.1.0/vaata-mind_0.1.0_aarch64.dmg)
+[<img src="images/macOS Intel.svg" alt="macOS Intel" width="240"/>](https://github.com/yourusername/vaata-mind/releases/download/v0.1.0/vaata-mind_aarch64.app.tar.gz)
+[<img src="images/macOS Apple Silicon.svg" alt="macOS Apple Silicon" width="240"/>](https://github.com/yourusername/vaata-mind/releases/download/v0.1.0/vaata-mind_0.1.0_aarch64.dmg)
 
 ### Linux
 
-[<img src="https://placehold.co/240x40/E95420/FFFFFF?text=Linux+AppImage&font=montserrat" alt="Linux AppImage" width="240" height="40"/>](https://github.com/yourusername/vaata-mind/releases/download/v0.1.0/vaata-mind_0.1.0_amd64.AppImage)
-[<img src="https://placehold.co/240x40/0078D4/FFFFFF?text=Linux+DEB&font=montserrat" alt="Linux DEB" width="240" height="40"/>](https://github.com/yourusername/vaata-mind/releases/download/v0.1.0/vaata-mind_0.1.0_amd64.deb)
-[<img src="https://placehold.co/240x40/294172/FFFFFF?text=Linux+RPM&font=montserrat" alt="Linux RPM" width="240" height="40"/>](https://github.com/yourusername/vaata-mind/releases/download/v0.1.0/vaata-mind-0.1.0-1.x86_64.rpm)
+[<img src="images/Linux AppImage.svg" alt="Linux AppImage" width="240"/>](https://github.com/yourusername/vaata-mind/releases/download/v0.1.0/vaata-mind_0.1.0_amd64.AppImage)
+[<img src="images/Linux DEB.svg" alt="Linux DEB" width="240"/>](https://github.com/yourusername/vaata-mind/releases/download/v0.1.0/vaata-mind_0.1.0_amd64.deb)
+[<img src="images/Linux RPM.svg" alt="Linux RPM" width="240"/>](https://github.com/yourusername/vaata-mind/releases/download/v0.1.0/vaata-mind-0.1.0-1.x86_64.rpm)
 
 </div>
 
 <div align="center">
   
-[<img src="https://placehold.co/240x40/6c63ff/FFFFFF?text=View+All+Releases&font=montserrat" alt="All Releases" width="240" height="40"/>](https://github.com/yourusername/vaata-mind/releases)
-
-</div>
-
-## Alternative Downloads with Icons
-
-<div align="center">
-
-### Windows
-
-[<img src="https://placehold.co/240x40/0078D6/FFFFFF?text=%F0%9F%AA%9F+Windows+Installer&font=montserrat" alt="Windows Installer" width="240" height="40"/>](https://github.com/yourusername/vaata-mind/releases/download/v0.1.0/vaata-mind_0.1.0_x64-setup.exe)
-
-### macOS
-
-[<img src="https://placehold.co/240x40/000000/FFFFFF?text=%F0%9F%8D%8E+macOS+Apple+Silicon&font=montserrat" alt="macOS Apple Silicon" width="240" height="40"/>](https://github.com/yourusername/vaata-mind/releases/download/v0.1.0/vaata-mind_0.1.0_aarch64.dmg)
-
-### Linux
-
-[<img src="https://placehold.co/240x40/E95420/FFFFFF?text=%F0%9F%90%A7+Linux+AppImage&font=montserrat" alt="Linux AppImage" width="240" height="40"/>](https://github.com/yourusername/vaata-mind/releases/download/v0.1.0/vaata-mind_0.1.0_amd64.AppImage)
+[<img src="https://placehold.co/240x40/6c63ff/FFFFFF?text=View+All+Releases&font=montserrat" alt="All Releases" width="240"/>](https://github.com/yourusername/vaata-mind/releases)
 
 </div>
 
