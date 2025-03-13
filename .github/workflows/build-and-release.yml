@@ -8,6 +8,9 @@ on:
       - "v*"
   workflow_dispatch:
 
+permissions:
+  contents: write
+
 jobs:
   build-tauri:
     permissions:
@@ -47,7 +50,6 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf
-          export PKG_CONFIG_PATH=/usr/lib/pkgconfig:/usr/share/pkgconfig
 
       - name: Install dependencies
         run: npm install
