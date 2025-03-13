@@ -21,63 +21,25 @@ Choose your platform below to download:
 
 ### Windows
 
-[<img src="https://placehold.co/240x60/0078d7/FFFFFF?text=Windows+Installer+%28exe%29&font=montserrat" alt="Windows Installer" width="240"/>](https://github.com/yourusername/vaata-mind/releases/download/v0.1.0/vaata-mind_0.1.0_x64-setup.exe)
-[<img src="https://placehold.co/240x60/5e5e5e/FFFFFF?text=Windows+MSI&font=montserrat" alt="Windows MSI" width="240"/>](https://github.com/yourusername/vaata-mind/releases/download/v0.1.0/vaata-mind_0.1.0_x64_en-US.msi)
+[<img src="https://img.shields.io/badge/-Windows%20Installer-0078D6?style=for-the-badge&logo=microsoft&logoColor=white" height="40" width="240"/>](https://github.com/yourusername/vaata-mind/releases/download/v0.1.0/vaata-mind_0.1.0_x64-setup.exe)
+[<img src="https://img.shields.io/badge/-Windows%20MSI-5E5E5E?style=for-the-badge&logo=microsoft&logoColor=white" height="40" width="240"/>](https://github.com/yourusername/vaata-mind/releases/download/v0.1.0/vaata-mind_0.1.0_x64_en-US.msi)
 
 ### macOS
 
-[<img src="https://placehold.co/240x60/000000/FFFFFF?text=macOS+Intel&font=montserrat" alt="macOS Intel" width="240"/>](https://github.com/yourusername/vaata-mind/releases/download/v0.1.0/vaata-mind_0.1.0_x64.dmg)
-[<img src="https://placehold.co/240x60/000000/FFFFFF?text=macOS+Apple+Silicon&font=montserrat" alt="macOS Apple Silicon" width="240"/>](https://github.com/yourusername/vaata-mind/releases/download/v0.1.0/vaata-mind_0.1.0_aarch64.dmg)
+[<img src="https://img.shields.io/badge/-macOS%20Intel-000000?style=for-the-badge&logo=apple&logoColor=white" height="40" width="240"/>](https://github.com/yourusername/vaata-mind/releases/download/v0.1.0/vaata-mind_aarch64.app.tar.gz)
+[<img src="https://img.shields.io/badge/-macOS%20Apple%20Silicon-000000?style=for-the-badge&logo=apple&logoColor=white" height="40" width="240"/>](https://github.com/yourusername/vaata-mind/releases/download/v0.1.0/vaata-mind_0.1.0_aarch64.dmg)
 
 ### Linux
 
-[<img src="https://placehold.co/240x60/E95420/FFFFFF?text=Linux+AppImage&font=montserrat" alt="Linux AppImage" width="240"/>](https://github.com/yourusername/vaata-mind/releases/download/v0.1.0/vaata-mind_0.1.0_amd64.AppImage)
-[<img src="https://placehold.co/240x60/0078d4/FFFFFF?text=Linux+DEB&font=montserrat" alt="Linux DEB" width="240"/>](https://github.com/yourusername/vaata-mind/releases/download/v0.1.0/vaata-mind_0.1.0_amd64.deb)
-[<img src="https://placehold.co/240x60/294172/FFFFFF?text=Linux+RPM&font=montserrat" alt="Linux RPM" width="240"/>](https://github.com/yourusername/vaata-mind/releases/download/v0.1.0/vaata-mind-0.1.0-1.x86_64.rpm)
+[<img src="https://img.shields.io/badge/-Linux%20AppImage-E95420?style=for-the-badge&logo=linux&logoColor=white" height="40" width="240"/>](https://github.com/yourusername/vaata-mind/releases/download/v0.1.0/vaata-mind_0.1.0_amd64.AppImage)
+[<img src="https://img.shields.io/badge/-Linux%20DEB-0078D4?style=for-the-badge&logo=debian&logoColor=white" height="40" width="240"/>](https://github.com/yourusername/vaata-mind/releases/download/v0.1.0/vaata-mind_0.1.0_amd64.deb)
+[<img src="https://img.shields.io/badge/-Linux%20RPM-294172?style=for-the-badge&logo=redhat&logoColor=white" height="40" width="240"/>](https://github.com/yourusername/vaata-mind/releases/download/v0.1.0/vaata-mind-0.1.0-1.x86_64.rpm)
 
 </div>
 
 <div align="center">
   
-[<img src="https://placehold.co/200x40/6c63ff/FFFFFF?text=View+All+Releases&font=montserrat" alt="All Releases" width="200"/>](https://github.com/yourusername/vaata-mind/releases)
-
-</div>
-
-## Platform-Specific Logo Buttons
-
-Buttons with real platform logos:
-
-<div align="center">
-
-### Windows
-
-[<img src="https://img.shields.io/badge/-Windows%20Installer-0078D6?style=for-the-badge&logo=windows&logoColor=white" alt="Windows Installer" width="240"/>](https://github.com/yourusername/vaata-mind/releases/download/v0.1.0/vaata-mind_0.1.0_x64-setup.exe)
-[<img src="https://img.shields.io/badge/-Windows%20MSI-5E5E5E?style=for-the-badge&logo=windows&logoColor=white" alt="Windows MSI" width="240"/>](https://github.com/yourusername/vaata-mind/releases/download/v0.1.0/vaata-mind_0.1.0_x64_en-US.msi)
-
-### macOS
-
-[<img src="https://img.shields.io/badge/-macOS%20Intel-000000?style=for-the-badge&logo=apple&logoColor=white" alt="macOS Intel" width="240"/>](https://github.com/yourusername/vaata-mind/releases/download/v0.1.0/vaata-mind_aarch64.app.tar.gz)
-[<img src="https://img.shields.io/badge/-macOS%20Apple%20Silicon-000000?style=for-the-badge&logo=apple&logoColor=white" alt="macOS Apple Silicon" width="240"/>](https://github.com/yourusername/vaata-mind/releases/download/v0.1.0/vaata-mind_0.1.0_aarch64.dmg)
-
-### Linux
-
-[<img src="https://img.shields.io/badge/-Linux%20AppImage-E95420?style=for-the-badge&logo=linux&logoColor=white" alt="Linux AppImage" width="240"/>](https://github.com/yourusername/vaata-mind/releases/download/v0.1.0/vaata-mind_0.1.0_amd64.AppImage)
-[<img src="https://img.shields.io/badge/-Linux%20DEB-0078D4?style=for-the-badge&logo=debian&logoColor=white" alt="Linux DEB" width="240"/>](https://github.com/yourusername/vaata-mind/releases/download/v0.1.0/vaata-mind_0.1.0_amd64.deb)
-[<img src="https://img.shields.io/badge/-Linux%20RPM-294172?style=for-the-badge&logo=redhat&logoColor=white" alt="Linux RPM" width="240"/>](https://github.com/yourusername/vaata-mind/releases/download/v0.1.0/vaata-mind-0.1.0-1.x86_64.rpm)
-
-</div>
-
-## App-Themed Buttons with Real Logos
-
-Styled with Vaata Mind's brand color (#6c63ff) and real platform logos:
-
-<div align="center">
-
-[<img src="https://img.shields.io/badge/-Windows%20x64%20Installer-6c63ff?style=for-the-badge&logo=windows&logoColor=white" alt="Windows Installer" width="280"/>](https://github.com/yourusername/vaata-mind/releases/download/v0.1.0/vaata-mind_0.1.0_x64-setup.exe)
-
-[<img src="https://img.shields.io/badge/-macOS%20Apple%20Silicon-6c63ff?style=for-the-badge&logo=apple&logoColor=white" alt="macOS Apple Silicon" width="280"/>](https://github.com/yourusername/vaata-mind/releases/download/v0.1.0/vaata-mind_0.1.0_aarch64.dmg)
-
-[<img src="https://img.shields.io/badge/-Linux%20AppImage-6c63ff?style=for-the-badge&logo=linux&logoColor=white" alt="Linux AppImage" width="280"/>](https://github.com/yourusername/vaata-mind/releases/download/v0.1.0/vaata-mind_0.1.0_amd64.AppImage)
+[<img src="https://img.shields.io/badge/-View%20All%20Releases-6c63ff?style=for-the-badge&logo=github&logoColor=white" height="40" width="240"/>](https://github.com/yourusername/vaata-mind/releases)
 
 </div>
 
