@@ -1,5 +1,6 @@
 {
   "identifier": "com.vaata-mind.app",
+  "productName": "Vaata Mind",
   "build": {
     "frontendDist": "../dist"
   },
