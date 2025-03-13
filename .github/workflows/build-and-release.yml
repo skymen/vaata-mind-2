@@ -68,6 +68,7 @@ jobs:
           updaterJsonPreferNsis: true
           includeDebug: false
           includeRelease: true
+          retryAttempts: 2
 
   update-json:
     runs-on: ubuntu-latest
