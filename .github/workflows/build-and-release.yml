@@ -35,11 +35,11 @@ jobs:
 
       - name: Export Tauri private key (Unix)
         if: matrix.platform != 'windows-latest'
-        run: echo "TAURI_PRIVATE_KEY=${{ secrets.TAURI_PRIVATE_KEY }}" >> $GITHUB_ENV
+        run: echo "TAURI_SIGNING_PRIVATE_KEY=${{ secrets.TAURI_PRIVATE_KEY }}" >> $GITHUB_ENV
 
       - name: Export Tauri private key (Windows)
         if: matrix.platform == 'windows-latest'
-        run: echo "TAURI_PRIVATE_KEY=${{ secrets.TAURI_PRIVATE_KEY }}" >> $GITHUB_ENV
+        run: echo "TAURI_SIGNING_PRIVATE_KEY=${{ secrets.TAURI_PRIVATE_KEY }}" >> $GITHUB_ENV
         shell: bash
 
       - name: Install Linux dependencies
