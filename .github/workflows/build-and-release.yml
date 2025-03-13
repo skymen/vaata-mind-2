@@ -1,11 +1,11 @@
 name: Build and Release Tauri App
 
 on:
-  # push:
-  #   branches:
-  #     - main
-  #   tags:
-  #     - "v*"
+  push:
+    branches:
+      - main
+    tags:
+      - "v*"
   workflow_dispatch:
 
 jobs:
@@ -61,7 +61,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          projectPath: "./tauri-app"
+          projectPath: "tauri-app"
           tagName: vaata-mind-v__VERSION__
           releaseName: "Vaata Mind v__VERSION__"
           releaseBody: "See the assets to download this version and install."
