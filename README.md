@@ -10,7 +10,7 @@ A powerful, cross-platform application built with Tauri.
 
 [🚀 Try it out!](https://vaata-mind.netlify.app/)
 
-## Download
+## Download Offline App
 
 ### Latest Version: 0.3.1
 
