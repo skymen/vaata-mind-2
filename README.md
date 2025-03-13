@@ -48,12 +48,12 @@ A powerful, cross-platform application built with Tauri.
 
 <div align="center">
 
-<img src="images/screenshot (1).png" alt="Screenshot 1" width="240"/>
-<img src="images/screenshot (2).png" alt="Screenshot 2" width="240"/>
-<img src="images/screenshot (3).png" alt="Screenshot 3" width="240"/>
-<img src="images/screenshot (4).png" alt="Screenshot 4" width="240"/>
-<img src="images/screenshot (5).png" alt="Screenshot 5" width="240"/>
-<img src="images/screenshot (6).png" alt="Screenshot 6" width="240"/>
+<img src="images/screenshot (5).png" alt="Screenshot 5" width="480"/>
+<img src="images/screenshot (2).png" alt="Screenshot 2" width="480"/>
+<img src="images/screenshot (4).png" alt="Screenshot 4" width="480"/>
+<img src="images/screenshot (6).png" alt="Screenshot 6" width="480"/>
+<img src="images/screenshot (3).png" alt="Screenshot 3" width="480"/>
+<img src="images/screenshot (1).png" alt="Screenshot 1" width="480"/>
 
 </div>
 
