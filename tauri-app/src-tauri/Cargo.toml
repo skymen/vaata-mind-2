@@ -1,6 +1,6 @@
 [package]
 name = "vaata-mind"
-version = "1.0.1"
+version = "1.0.2"
 description = "A minimalist todo app with task recommendation"
 authors = ["skymen"]
 edition = "2021"
