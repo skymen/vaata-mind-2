@@ -4,11 +4,9 @@
 
 A powerful, cross-platform application built with Tauri.
 
-## Online PWA
+## Use Online PWA
 
-[![Netlify Status](https://api.netlify.com/api/v1/badges/7b3b3b3b-1b7b-4b7b-8b7b-9b7b7b7b7b7b/deploy-status)](https://app.netlify.com/sites/vaata-mind/deploys)
-
-[🚀 Try it out!](https://vaata-mind.netlify.app/)
+[<img src="images/Online PWA.svg" alt="Online PWA" width="240"/>](https://vaata-mind.netlify.app/)
 
 ## Download Offline App
 
