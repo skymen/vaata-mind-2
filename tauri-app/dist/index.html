@@ -1,0 +1,3739 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" type="image/png" href="/favicon-96x96.png" sizes="96x96" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="shortcut icon" href="/favicon.ico" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+    <link rel="preload" href="/logo.svg" as="image" />
+    <meta name="apple-mobile-web-app-title" content="Vaata Mind" />
+    <link rel="manifest" href="/site.webmanifest" />
+    <meta name="theme-color" content="#6C63FF" />
+    <meta
+      name="description"
+      content="A minimalist note-taking and mind-mapping application"
+    />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta
+      name="apple-mobile-web-app-status-bar-style"
+      content="black-translucent"
+    />
+    <title>Vaata Mind</title>
+    <style>
+      #loading-screen {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: var(--bg-color);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        z-index: 9999;
+      }
+
+      .loading-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        opacity: 0;
+        transition: opacity 0.2s ease-in;
+      }
+
+      .logo-container {
+        width: 100px;
+        height: 100px;
+        margin-bottom: 20px;
+        position: relative;
+      }
+
+      .loading-logo {
+        width: 100%;
+        height: 100%;
+        animation: logo-pulse 2s ease-in-out infinite alternate,
+          logo-spin 8s linear infinite;
+      }
+
+      .loading-text {
+        font-size: 18px;
+        color: var(--accent-color);
+        margin-bottom: 20px;
+        font-weight: 300;
+      }
+
+      .loading-spinner {
+        display: flex;
+        justify-content: center;
+        gap: 8px;
+      }
+
+      .spinner-dot {
+        width: 10px;
+        height: 10px;
+        background-color: var(--accent-color);
+        border-radius: 50%;
+        opacity: 0.3;
+      }
+
+      .spinner-dot:nth-child(1) {
+        animation: dot-pulse 1.4s ease-in-out 0s infinite;
+      }
+
+      .spinner-dot:nth-child(2) {
+        animation: dot-pulse 1.4s ease-in-out 0.2s infinite;
+      }
+
+      .spinner-dot:nth-child(3) {
+        animation: dot-pulse 1.4s ease-in-out 0.4s infinite;
+      }
+
+      @keyframes logo-pulse {
+        0% {
+          transform: scale(0.9);
+        }
+        100% {
+          transform: scale(1.1);
+        }
+      }
+
+      @keyframes logo-spin {
+        0% {
+          transform: rotate(0deg);
+        }
+        100% {
+          transform: rotate(360deg);
+        }
+      }
+
+      @keyframes dot-pulse {
+        0%,
+        100% {
+          opacity: 0.3;
+        }
+        50% {
+          opacity: 1;
+        }
+      }
+    </style>
+    <style>
+      :root {
+        --bg-color: #fafafa;
+        --text-color: #333;
+        --accent-color: #6c63ff;
+        --secondary-color: #03dac6;
+        --error-color: #b00020;
+        --shadow-color: rgba(0, 0, 0, 0.1);
+        --done-color: #aaaaaa;
+        --not-started-color: #fff;
+        --in-progress-color: #ffb74d;
+        --completed-color: #66bb6a;
+        --due-today-color: #f44336;
+        --due-tomorrow-color: #ff9800;
+        --due-week-color: #ffc107;
+        --due-later-color: #4caf50;
+        --important-color: #ff5252;
+
+        --in-progress-color: #000;
+        --completed-color: #000;
+      }
+
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+          Oxygen, Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
+        margin: 0;
+        padding: 0;
+        background-color: var(--bg-color);
+        color: var(--text-color);
+        height: 100vh;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+      }
+
+      .container {
+        max-width: 800px;
+        margin: 0 auto;
+        padding: 20px;
+        flex-grow: 1;
+        display: flex;
+        flex-direction: column;
+        width: 100%;
+      }
+
+      .editor {
+        flex-grow: 1;
+        display: flex;
+        flex-direction: column;
+      }
+
+      .editor textarea {
+        flex-grow: 1;
+        border: none;
+        outline: none;
+        resize: none;
+        padding: 20px;
+        font-size: 16px;
+        line-height: 1.6;
+        background-color: var(--bg-color);
+        min-height: 300px;
+      }
+
+      .status-bar {
+        display: flex;
+        justify-content: space-between;
+        padding: 10px 20px;
+        font-size: 12px;
+        color: #777;
+      }
+
+      .hidden {
+        display: none !important;
+      }
+
+      /* Explore Mode */
+      .explore-container {
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+      }
+
+      .filter-controls {
+        margin-bottom: 5px;
+        display: flex;
+        gap: 5px;
+        flex-wrap: wrap;
+      }
+
+      .filter-tag {
+        background-color: var(--accent-color);
+        color: white;
+        padding: 5px 12px;
+        border-radius: 16px;
+        font-size: 14px;
+        cursor: pointer;
+        margin: 3px;
+      }
+
+      .filter-tag.active {
+        background-color: var(--secondary-color);
+      }
+
+      .progress-filter {
+        background-color: var(--accent-color);
+        background-color: #d7d7d7;
+        color: white;
+        color: black;
+        padding: 5px 12px;
+        border-radius: 16px;
+        font-size: 14px;
+        cursor: pointer;
+        margin: 3px;
+        display: flex;
+        align-items: center;
+        gap: 5px;
+      }
+
+      .progress-filter.active {
+        background-color: var(--secondary-color);
+        color: white;
+      }
+
+      .graph-container {
+        flex-grow: 1;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        overflow: hidden;
+        background-color: white;
+        position: relative;
+      }
+
+      /* Recommendation Mode */
+      .recommendation-container {
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .note-card {
+        max-width: 600px;
+        background-color: white;
+        box-shadow: 0 4px 12px var(--shadow-color);
+        border-radius: 8px;
+        padding: 20px;
+        margin-bottom: 20px;
+        transition: transform 0.3s ease;
+      }
+
+      .recommendation-actions {
+        display: flex;
+        gap: 20px;
+        margin-top: 20px;
+      }
+
+      .btn {
+        padding: 10px 20px;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        font-weight: 500;
+        transition: all 0.2s;
+      }
+
+      .btn:hover :not(:disabled) {
+        transform: translateY(-2px);
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      }
+
+      .btn:active {
+        transform: translateY(0);
+      }
+
+      .btn:disabled {
+        opacity: 0.5;
+        cursor: auto;
+      }
+
+      .btn-primary {
+        background-color: var(--accent-color);
+        color: white;
+      }
+
+      .btn-secondary {
+        background-color: #eee;
+        color: var(--text-color);
+      }
+
+      .btn.btn-danger {
+        background-color: var(--error-color);
+        color: white;
+      }
+
+      .btn-icon {
+        padding: 10px 10px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        cursor: pointer;
+        font-weight: 500;
+        transition: all 0.2s;
+      }
+
+      .btn-icon:hover :not(:disabled) {
+        transform: translateY(-2px);
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      }
+
+      .btn-icon.btn-danger {
+        border: 1px solid var(--error-color);
+        color: var(--text-color);
+      }
+
+      .btn-icon.btn-danger:hover {
+        background-color: rgba(240, 14, 55, 0.3);
+        color: var(--error-color);
+      }
+
+      .btn-icon:disabled {
+        opacity: 0.5;
+        cursor: auto;
+      }
+
+      /* Enhanced Menu UI */
+      .menu-view {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        height: 100%;
+        background-color: var(--bg-color);
+      }
+
+      .app-title {
+        font-size: 32px;
+        margin-bottom: 40px;
+        z-index: 1;
+        color: var(--accent-color);
+        font-weight: 300;
+        text-shadow: 0 0 10px rgba(98, 0, 238, 0.3);
+      }
+
+      .mode-selector {
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+        width: 300px;
+      }
+
+      .mode-btn {
+        padding: 16px 24px;
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+        font-weight: 500;
+        font-size: 16px;
+        transition: all 0.2s;
+        text-align: left;
+        position: relative;
+        background-color: white;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+        display: flex;
+        align-items: center;
+      }
+
+      .mode-btn > .mode-btn-tip {
+        font-size: 12px;
+        color: #777;
+        position: absolute;
+        right: 20px;
+        opacity: 1;
+        transition: opacity 0.2s ease, transform 0.17s ease-out;
+      }
+
+      /* hide tip if parent is hovered */
+      .mode-btn:hover > .mode-btn-tip {
+        opacity: 0;
+        transform: translateX(5px) scaleY(0.2);
+      }
+
+      .mode-btn:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+      }
+
+      .mode-btn:active {
+        transform: translateY(0);
+      }
+
+      .mode-btn::after {
+        content: "→";
+        position: absolute;
+        right: 20px;
+        opacity: 0;
+        transition: opacity 0.2s, transform 0.2s;
+      }
+
+      .mode-btn:hover::after {
+        opacity: 1;
+        transform: translateX(5px);
+      }
+
+      .mode-btn.active {
+        background-color: var(--accent-color);
+        color: white;
+      }
+
+      .mode-btn-icon {
+        margin-right: 12px;
+        width: 24px;
+        height: 24px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .back-btn {
+        position: absolute;
+        top: 20px;
+        left: 20px;
+        background-color: rgba(255, 255, 255, 0.8);
+        color: var(--accent-color);
+        border: none;
+        border-radius: 50%;
+        width: 40px;
+        height: 40px;
+        display: flex;
+        font-size: 1.1em;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        z-index: 10;
+        box-shadow: 0 0 8px rgba(0, 0, 0, 0.1);
+        transition: background-color 0.2s, box-shadow 0.2s,
+          transform 0.2s ease-out;
+      }
+
+      .back-btn:hover {
+        background-color: white;
+        box-shadow: 0 0 12px 2px rgba(0, 0, 0, 0.3);
+        transform: translate(0, -3px);
+      }
+
+      /* Animation */
+      .save-animation {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(98, 0, 238, 0.1);
+        pointer-events: none;
+        opacity: 0;
+        z-index: 999;
+        animation: save-flash 0.7s ease-out forwards;
+      }
+
+      @keyframes save-flash {
+        0% {
+          opacity: 0;
+        }
+        30% {
+          opacity: 0.5;
+        }
+        100% {
+          opacity: 0;
+        }
+      }
+
+      .tag {
+        color: var(--accent-color);
+        font-weight: 500;
+      }
+
+      .status-message {
+        position: fixed;
+        bottom: 20px;
+        left: 50%;
+        transform: translateX(-50%);
+        background-color: rgba(0, 0, 0, 0.7);
+        color: white;
+        padding: 8px 16px;
+        border-radius: 4px;
+        opacity: 0;
+        transition: opacity 0.3s;
+      }
+
+      .note-unsaved {
+        font-style: italic;
+      }
+      .note-unsaved::before {
+        content: "* ";
+      }
+
+      .status-message.show {
+        opacity: 1;
+      }
+
+      /* Progress Indicator */
+      .progress-indicator {
+        width: 24px;
+        height: 24px;
+        border-radius: 50%;
+        border: 2px solid #000;
+        position: relative;
+        cursor: pointer;
+        display: inline-block;
+        margin-right: 8px;
+        vertical-align: middle;
+        box-shadow: rgba(0, 0, 0, 0.6) 2.5px 2.5px 1px 0px;
+        background-color: #fff;
+        display: none;
+      }
+
+      .progress-filter > .progress-indicator {
+        width: 12px;
+        height: 12px;
+      }
+
+      .progress-indicator::before {
+        content: "";
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        clip-path: polygon(0 100%, 100% 0, 100% 100%);
+        border-radius: 50%;
+        border: 1px solid #000;
+        display: none;
+      }
+
+      .progress-indicator.not-started {
+        display: block;
+      }
+
+      .progress-indicator.in-progress {
+        display: block;
+      }
+
+      .progress-indicator.in-progress::before {
+        background-color: var(--in-progress-color);
+        display: inline-block;
+      }
+
+      .progress-indicator.done {
+        background-color: var(--completed-color);
+        display: block;
+      }
+
+      /* Editor Controls */
+      .editor-controls {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 10px;
+        padding: 10px;
+        background-color: #f5f5f5;
+        border-radius: 4px;
+      }
+
+      .editor-actions {
+        display: flex;
+        gap: 10px;
+        align-items: center;
+      }
+
+      .progress-menu {
+        position: absolute;
+        background: white;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        z-index: 100;
+        overflow: hidden;
+      }
+
+      .progress-option {
+        padding: 8px 16px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .progress-option:hover {
+        background-color: #f5f5f5;
+      }
+
+      .done-note {
+        opacity: 0.6;
+      }
+      .note {
+        cursor: pointer;
+      }
+
+      /* Reshuffle Animation */
+      .reshuffle-container {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(255, 255, 255, 0.9);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        z-index: 50;
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.5s;
+      }
+
+      .reshuffle-container.show {
+        opacity: 1;
+        pointer-events: auto;
+      }
+
+      .reshuffle-animation {
+        width: 100px;
+        height: 100px;
+        margin-bottom: 20px;
+        position: relative;
+      }
+
+      .reshuffle-card {
+        position: absolute;
+        width: 60px;
+        height: 80px;
+        background-color: white;
+        border-radius: 8px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        transform-origin: center bottom;
+      }
+
+      .reshuffle-card:nth-child(1) {
+        animation: card-shuffle-1 2s infinite;
+        z-index: 3;
+      }
+
+      .reshuffle-card:nth-child(2) {
+        animation: card-shuffle-2 2s infinite;
+        z-index: 2;
+      }
+
+      .reshuffle-card:nth-child(3) {
+        animation: card-shuffle-3 2s infinite;
+        z-index: 1;
+      }
+
+      @keyframes card-shuffle-1 {
+        0%,
+        100% {
+          transform: translateX(0) rotate(0deg);
+        }
+        25% {
+          transform: translateX(-30px) rotate(-15deg);
+        }
+        50% {
+          transform: translateX(0) rotate(0deg);
+        }
+        75% {
+          transform: translateX(30px) rotate(15deg);
+        }
+      }
+
+      @keyframes card-shuffle-2 {
+        0%,
+        100% {
+          transform: translateX(0) rotate(0deg);
+        }
+        25% {
+          transform: translateX(30px) rotate(15deg);
+        }
+        50% {
+          transform: translateX(0) rotate(0deg);
+        }
+        75% {
+          transform: translateX(-30px) rotate(-15deg);
+        }
+      }
+
+      @keyframes card-shuffle-3 {
+        0%,
+        100% {
+          transform: translateY(0) rotate(0deg);
+        }
+        50% {
+          transform: translateY(-20px) rotate(5deg);
+        }
+      }
+
+      .reshuffle-text {
+        font-size: 18px;
+        color: var(--accent-color);
+        margin-bottom: 10px;
+        user-select: none;
+      }
+
+      /* Due Date Controls */
+      .due-date-controls {
+        display: flex;
+        gap: 5px;
+        margin-top: 5px;
+      }
+
+      .date-pill {
+        background-color: #f0f0f0;
+        padding: 2px 8px;
+        border-radius: 12px;
+        font-size: 12px;
+        cursor: pointer;
+        transition: all 0.2s;
+      }
+
+      .date-pill:hover {
+        background-color: #e0e0e0;
+      }
+
+      .date-pill.active {
+        background-color: var(--accent-color);
+        color: white;
+      }
+
+      /* Due date badges */
+      .due-date-badge {
+        display: inline-flex;
+        align-items: center;
+        background-color: #f0f0f0;
+        padding: 3px 8px;
+        border-radius: 12px;
+        font-size: 12px;
+        margin-right: 5px;
+      }
+
+      .due-today {
+        background-color: var(--due-today-color);
+        color: white;
+      }
+
+      .due-tomorrow {
+        background-color: var(--due-tomorrow-color);
+        color: white;
+      }
+
+      .due-week {
+        background-color: var(--due-week-color);
+      }
+
+      .due-later {
+        background-color: var(--due-later-color);
+        color: white;
+      }
+
+      .importance-badge {
+        display: inline-flex;
+        align-items: center;
+        background-color: var(--important-color);
+        color: white;
+        padding: 3px 8px;
+        border-radius: 12px;
+        font-size: 12px;
+        margin-right: 5px;
+      }
+
+      .due-date-selector {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-top: 5px;
+      }
+
+      .due-date-selector input {
+        padding: 5px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+      }
+
+      .due-date-selector button {
+        background-color: #f0f0f0;
+        border: none;
+        padding: 5px 10px;
+        border-radius: 4px;
+        cursor: pointer;
+      }
+
+      .due-date-selector button:hover {
+        background-color: #e0e0e0;
+      }
+
+      /* Badges in the main editor */
+      .note-badges {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 5px;
+        margin-bottom: 5px;
+      }
+
+      .app-logo {
+        position: absolute;
+        opacity: 0.2;
+        transform: translate(-7px, -130px);
+        animation: fadeIn 0.7s ease forwards,
+          rotateInitial 0.7s ease-out forwards, rotate 23s linear infinite 0.7s;
+      }
+
+      /* Fade in animation */
+      @keyframes fadeIn {
+        0% {
+          opacity: 0.01;
+        }
+        100% {
+          opacity: 0.2;
+        }
+      }
+
+      /* Initial faster rotation */
+      @keyframes rotateInitial {
+        0% {
+          transform: translate(-7px, -170px) rotate(0deg);
+        }
+        /* 70% {
+          transform: translate(-7px, -130px) rotate(85deg);
+        } */
+        100% {
+          transform: translate(-7px, -130px) rotate(90deg);
+        }
+      }
+
+      /* Continuous rotation animation */
+      @keyframes rotate {
+        0% {
+          transform: translate(-7px, -130px) rotate(90deg);
+        }
+        100% {
+          transform: translate(-7px, -130px) rotate(450deg);
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Main Editor View -->
+    <div id="loading-screen">
+      <div class="loading-container">
+        <div class="logo-container">
+          <!-- This will use your existing app logo SVG -->
+          <img src="./logo.svg" class="loading-logo" alt="Vaata Mind Logo" />
+        </div>
+        <div class="loading-text">Loading Vaata Mind...</div>
+        <div class="loading-spinner">
+          <div class="spinner-dot"></div>
+          <div class="spinner-dot"></div>
+          <div class="spinner-dot"></div>
+        </div>
+      </div>
+    </div>
+    <div id="editor-view" class="container hidden">
+      <button class="back-btn" id="editor-back">←</button>
+      <div class="editor-controls">
+        <div class="editor-actions">
+          <div
+            id="progress-button"
+            class="progress-indicator not-started"
+          ></div>
+          <div id="progress-menu" class="progress-menu hidden">
+            <div class="progress-option" data-progress="not-started">
+              <div class="progress-indicator not-started"></div>
+              Not Started
+            </div>
+            <div class="progress-option" data-progress="in-progress">
+              <div class="progress-indicator in-progress"></div>
+              In Progress
+            </div>
+            <div class="progress-option" data-progress="done">
+              <div class="progress-indicator done"></div>
+              Done
+            </div>
+          </div>
+          <div id="note-status"></div>
+        </div>
+        <button id="delete-note" class="btn-icon btn-danger">🗑️ Delete</button>
+      </div>
+
+      <!-- Due Date and Importance Controls -->
+      <div class="note-badges" id="note-badges">
+        <!-- Will be populated dynamically -->
+      </div>
+      <div class="due-date-selector">
+        <span>Due date:</span>
+        <input type="date" id="due-date-input" />
+        <button id="set-due-date">Set</button>
+        <button id="clear-due-date">Clear</button>
+        <button id="toggle-importance">⭐ Toggle Importance</button>
+      </div>
+      <div class="due-date-controls">
+        <div class="date-pill" data-marker="!today">Today</div>
+        <div class="date-pill" data-marker="!tomorrow">Tomorrow</div>
+        <div class="date-pill" data-marker="!nextweek">Next Week</div>
+        <div class="date-pill" data-marker="!nextmonth">Next Month</div>
+      </div>
+
+      <div class="editor">
+        <textarea
+          id="note-editor"
+          placeholder="Start typing your note... (Use #hashtags for categorization, !today/!tomorrow for due dates, and !important for priority)"
+        ></textarea>
+      </div>
+      <div class="status-bar">
+        <div id="hashtags-display"></div>
+        <div>
+          Press Esc to open menu, Ctrl+Enter to save & close, Ctrl+S to save
+        </div>
+      </div>
+    </div>
+
+    <!-- Menu View (shown after pressing Escape) -->
+    <div id="menu-view" class="container menu-view hidden">
+      <!-- ./logo.svg -->
+      <img class="app-logo" src="./logo.svg" alt="Vaata Mind Logo" />
+      <h1 class="app-title">Vaata Mind</h1>
+      <div class="mode-selector">
+        <button class="mode-btn" data-mode="editor">
+          <span class="mode-btn-icon">📝</span>
+          New Note
+          <span class="mode-btn-tip">[N]</span>
+        </button>
+        <button class="mode-btn" data-mode="explore">
+          <span class="mode-btn-icon">🔍</span>
+          Explore Mode
+          <span class="mode-btn-tip">[E]</span>
+        </button>
+        <button class="mode-btn" data-mode="recommendation">
+          <span class="mode-btn-icon">🎲</span>
+          Recommendation Mode
+          <span class="mode-btn-tip">[R]</span>
+        </button>
+        <button class="mode-btn" data-mode="table">
+          <span class="mode-btn-icon">📋</span>
+          Table Mode
+          <span class="mode-btn-tip">[T]</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Explore Mode View -->
+    <div id="explore-view" class="container hidden">
+      <button class="back-btn" id="explore-back">←</button>
+      <div class="explore-container">
+        <div class="filter-controls" id="filter-controls">
+          <!-- Hashtags will be populated here -->
+        </div>
+        <div class="filter-controls" id="progress-filters">
+          <div class="progress-filter" data-progress="all">
+            <div
+              class="progress-indicator"
+              style="border-color: transparent"
+            ></div>
+            All
+          </div>
+          <div class="progress-filter" data-progress="not-started">
+            <div class="progress-indicator not-started"></div>
+            Not Started
+          </div>
+          <div class="progress-filter" data-progress="in-progress">
+            <div class="progress-indicator in-progress"></div>
+            In Progress
+          </div>
+          <div class="progress-filter" data-progress="done">
+            <div class="progress-indicator done"></div>
+            Done
+          </div>
+        </div>
+        <div class="graph-container" id="graph-container">
+          <!-- Graph will be rendered here -->
+        </div>
+      </div>
+    </div>
+
+    <!-- Recommendation Mode View -->
+    <div id="recommendation-view" class="container hidden">
+      <button class="back-btn" id="recommendation-back">←</button>
+      <div class="recommendation-container">
+        <div class="note-card" id="recommendation-card">
+          <p>No notes available yet. Start by creating some notes!</p>
+        </div>
+        <div class="recommendation-actions">
+          <button class="btn btn-secondary" id="btn-reject">Reject</button>
+          <button class="btn btn-primary" id="btn-accept">Accept</button>
+        </div>
+
+        <!-- Reshuffle Animation -->
+        <div id="reshuffle-container" class="reshuffle-container">
+          <div class="reshuffle-animation">
+            <div class="reshuffle-card"></div>
+            <div class="reshuffle-card"></div>
+            <div class="reshuffle-card"></div>
+          </div>
+          <div class="reshuffle-text">Reshuffling notes...</div>
+        </div>
+      </div>
+    </div>
+
+    <div id="table-view" class="container hidden">
+      <button class="back-btn" id="table-back">←</button>
+      <div class="table-container">
+        <div class="table-top-bar">
+          <div class="table-actions">
+            <button id="bulk-delete-btn" class="btn btn-danger" disabled>
+              Delete Selected
+            </button>
+            <button id="table-select-all-btn" class="btn btn-secondary">
+              Select All
+            </button>
+            <button id="table-deselect-all-btn" class="btn btn-secondary">
+              Deselect All
+            </button>
+          </div>
+          <div class="table-filters">
+            <select id="table-progress-filter">
+              <option value="all">All Progress</option>
+              <option value="not-started">Not Started</option>
+              <option value="in-progress">In Progress</option>
+              <option value="done">Done</option>
+            </select>
+            <select id="table-importance-filter">
+              <option value="all">All Importance</option>
+              <option value="important">Important Only</option>
+              <option value="normal">Normal Only</option>
+            </select>
+            <select id="table-date-filter">
+              <option value="all">All Dates</option>
+              <option value="overdue">Overdue</option>
+              <option value="today">Due Today</option>
+              <option value="tomorrow">Due Tomorrow</option>
+              <option value="week">Due This Week</option>
+              <option value="future">Future</option>
+              <option value="no-date">No Due Date</option>
+            </select>
+            <div id="table-tag-filters"></div>
+          </div>
+        </div>
+        <div class="table-wrapper">
+          <table class="notes-table">
+            <thead>
+              <tr>
+                <th width="40px">
+                  <input type="checkbox" id="select-all-checkbox" />
+                </th>
+                <th width="40px">Status</th>
+                <th width="40px">⭐</th>
+                <th>Content</th>
+                <th>Tags</th>
+                <th>Due Date</th>
+                <th width="80px">Actions</th>
+              </tr>
+            </thead>
+            <tbody id="table-body">
+              <!-- Notes will be populated here -->
+            </tbody>
+          </table>
+        </div>
+        <div id="table-empty-message" class="empty-message">
+          No notes match the current filters
+        </div>
+      </div>
+    </div>
+    <style>
+      /* Table View */
+      .table-container {
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+        width: 100%;
+        user-select: none;
+      }
+
+      .table-top-bar {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 10px;
+        flex-wrap: wrap;
+        gap: 10px;
+      }
+
+      .table-filters {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+        align-items: center;
+      }
+
+      .table-filters select {
+        padding: 6px;
+        border-radius: 4px;
+        border: 1px solid #ddd;
+      }
+
+      .table-actions {
+        display: flex;
+        gap: 10px;
+      }
+
+      .table-wrapper {
+        overflow-x: auto;
+        flex-grow: 1;
+        background: white;
+        border-radius: 8px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+        max-width: 100%;
+      }
+
+      .notes-table {
+        width: 100%;
+        display: table;
+        table-layout: fixed;
+        border-collapse: collapse;
+        white-space: nowrap;
+      }
+
+      .notes-table th {
+        background-color: #f5f5f5;
+        padding: 10px;
+        text-align: left;
+        border-bottom: 2px solid #ddd;
+        position: sticky;
+        top: 0;
+        z-index: 10;
+      }
+
+      .notes-table td {
+        padding: 10px;
+        border-bottom: 1px solid #eee;
+        vertical-align: middle;
+        overflow: hidden;
+      }
+
+      /* .notes-table td :hover {
+        overflow: auto;
+      } */
+
+      .notes-table tr:hover {
+        background-color: rgba(0, 0, 0, 0.03);
+        cursor: pointer;
+      }
+
+      .table-row-selected {
+        background-color: rgba(98, 0, 238, 0.05) !important;
+      }
+
+      .table-content {
+        max-width: 300px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+
+      .table-content-full {
+        white-space: normal;
+        cursor: pointer;
+      }
+
+      .table-tags {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 4px;
+      }
+
+      .table-tag {
+        background-color: rgba(98, 0, 238, 0.1);
+        color: var(--accent-color);
+        padding: 2px 6px;
+        border-radius: 4px;
+        font-size: 12px;
+      }
+
+      .table-due-date {
+        white-space: nowrap;
+      }
+
+      .table-actions-cell {
+        display: flex;
+        gap: 5px;
+      }
+
+      .table-action-btn {
+        border: none;
+        background: none;
+        cursor: pointer;
+        font-size: 16px;
+        padding: 2px 5px;
+        border-radius: 4px;
+        opacity: 0.7;
+        transition: all 0.2s;
+      }
+
+      .table-action-btn:hover {
+        opacity: 1;
+        background-color: rgba(0, 0, 0, 0.05);
+      }
+
+      .table-progress-indicator {
+        width: 20px;
+        height: 20px;
+        cursor: auto;
+      }
+
+      .empty-message {
+        display: none;
+        padding: 40px;
+        text-align: center;
+        color: #777;
+        font-style: italic;
+      }
+
+      .table-tag-filter {
+        display: inline-block;
+        padding: 4px 8px;
+        background-color: #f0f0f0;
+        border-radius: 4px;
+        margin: 2px;
+        cursor: pointer;
+        user-select: none;
+        font-size: 12px;
+      }
+
+      .table-tag-filter.active {
+        background-color: var(--accent-color);
+        color: white;
+      }
+
+      .autocomplete-container {
+        position: absolute;
+        background: white;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        max-height: 200px;
+        overflow-y: auto;
+        z-index: 1000;
+        font-size: 12px;
+      }
+
+      .autocomplete-item {
+        padding: 6px 10px;
+        cursor: pointer;
+        transition: background-color 0.2s;
+      }
+
+      .autocomplete-item:hover {
+        background-color: #f5f5f5;
+      }
+
+      .autocomplete-item.selected {
+        background-color: var(--accent-color);
+        color: white;
+      }
+
+      .autocomplete-info {
+        padding: 4px 8px;
+        font-style: italic;
+        color: #888;
+        font-size: 10px;
+        border-bottom: 1px solid #eee;
+      }
+    </style>
+
+    <!-- Animation Elements -->
+    <div id="save-animation" class="save-animation hidden"></div>
+    <div id="status-message" class="status-message">Note saved</div>
+
+    <!-- Scripts -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
+    <script>
+      let appLoadStartTime = Date.now();
+
+      function setupLoadingScreen() {
+        setTimeout(() => {
+          document.querySelector(".loading-container").style.opacity = "1";
+        }, 20);
+      }
+
+      function hideLoadingScreen() {
+        const loadingScreen = document.getElementById("loading-screen");
+        const loadTime = Date.now() - appLoadStartTime;
+
+        // If the app loaded in less than 300ms, skip the transition animation
+        if (loadTime < 300) {
+          // Apply styles directly without transition
+          loadingScreen.style.transition =
+            "opacity 0.07s ease-out, visibility 0.07s ease-out";
+          loadingScreen.style.opacity = "0";
+          loadingScreen.style.visibility = "hidden";
+          // Force a reflow to ensure the 'none' transition takes effect immediately
+          loadingScreen.offsetHeight;
+        } else {
+          // Regular fade-out transition for slower loads
+          loadingScreen.style.transition =
+            "opacity 0.3s ease-out, visibility 0.3s ease-out";
+          loadingScreen.style.opacity = "0";
+          loadingScreen.style.visibility = "hidden";
+          loadingScreen.offsetHeight;
+        }
+      }
+
+      setupLoadingScreen();
+    </script>
+    <script>
+      // DOM Elements
+      const editorView = document.getElementById("editor-view");
+      const menuView = document.getElementById("menu-view");
+      const exploreView = document.getElementById("explore-view");
+      const recommendationView = document.getElementById("recommendation-view");
+      const noteEditor = document.getElementById("note-editor");
+      const hashtagsDisplay = document.getElementById("hashtags-display");
+      const saveAnimation = document.getElementById("save-animation");
+      const statusMessage = document.getElementById("status-message");
+      const graphContainer = document.getElementById("graph-container");
+      const filterControls = document.getElementById("filter-controls");
+      const recommendationCard = document.getElementById("recommendation-card");
+      const btnReject = document.getElementById("btn-reject");
+      const btnAccept = document.getElementById("btn-accept");
+      const progressButton = document.getElementById("progress-button");
+      const progressMenu = document.getElementById("progress-menu");
+      const deleteNoteBtn = document.getElementById("delete-note");
+      const noteStatus = document.getElementById("note-status");
+      const progressFilters = document.querySelectorAll(".progress-filter");
+      const reshuffleContainer = document.getElementById("reshuffle-container");
+      const noteBadges = document.getElementById("note-badges");
+      const dueDateInput = document.getElementById("due-date-input");
+      const setDueDateBtn = document.getElementById("set-due-date");
+      const clearDueDateBtn = document.getElementById("clear-due-date");
+      const toggleImportanceBtn = document.getElementById("toggle-importance");
+      const datePills = document.querySelectorAll(".date-pill");
+      const datePillsContainer = document.querySelector(".due-date-controls");
+      const dueDateControlsContainer =
+        document.querySelector(".due-date-selector");
+      // Add these DOM elements to the existing declarations
+      const tableView = document.getElementById("table-view");
+      const tableBody = document.getElementById("table-body");
+      const tableBackBtn = document.getElementById("table-back");
+      const bulkDeleteBtn = document.getElementById("bulk-delete-btn");
+      const tableSelectAllBtn = document.getElementById("table-select-all-btn");
+      const tableDeselectAllBtn = document.getElementById(
+        "table-deselect-all-btn"
+      );
+      const selectAllCheckbox = document.getElementById("select-all-checkbox");
+      const tableProgressFilter = document.getElementById(
+        "table-progress-filter"
+      );
+      const tableImportanceFilter = document.getElementById(
+        "table-importance-filter"
+      );
+      const tableDateFilter = document.getElementById("table-date-filter");
+      const tableTagFilters = document.getElementById("table-tag-filters");
+      const tableEmptyMessage = document.getElementById("table-empty-message");
+
+      const autocompleteContainer = document.createElement("div");
+      autocompleteContainer.className = "autocomplete-container";
+      autocompleteContainer.style.display = "none";
+      document.body.appendChild(autocompleteContainer);
+
+      // State
+      let lastNoteWasSaved = true;
+      let lastSavedNoteContent = "";
+      let currentNoteId = null;
+      let activeFilters = new Set();
+      let activeProgressFilter = "all";
+      let currentRecommendation = null;
+      let isProgressMenuOpen = false;
+      let viewedNoteIds = new Set(); // Track viewed recommendations
+      let reshuffling = false;
+
+      // Time marker patterns
+      const TIME_MARKERS = {
+        TODAY: "!today",
+        TOMORROW: "!tomorrow",
+        NEXT_WEEK: "!nextweek",
+        NEXT_MONTH: "!nextmonth",
+        IMPORTANT: "!important",
+      };
+
+      const TIME_MARKER_OPTIONS = [
+        {
+          value: TIME_MARKERS.IMPORTANT,
+          label: "Important",
+          description: "Mark as important",
+        },
+        { value: TIME_MARKERS.TODAY, label: "Today", description: "Due today" },
+        {
+          value: TIME_MARKERS.TOMORROW,
+          label: "Tomorrow",
+          description: "Due tomorrow",
+        },
+        {
+          value: TIME_MARKERS.NEXT_WEEK,
+          label: "Next Week",
+          description: "Due next week",
+        },
+        {
+          value: TIME_MARKERS.NEXT_MONTH,
+          label: "Next Month",
+          description: "Due next month",
+        },
+      ];
+
+      // Progress states
+      const PROGRESS_STATES = {
+        NOT_STARTED: "not-started",
+        IN_PROGRESS: "in-progress",
+        DONE: "done",
+      };
+
+      // Database
+      const DB = {
+        notes: [],
+        probabilities: {}, // for recommendation mode - only used in memory, not saved
+
+        init() {
+          const savedData = localStorage.getItem("minimalist_notes_db");
+          if (savedData) {
+            const parsed = JSON.parse(savedData);
+            this.notes = parsed.notes || [];
+            // Don't load probabilities from storage, initialize fresh
+            this.probabilities = {};
+          }
+
+          // Initialize probabilities for all notes
+          this.notes.forEach((note) => {
+            // Always start with fresh probabilities
+            this.probabilities[note.id] = 1.0;
+
+            // Ensure progress state is set for all notes
+            if (!note.progress) {
+              note.progress = PROGRESS_STATES.NOT_STARTED;
+            }
+
+            // Make sure dueDate and importance are initialized
+            if (note.dueDate === undefined) {
+              note.dueDate = null;
+            }
+
+            if (note.important === undefined) {
+              note.important = false;
+            }
+          });
+
+          return this;
+        },
+
+        save() {
+          localStorage.setItem(
+            "minimalist_notes_db",
+            JSON.stringify({
+              notes: this.notes,
+              // Don't save probabilities
+            })
+          );
+          return this;
+        },
+
+        addNote(content) {
+          const hashtags = extractHashtags(content);
+          const timeData = extractTimeMarkers(content);
+          const id = Date.now().toString();
+          const newNote = {
+            id,
+            content,
+            hashtags,
+            progress: PROGRESS_STATES.NOT_STARTED,
+            dueDate: timeData.dueDate,
+            important: timeData.important,
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+          };
+
+          this.notes.push(newNote);
+          this.probabilities[id] = 1.0;
+          this.save();
+          return newNote;
+        },
+
+        updateNote(id, content, progress, dueDate, important) {
+          const noteIndex = this.notes.findIndex((note) => note.id === id);
+          if (noteIndex >= 0) {
+            const hashtags = extractHashtags(content);
+            const timeData = extractTimeMarkers(content);
+
+            // Use provided values or extract from content
+            const newDueDate =
+              dueDate !== undefined ? dueDate : timeData.dueDate;
+            const isImportant =
+              important !== undefined ? important : timeData.important;
+
+            this.notes[noteIndex] = {
+              ...this.notes[noteIndex],
+              content,
+              hashtags,
+              progress:
+                progress !== undefined
+                  ? progress
+                  : this.notes[noteIndex].progress,
+              dueDate: newDueDate,
+              important: isImportant,
+              updatedAt: new Date().toISOString(),
+            };
+            this.save();
+            return this.notes[noteIndex];
+          }
+          return null;
+        },
+
+        deleteNote(id) {
+          const noteIndex = this.notes.findIndex((note) => note.id === id);
+          if (noteIndex >= 0) {
+            this.notes.splice(noteIndex, 1);
+            delete this.probabilities[id];
+            this.save();
+            return true;
+          }
+          return false;
+        },
+
+        getNoteById(id) {
+          return this.notes.find((note) => note.id === id);
+        },
+
+        getAllHashtags() {
+          const hashtagSet = new Set();
+          this.notes.forEach((note) => {
+            note.hashtags.forEach((tag) => hashtagSet.add(tag));
+          });
+          return Array.from(hashtagSet);
+        },
+
+        getRecommendation() {
+          if (this.notes.length === 0) return null;
+
+          // If all notes have been viewed, return null to trigger reshuffle
+          if (viewedNoteIds.size >= this.notes.length) {
+            return null;
+          }
+
+          // Calculate total probability only for notes not yet viewed
+          let totalProb = 0;
+          const availableNotes = this.notes.filter(
+            (note) =>
+              !viewedNoteIds.has(note.id) &&
+              note.progress !== PROGRESS_STATES.DONE
+          );
+
+          if (availableNotes.length === 0) {
+            return null; // Should never happen but just in case
+          }
+
+          // Calculate base probabilities with importance and due date factoring in
+          availableNotes.forEach((note) => {
+            // Start with base probability
+            let noteProbability = this.probabilities[note.id] || 1.0;
+
+            // Apply importance multiplier
+            if (note.important) {
+              noteProbability *= 2.0; // Important notes are twice as likely
+            }
+
+            // Apply due date factor
+            if (note.dueDate) {
+              const today = new Date();
+              today.setHours(0, 0, 0, 0);
+
+              const dueDate = new Date(note.dueDate);
+              dueDate.setHours(0, 0, 0, 0);
+
+              const daysUntilDue = Math.floor(
+                (dueDate - today) / (1000 * 60 * 60 * 24)
+              );
+
+              // The closer to due date, the higher the probability
+              if (daysUntilDue < 0) {
+                // Overdue items get highest priority
+                noteProbability *= 3.0;
+              } else if (daysUntilDue === 0) {
+                // Due today
+                noteProbability *= 2.5;
+              } else if (daysUntilDue === 1) {
+                // Due tomorrow
+                noteProbability *= 2.0;
+              } else if (daysUntilDue <= 7) {
+                // Due this week
+                noteProbability *= 1.5;
+              }
+            }
+
+            totalProb += noteProbability;
+          });
+
+          // Choose a note based on weighted probabilities
+          let targetProb = Math.random() * totalProb;
+          let cumulativeProb = 0;
+
+          for (const note of availableNotes) {
+            let noteProbability = this.probabilities[note.id] || 1.0;
+
+            // Apply importance multiplier
+            if (note.important) {
+              noteProbability *= 2.0;
+            }
+
+            // Apply due date factor
+            if (note.dueDate) {
+              const today = new Date();
+              today.setHours(0, 0, 0, 0);
+
+              const dueDate = new Date(note.dueDate);
+              dueDate.setHours(0, 0, 0, 0);
+
+              const daysUntilDue = Math.floor(
+                (dueDate - today) / (1000 * 60 * 60 * 24)
+              );
+
+              if (daysUntilDue < 0) {
+                noteProbability *= 3.0;
+              } else if (daysUntilDue === 0) {
+                noteProbability *= 2.5;
+              } else if (daysUntilDue === 1) {
+                noteProbability *= 2.0;
+              } else if (daysUntilDue <= 7) {
+                noteProbability *= 1.5;
+              }
+            }
+
+            cumulativeProb += noteProbability;
+            if (cumulativeProb >= targetProb) {
+              viewedNoteIds.add(note.id);
+              return note;
+            }
+          }
+
+          // Fallback in case of floating point issues
+          const randomNote =
+            availableNotes[Math.floor(Math.random() * availableNotes.length)];
+          viewedNoteIds.add(randomNote.id);
+          return randomNote;
+        },
+        adjustProbabilitiesAccepted(rejectedNoteId) {
+          const acceptedNote = this.notes.find(
+            (note) => note.id === rejectedNoteId
+          );
+          if (!acceptedNote) return;
+
+          // Reduce probability of the accepted note
+          this.probabilities[rejectedNoteId] *= 0.5;
+
+          // Slightly increase probability of notes with similar hashtags
+          const similarityBonus = (nb) => {
+            // lerp from 1.0 to 2.0 based on number of shared hashtags, clamped
+            return Math.min(2.0, 1.0 + nb * 0.1);
+          };
+          this.notes.forEach((note) => {
+            if (note.id !== rejectedNoteId) {
+              // Check for hashtag overlap
+              const overlap = note.hashtags.filter((tag) =>
+                acceptedNote.hashtags.includes(tag)
+              );
+
+              this.probabilities[note.id] *= similarityBonus(overlap.length);
+            }
+          });
+        },
+        adjustProbabilitiesRejected(rejectedNoteId) {
+          const rejectedNote = this.notes.find(
+            (note) => note.id === rejectedNoteId
+          );
+          if (!rejectedNote) return;
+
+          // Reduce probability of the rejected note
+          this.probabilities[rejectedNoteId] *= 0.5;
+
+          // Slightly reduce probability of notes with similar hashtags
+          const similarityPenalty = (nb) => {
+            // unlerp from 0.5 to 1.0 based on number of shared hashtags, clamped
+            return Math.max(0.5, 1.0 - nb * 0.1);
+          };
+          this.notes.forEach((note) => {
+            if (note.id !== rejectedNoteId) {
+              // Check for hashtag overlap
+              const overlap = note.hashtags.filter((tag) =>
+                rejectedNote.hashtags.includes(tag)
+              );
+
+              this.probabilities[note.id] *= similarityPenalty(overlap.length);
+            }
+          });
+        },
+
+        reshuffleRecommendations() {
+          // Clear the viewed notes set
+          viewedNoteIds.clear();
+
+          // Reset all probabilities
+          this.notes.forEach((note) => {
+            this.probabilities[note.id] = 1.0;
+          });
+        },
+      };
+
+      // Initialize the database
+      const database = DB.init();
+
+      // Utility Functions
+      function extractHashtags(text) {
+        const hashtagRegex = /#(\w+)/g;
+        const matches = text.match(hashtagRegex);
+        return matches ? matches.map((tag) => tag.trim()) : [];
+      }
+
+      function showView(viewElement) {
+        // Hide all views
+        editorView.classList.add("hidden");
+        menuView.classList.add("hidden");
+        exploreView.classList.add("hidden");
+        recommendationView.classList.add("hidden");
+        tableView.classList.add("hidden");
+
+        // Show the requested view
+        viewElement.classList.remove("hidden");
+
+        if (viewElement === editorView) {
+          // focus on the note editor
+          noteEditor.focus();
+        }
+      }
+
+      function playFlashAnimation() {
+        saveAnimation.classList.remove("hidden");
+        setTimeout(() => {
+          saveAnimation.classList.add("hidden");
+        }, 800);
+      }
+
+      function setEditorContent(content, noteId = null) {
+        if (!lastNoteWasSaved && noteEditor.value !== content) {
+          return;
+        }
+
+        noteEditor.value = content || "";
+        currentNoteId = noteId;
+        lastSavedNoteContent = noteEditor.value;
+        updateHashtagsDisplay();
+        updateProgressIndicator();
+        updateNoteStatus();
+        updateNoteBadges();
+        updateEditorUI();
+      }
+
+      function updateHashtagsDisplay() {
+        const hashtags = extractHashtags(noteEditor.value);
+        hashtagsDisplay.innerHTML = hashtags
+          .map((tag) => `<span class="tag">${tag}</span>`)
+          .join(" ");
+      }
+
+      function updateProgressIndicator() {
+        // Clear all classes first
+        progressButton.classList.remove(
+          PROGRESS_STATES.NOT_STARTED,
+          PROGRESS_STATES.IN_PROGRESS,
+          PROGRESS_STATES.DONE
+        );
+
+        if (!currentNoteId) {
+          progressButton.classList.add(PROGRESS_STATES.NOT_STARTED);
+          return;
+        }
+
+        const note = database.getNoteById(currentNoteId);
+        if (note) {
+          progressButton.classList.add(note.progress);
+        } else {
+          progressButton.classList.add(PROGRESS_STATES.NOT_STARTED);
+        }
+      }
+
+      function updateNoteStatus() {
+        if (!lastNoteWasSaved) {
+          noteStatus.classList.add("note-unsaved");
+        } else {
+          noteStatus.classList.remove("note-unsaved");
+        }
+        if (!currentNoteId) {
+          noteStatus.textContent = "New Note";
+          return;
+        }
+
+        const note = database.getNoteById(currentNoteId);
+        if (note) {
+          const date = new Date(note.updatedAt).toLocaleString();
+          noteStatus.textContent = `Last updated: ${date}`;
+        } else {
+          noteStatus.textContent = "";
+        }
+      }
+
+      function toggleProgressMenu() {
+        isProgressMenuOpen = !isProgressMenuOpen;
+
+        if (isProgressMenuOpen) {
+          const rect = progressButton.getBoundingClientRect();
+          progressMenu.style.top = `${rect.bottom + 5}px`;
+          progressMenu.style.left = `${rect.left}px`;
+          progressMenu.classList.remove("hidden");
+        } else {
+          progressMenu.classList.add("hidden");
+        }
+      }
+
+      function setNoteProgress(progress) {
+        if (!currentNoteId) return;
+
+        database.updateNote(currentNoteId, noteEditor.value, progress);
+        updateProgressIndicator();
+        toggleProgressMenu();
+      }
+
+      function saveCurrentNote(closeAfterSave = false) {
+        const content = noteEditor.value;
+        if (content === "" && closeAfterSave && !currentNoteId) {
+          return;
+        }
+        if (currentNoteId) {
+          database.updateNote(currentNoteId, content);
+        } else {
+          const newNote = database.addNote(content);
+          currentNoteId = newNote.id;
+          updateEditorUI();
+        }
+
+        lastNoteWasSaved = true;
+        lastSavedNoteContent = content;
+
+        updateProgressIndicator();
+        updateNoteStatus();
+        updateNoteBadges();
+        showStatus("Note saved");
+        playFlashAnimation();
+
+        if (closeAfterSave) {
+          setEditorContent("");
+          currentNoteId = null;
+        }
+      }
+
+      let shiftPressed = false;
+      let ctrlPressed = false;
+      document.addEventListener("keydown", (e) => {
+        if (e.key === "Shift") {
+          shiftPressed = true;
+        }
+        if (e.key === "Control") {
+          ctrlPressed = true;
+        }
+      });
+
+      document.addEventListener("keyup", (e) => {
+        if (e.key === "Shift") {
+          shiftPressed = false;
+        }
+        if (e.key === "Control") {
+          ctrlPressed = false;
+        }
+      });
+
+      function deleteCurrentNote() {
+        if (!currentNoteId) return;
+
+        // check that shift key is pressed
+
+        if (
+          shiftPressed ||
+          confirm("Are you sure you want to delete this note?")
+        ) {
+          database.deleteNote(currentNoteId);
+          setEditorContent("");
+          currentNoteId = null;
+          showStatus("Note deleted");
+          playFlashAnimation();
+        }
+      }
+
+      // Autocomplete state
+      let isAutocompleteVisible = false;
+      let autocompleteItems = [];
+      let selectedItemIndex = -1;
+      let autocompleteType = null; // 'hashtag' or 'marker'
+      let autocompleteStartPos = -1;
+      let currentWord = "";
+
+      // Autocomplete Functions
+      function showAutocomplete(type, items, position) {
+        // Save autocomplete state
+        autocompleteType = type;
+        autocompleteItems = items;
+        selectedItemIndex = -1;
+        isAutocompleteVisible = true;
+
+        // Position the container
+        const editorRect = noteEditor.getBoundingClientRect();
+        const lineHeight = parseInt(
+          window.getComputedStyle(noteEditor).lineHeight
+        );
+        const cursorCoords = getCaretCoordinates(noteEditor, position);
+
+        autocompleteContainer.style.left = `${
+          editorRect.left + cursorCoords.left - 5
+        }px`;
+        autocompleteContainer.style.top = `${
+          editorRect.top + cursorCoords.top + lineHeight - 5
+        }px`;
+
+        // Populate and show the container
+        renderAutocompleteItems();
+        autocompleteContainer.style.display = "block";
+      }
+
+      function hideAutocomplete() {
+        autocompleteContainer.style.display = "none";
+        isAutocompleteVisible = false;
+        autocompleteType = null;
+        selectedItemIndex = -1;
+        autocompleteStartPos = -1;
+      }
+
+      function renderAutocompleteItems() {
+        autocompleteContainer.innerHTML = "";
+
+        // Add info text based on type
+        const infoText = document.createElement("div");
+        infoText.className = "autocomplete-info";
+        infoText.textContent =
+          autocompleteType === "hashtag"
+            ? "Select a hashtag or type a new one"
+            : "Select a time marker";
+        autocompleteContainer.appendChild(infoText);
+
+        // Add all items
+        autocompleteItems.forEach((item, index) => {
+          const itemElement = document.createElement("div");
+          itemElement.className = "autocomplete-item";
+
+          if (autocompleteType === "hashtag") {
+            itemElement.textContent = item;
+          } else {
+            // For time markers, show label and description
+            itemElement.innerHTML = `<strong>${item.label}</strong> - ${item.description}`;
+          }
+
+          if (index === selectedItemIndex) {
+            itemElement.classList.add("selected");
+          }
+
+          itemElement.addEventListener("click", () => {
+            selectAutocompleteItem(index);
+          });
+
+          autocompleteContainer.appendChild(itemElement);
+        });
+
+        // If no items, show message
+        if (autocompleteItems.length === 0) {
+          const emptyElement = document.createElement("div");
+          emptyElement.className = "autocomplete-item";
+          emptyElement.textContent =
+            autocompleteType === "hashtag"
+              ? "No matching hashtags. Type to create new."
+              : "No matching time markers.";
+          autocompleteContainer.appendChild(emptyElement);
+        }
+      }
+
+      function selectAutocompleteItem(index) {
+        if (index < 0 || index >= autocompleteItems.length) return;
+        // Get the current value
+        const value =
+          autocompleteType === "hashtag"
+            ? autocompleteItems[index]
+            : autocompleteItems[index].value;
+
+        // Find the end of the current word to replace the entire word
+        const text = noteEditor.value;
+        let wordEndPos = autocompleteStartPos;
+
+        // Find where the current word ends (next whitespace or end of text)
+        while (wordEndPos < text.length && !/\s/.test(text[wordEndPos])) {
+          wordEndPos++;
+        }
+
+        // Get text before and after the complete word
+        const textBeforeCursor = text.substring(0, autocompleteStartPos);
+        const textAfterWord = text.substring(wordEndPos);
+
+        if (autocompleteType === "hashtag") {
+          // For hashtags, we need to keep the # prefix
+          noteEditor.value =
+            textBeforeCursor + "#" + value.substring(1) + textAfterWord;
+          // Position cursor after the hashtag
+          noteEditor.selectionStart = noteEditor.selectionEnd =
+            autocompleteStartPos + value.length;
+        } else {
+          // For time markers, replace the entire marker
+          noteEditor.value = textBeforeCursor + value + textAfterWord;
+          // Position cursor after the time marker
+          noteEditor.selectionStart = noteEditor.selectionEnd =
+            autocompleteStartPos + value.length;
+        }
+
+        hideAutocomplete();
+        updateHashtagsDisplay();
+        markNoteAsUnsaved();
+        noteEditor.focus();
+      }
+      function moveSelection(direction) {
+        // No items to select
+        if (autocompleteItems.length === 0) return;
+
+        // Calculate new index
+        selectedItemIndex =
+          (selectedItemIndex + direction) % autocompleteItems.length;
+        if (selectedItemIndex < 0)
+          selectedItemIndex = autocompleteItems.length - 1;
+
+        // Render with new selection
+        renderAutocompleteItems();
+
+        // Scroll selected item into view
+        const selectedItem = autocompleteContainer.querySelector(
+          ".autocomplete-item.selected"
+        );
+        if (selectedItem) {
+          selectedItem.scrollIntoView({ block: "nearest" });
+        }
+      }
+
+      // Helper function to get caret (cursor) coordinates
+      function getCaretCoordinates(element, position, options) {
+        const debug = options?.debug || false;
+
+        // Handle debug marker
+        if (!globalThis.debugMarker && debug) {
+          globalThis.debugMarker = document.createElement("div");
+          globalThis.debugMarker.style.position = "absolute";
+          globalThis.debugMarker.style.backgroundColor = "red";
+          globalThis.debugMarker.style.width = "2px";
+          globalThis.debugMarker.style.height = "5px";
+          document.body.appendChild(globalThis.debugMarker);
+        }
+
+        // We'll copy the properties below into the mirror div.
+        // Note that some browsers, such as Firefox, do not concatenate properties
+        // into their shorthand (e.g. padding-top, padding-bottom etc. -> padding),
+        // so we have to list every single property explicitly.
+        const properties = [
+          "direction", // RTL support
+          "boxSizing",
+          "width", // on Chrome and IE, exclude the scrollbar, so the mirror div wraps exactly as the textarea does
+          "height",
+          "overflowX",
+          "overflowY", // copy the scrollbar for IE
+
+          "borderTopWidth",
+          "borderRightWidth",
+          "borderBottomWidth",
+          "borderLeftWidth",
+          "borderStyle",
+
+          "paddingTop",
+          "paddingRight",
+          "paddingBottom",
+          "paddingLeft",
+
+          "fontStyle",
+          "fontVariant",
+          "fontWeight",
+          "fontStretch",
+          "fontSize",
+          "fontSizeAdjust",
+          "lineHeight",
+          "fontFamily",
+
+          "textAlign",
+          "textTransform",
+          "textIndent",
+          "textDecoration",
+
+          "letterSpacing",
+          "wordSpacing",
+
+          "tabSize",
+          "MozTabSize",
+        ];
+
+        const isFirefox =
+          typeof window !== "undefined" && window.mozInnerScreenX != null;
+        const isInput = element.nodeName === "INPUT";
+
+        // Create a mirror div to replicate the textarea's style
+        const div = document.createElement("div");
+        div.id = "input-textarea-caret-position-mirror-div";
+
+        // Set basic styles
+        const style = div.style;
+        const computed = window.getComputedStyle
+          ? window.getComputedStyle(element)
+          : element.currentStyle;
+
+        // Default textarea styles
+        style.whiteSpace = "pre-wrap";
+        if (!isInput) {
+          style.wordWrap = "break-word"; // only for textarea-s
+        }
+
+        // Position off-screen
+        style.position = "absolute";
+        if (!debug) {
+          style.visibility = "hidden";
+        }
+
+        // Transfer the element's properties to the div
+        properties.forEach((prop) => {
+          if (isInput && prop === "lineHeight") {
+            // Special case for <input>s because text is rendered centered and line height may be != height
+            if (computed.boxSizing === "border-box") {
+              const height = parseInt(computed.height);
+              const outerHeight =
+                parseInt(computed.paddingTop) +
+                parseInt(computed.paddingBottom) +
+                parseInt(computed.borderTopWidth) +
+                parseInt(computed.borderBottomWidth);
+              const targetHeight = outerHeight + parseInt(computed.lineHeight);
+              if (height > targetHeight) {
+                style.lineHeight = height - outerHeight + "px";
+              } else if (height === targetHeight) {
+                style.lineHeight = computed.lineHeight;
+              } else {
+                style.lineHeight = 0;
+              }
+            } else {
+              style.lineHeight = computed.height;
+            }
+          } else {
+            style[prop] = computed[prop];
+          }
+        });
+
+        // Firefox-specific handling
+        if (isFirefox) {
+          // Firefox lies about the overflow property for textareas
+          if (element.scrollHeight > parseInt(computed.height)) {
+            style.overflowY = "scroll";
+          }
+        } else {
+          style.overflow = "hidden"; // for Chrome to not render a scrollbar; IE keeps overflowY = 'scroll'
+        }
+
+        // Add to DOM to start measuring
+        document.body.appendChild(div);
+
+        // Set content and create span for cursor position
+        div.textContent = element.value.substring(0, position);
+
+        // Special handling for input type="text" vs textarea
+        if (isInput) {
+          div.textContent = div.textContent.replace(/\s/g, "\u00a0"); // Replace spaces with non-breaking spaces
+        }
+
+        const span = document.createElement("span");
+        // Add content after cursor position to ensure proper text wrapping
+        span.textContent = element.value.substring(position) || ".";
+        div.appendChild(span);
+
+        // Calculate coordinates
+        const coordinates = {
+          top: span.offsetTop + parseInt(computed.borderTopWidth),
+          left: span.offsetLeft + parseInt(computed.borderLeftWidth),
+          height: parseInt(computed.lineHeight),
+        };
+
+        // Update debug marker if needed
+        if (debug && globalThis.debugMarker) {
+          const editorRect = element.getBoundingClientRect();
+          globalThis.debugMarker.style.top = `${
+            editorRect.top + coordinates.top
+          }px`;
+          globalThis.debugMarker.style.left = `${
+            editorRect.left + coordinates.left
+          }px`;
+          globalThis.debugMarker.style.height = `${coordinates.height}px`;
+        } else {
+          // Clean up - remove the div
+          document.body.removeChild(div);
+        }
+
+        return coordinates;
+      }
+      // Get the word currently being typed
+      function getCurrentWord(value, position) {
+        if (position <= 0) return "";
+
+        // Find the start of the current word
+        let start = position - 1;
+        while (start >= 0 && !/\s/.test(value[start])) {
+          start--;
+        }
+        start++; // Move past the whitespace
+
+        let end = position;
+        while (end < value.length && !/\s/.test(value[end])) {
+          end++;
+        }
+
+        // Extract and return the word
+        return [value.substring(start, end), value.substring(start, position)];
+      }
+
+      // Check if we should show autocomplete
+      function checkForAutocomplete() {
+        const cursorPos = noteEditor.selectionStart;
+        const text = noteEditor.value;
+        let currentWordAtCursor = "";
+
+        // Get the current word being typed
+        [currentWord, currentWordAtCursor] = getCurrentWord(text, cursorPos);
+        if (!currentWord) {
+          hideAutocomplete();
+          return;
+        }
+
+        // If we're already showing autocomplete, check if we should hide it
+        if (isAutocompleteVisible) {
+          if (autocompleteType === "hashtag" && !currentWord.startsWith("#")) {
+            hideAutocomplete();
+            return;
+          }
+          if (autocompleteType === "marker" && !currentWord.startsWith("!")) {
+            hideAutocomplete();
+            return;
+          }
+        }
+
+        // Check for hashtag autocompletion
+        if (currentWord.startsWith("#")) {
+          const query = currentWord.substring(1).toLowerCase(); // Remove # prefix
+          autocompleteStartPos = cursorPos - currentWordAtCursor.length;
+
+          // Get all hashtags that match the query
+          const matchingTags = database
+            .getAllHashtags()
+            .filter((tag) => tag.toLowerCase().includes(query))
+            .sort((a, b) => {
+              // Sort exact matches first, then by alphabetical order
+              const aExact = a.toLowerCase() === query;
+              const bExact = b.toLowerCase() === query;
+              if (aExact && !bExact) return -1;
+              if (!aExact && bExact) return 1;
+              return a.localeCompare(b);
+            });
+
+          // Show autocomplete with matching time markers
+          if (
+            matchingTags.length === 1 &&
+            matchingTags[0].substring(1).toLowerCase() === query
+          ) {
+            hideAutocomplete();
+            return;
+          }
+          // Show autocomplete with matching hashtags
+          showAutocomplete("hashtag", matchingTags, cursorPos);
+          return;
+        }
+
+        // Check for time marker autocompletion
+        if (currentWord.startsWith("!") && currentWord.length > 1) {
+          const query = currentWord.substring(1).toLowerCase(); // Remove ! prefix
+          autocompleteStartPos = cursorPos - currentWordAtCursor.length;
+
+          // Filter time markers that match the query
+          const matchingMarkers = TIME_MARKER_OPTIONS.filter(
+            (marker) =>
+              marker.value.substring(1).toLowerCase().includes(query) ||
+              marker.label.toLowerCase().includes(query)
+          );
+
+          // Show autocomplete with matching time markers
+          if (
+            matchingMarkers.length === 0 ||
+            (matchingMarkers.length === 1 &&
+              matchingMarkers[0].value.substring(1).toLowerCase() === query)
+          ) {
+            hideAutocomplete();
+            return;
+          }
+
+          showAutocomplete("marker", matchingMarkers, cursorPos);
+          return;
+        }
+
+        // If no conditions met, hide autocomplete
+        hideAutocomplete();
+      }
+
+      // Add keydown handler to manage autocomplete navigation
+      noteEditor.addEventListener("keydown", (e) => {
+        if (!isAutocompleteVisible) return;
+
+        switch (e.key) {
+          case "ArrowDown":
+            e.preventDefault();
+            moveSelection(1);
+            break;
+
+          case "ArrowUp":
+            e.preventDefault();
+            moveSelection(-1);
+            break;
+
+          case "Tab":
+          case "Enter":
+            if (e.ctrlKey) {
+              e.preventDefault();
+              saveCurrentNote(true);
+              hideAutocomplete();
+            } else if (selectedItemIndex >= 0) {
+              e.preventDefault();
+              selectAutocompleteItem(selectedItemIndex);
+            } else if (autocompleteItems.length > 0) {
+              e.preventDefault();
+              selectAutocompleteItem(0);
+            }
+            break;
+
+          case "Escape":
+            e.preventDefault();
+            hideAutocomplete();
+            break;
+        }
+      });
+
+      // Hide autocomplete when editor loses focus
+      noteEditor.addEventListener("blur", (e) => {
+        // Small delay to allow click events on autocomplete items
+        setTimeout(() => {
+          if (!autocompleteContainer.contains(document.activeElement)) {
+            hideAutocomplete();
+          }
+        }, 100);
+      });
+
+      // Handle cursor movement to check if autocomplete should be shown or hidden
+      noteEditor.addEventListener("click", checkForAutocomplete);
+      noteEditor.addEventListener("keyup", (e) => {
+        // Only check on keys that don't require special handling
+        if (
+          !["ArrowDown", "ArrowUp", "Tab", "Enter", "Escape"].includes(e.key)
+        ) {
+          checkForAutocomplete();
+        }
+      });
+
+      // Hide autocomplete when scrolling the editor
+      noteEditor.addEventListener("scroll", () => {
+        if (isAutocompleteVisible) {
+          hideAutocomplete();
+        }
+      });
+
+      function createProgressIndicatorSVG(progress, radius = 12) {
+        const svg = document.createElementNS(
+          "http://www.w3.org/2000/svg",
+          "svg"
+        );
+        svg.style.position = "absolute";
+        svg.style.transform = "rotate(45deg)";
+        svg.setAttribute("width", radius * 2);
+        svg.setAttribute("height", radius * 2);
+        svg.setAttribute("viewBox", `0 0 ${radius * 2} ${radius * 2}`);
+
+        // Create circle border
+        const circle = document.createElementNS(
+          "http://www.w3.org/2000/svg",
+          "circle"
+        );
+        circle.setAttribute("cx", radius);
+        circle.setAttribute("cy", radius);
+        circle.setAttribute("r", radius - 1);
+        circle.setAttribute("stroke", "#333");
+        circle.setAttribute("stroke-width", "1");
+        circle.setAttribute("fill", "var(--not-started-color)");
+        svg.appendChild(circle);
+
+        // draw line cutting circle in two halves
+        // const linePath = document.createElementNS(
+        //   "http://www.w3.org/2000/svg",
+        //   "path"
+        // );
+        // linePath.setAttribute(
+        //   "d",
+        //   `M ${radius} 1.5 L ${radius} ${radius * 2 - 1.5}`
+        // );
+        // linePath.setAttribute("stroke", "#000");
+        // linePath.setAttribute("stroke-width", "1");
+        // svg.appendChild(linePath);
+
+        if (progress === PROGRESS_STATES.IN_PROGRESS) {
+          // Half-filled circle for in-progress
+          const path = document.createElementNS(
+            "http://www.w3.org/2000/svg",
+            "path"
+          );
+          path.setAttribute(
+            "d",
+            `M ${radius} 1.5 A ${radius - 2} ${radius - 2} 0 0 1 ${radius} ${
+              radius * 2 - 1.5
+            }`
+          );
+          path.setAttribute("fill", "var(--in-progress-color)");
+          svg.appendChild(path);
+        } else if (progress === PROGRESS_STATES.DONE) {
+          // Full circle for done
+          const innerCircle = document.createElementNS(
+            "http://www.w3.org/2000/svg",
+            "circle"
+          );
+          innerCircle.setAttribute("cx", radius);
+          innerCircle.setAttribute("cy", radius);
+          innerCircle.setAttribute("r", radius - 1.5);
+          innerCircle.setAttribute("fill", "var(--completed-color)");
+          svg.appendChild(innerCircle);
+        }
+
+        return svg;
+      }
+
+      function createGraphVisualization() {
+        // Determine which notes to display based on filters
+        let notesToDisplay = database.notes;
+
+        // Apply hashtag filters if any
+        if (activeFilters.size > 0) {
+          notesToDisplay = notesToDisplay.filter((note) =>
+            note.hashtags.some((tag) => activeFilters.has(tag))
+          );
+        }
+
+        // Apply progress filter if not 'all'
+        if (activeProgressFilter !== "all") {
+          notesToDisplay = notesToDisplay.filter(
+            (note) => note.progress === activeProgressFilter
+          );
+        } else {
+          notesToDisplay = notesToDisplay.filter(
+            (note) => note.progress !== PROGRESS_STATES.DONE
+          );
+        }
+
+        // Clear the container
+        d3.select(graphContainer).selectAll("*").remove();
+
+        // If no notes match filters or there are no notes, show a message
+        if (notesToDisplay.length === 0) {
+          d3.select(graphContainer)
+            .append("div")
+            .style("display", "flex")
+            .style("height", "100%")
+            .style("justify-content", "center")
+            .style("align-items", "center")
+            .text(
+              database.notes.length === 0
+                ? "No notes yet. Create some notes first!"
+                : "No notes match the current filters"
+            );
+          return;
+        }
+
+        // Create SVG
+        const width = graphContainer.clientWidth;
+        const height = graphContainer.clientHeight;
+
+        const svg = d3
+          .select(graphContainer)
+          .append("svg")
+          .attr("width", width)
+          .attr("height", height);
+
+        // Create a container group that will be transformed for zoom/pan
+        const container = svg.append("g");
+
+        // Add zoom behavior
+        const zoom = d3
+          .zoom()
+          .scaleExtent([0.1, 4])
+          .on("zoom", (event) => {
+            container.attr("transform", event.transform);
+          });
+
+        svg.call(zoom);
+
+        // Define nodes and links for the graph
+        const nodes = notesToDisplay.map((note) => ({
+          id: note.id,
+          content:
+            note.content.substring(0, 50) +
+            (note.content.length > 50 ? "..." : ""),
+          hashtags: note.hashtags,
+          progress: note.progress,
+          dueDate: note.dueDate,
+          important: note.important,
+          radius: 10 + Math.min(note.content.length / 20, 20),
+        }));
+
+        // Create links between notes with the same hashtags
+        const links = [];
+        for (let i = 0; i < nodes.length; i++) {
+          for (let j = i + 1; j < nodes.length; j++) {
+            const commonTags = nodes[i].hashtags.filter((tag) =>
+              nodes[j].hashtags.includes(tag)
+            );
+
+            if (commonTags.length > 0) {
+              links.push({
+                source: nodes[i].id,
+                target: nodes[j].id,
+                strength: commonTags.length,
+              });
+            }
+          }
+        }
+
+        // Create force simulation
+        const simulation = d3
+          .forceSimulation(nodes)
+          .force(
+            "link",
+            d3
+              .forceLink(links)
+              .id((d) => d.id)
+              .distance((d) => 200 - 20 * d.strength)
+          )
+          .force("charge", d3.forceManyBody().strength(-200))
+          .force("center", d3.forceCenter(width / 2, height / 2))
+          .force(
+            "collision",
+            d3.forceCollide().radius((d) => d.radius + 10)
+          );
+
+        // Create links
+        const link = container
+          .append("g")
+          .selectAll("line")
+          .data(links)
+          .enter()
+          .append("line")
+          .attr("stroke", "#999")
+          .attr("stroke-opacity", 0.6)
+          .attr("stroke-width", (d) => Math.sqrt(d.strength));
+
+        // Create nodes
+        const node = container
+          .append("g")
+          .selectAll("g")
+          .data(nodes)
+          .enter()
+          .append("g")
+          .attr(
+            "class",
+            (d) =>
+              // d.progress === PROGRESS_STATES.DONE ? "done-note note" : "note"
+              "note"
+          )
+          .call(
+            d3
+              .drag()
+              .on("start", dragstarted)
+              .on("drag", dragged)
+              .on("end", dragended)
+          )
+          .on("click", function (event, d) {
+            // Click on node to edit
+            const note = database.notes.find((note) => note.id === d.id);
+            if (note) {
+              setEditorContent(note.content, note.id);
+              showView(editorView);
+            }
+          });
+
+        // Add circles for nodes
+        node
+          .append("circle")
+          .attr("r", (d) => d.radius)
+          .attr("fill", (d) => {
+            // If important, use a special color
+            if (d.important) {
+              return "hsl(0, 80%, 70%)"; // Reddish for important notes
+            }
+
+            // Color based on number of hashtags
+            const hue = (d.hashtags.length * 30) % 360;
+
+            // If has due date, adjust color saturation based on urgency
+            if (d.dueDate) {
+              const today = new Date();
+              today.setHours(0, 0, 0, 0);
+
+              const dueDate = new Date(d.dueDate);
+              dueDate.setHours(0, 0, 0, 0);
+
+              const daysUntilDue = Math.floor(
+                (dueDate - today) / (1000 * 60 * 60 * 24)
+              );
+
+              if (daysUntilDue < 0) {
+                return "hsl(0, 80%, 60%)"; // Red for overdue
+              } else if (daysUntilDue === 0) {
+                return "hsl(30, 90%, 60%)"; // Orange for today
+              } else if (daysUntilDue === 1) {
+                return "hsl(45, 90%, 60%)"; // Amber for tomorrow
+              }
+            }
+
+            return `hsl(${hue}, 70%, 60%)`;
+          })
+          .attr("stroke", (d) => (d.important ? "#f44336" : "#fff"))
+          .attr("stroke-width", (d) => (d.important ? 3 : 2));
+
+        // Add progress indicators to nodes - moved to top
+        node.each(function (d) {
+          // Create progress indicator SVG
+          const indicator = createProgressIndicatorSVG(d.progress, 6);
+
+          // Convert SVG to string
+          const serializer = new XMLSerializer();
+          const svgString = serializer.serializeToString(indicator);
+
+          // Add it to the node (now at top)
+          const foreignObject = d3
+            .select(this)
+            .append("foreignObject")
+            .attr("width", 12)
+            .attr("height", 12)
+            .attr("x", -6) // Center it
+            .attr("y", -6); // Move above the node
+
+          foreignObject.html(svgString);
+        });
+
+        // Add due date markers if applicable
+        node.each(function (d) {
+          if (d.dueDate) {
+            const dateText = d3
+              .select(this)
+              .append("text")
+              .attr("y", -d.radius - 5)
+              .attr("text-anchor", "middle")
+              .attr("font-size", "10px")
+              .attr("font-weight", "bold")
+              .attr("fill", getDueDateTextColor(d.dueDate));
+
+            dateText.text(formatShortDueDate(d.dueDate));
+          }
+
+          // Add importance indicator if applicable
+          if (d.important) {
+            d3.select(this)
+              .append("text")
+              .attr("y", d.radius / 2 - 2)
+              .attr("x", -d.radius - 10) // Center the text
+              .attr("text-anchor", "middle")
+              .attr("font-size", "12px")
+              .text("⭐");
+          }
+        });
+
+        // Add text moved below node
+        node
+          .append("text")
+          .text((d) => d.content)
+          .attr("x", 0) // Center the text
+          .attr("y", (d) => d.radius + 15) // Position below the node
+          .attr("text-anchor", "middle") // Center horizontally
+          .attr("font-size", "12px")
+          .attr("fill", (d) =>
+            d.progress === PROGRESS_STATES.DONE ? "#888" : "#333"
+          );
+
+        // Add hashtags below content
+        node
+          .append("text")
+          .text((d) => d.hashtags.join(" "))
+          .attr("x", 0) // Center the text
+          .attr("y", (d) => d.radius + 30) // Position below the content
+          .attr("text-anchor", "middle") // Center horizontally
+          .attr("font-size", "10px")
+          .attr("fill", (d) =>
+            d.progress === PROGRESS_STATES.DONE ? "#888" : "#6C63FF"
+          );
+
+        // Simulation tick function
+        simulation.on("tick", () => {
+          link
+            .attr("x1", (d) => d.source.x)
+            .attr("y1", (d) => d.source.y)
+            .attr("x2", (d) => d.target.x)
+            .attr("y2", (d) => d.target.y);
+
+          node.attr("transform", (d) => `translate(${d.x},${d.y})`);
+        });
+
+        // Drag functions
+        function dragstarted(event, d) {
+          if (!event.active) simulation.alphaTarget(0.3).restart();
+          d.fx = d.x;
+          d.fy = d.y;
+        }
+
+        function dragged(event, d) {
+          d.fx = event.x;
+          d.fy = event.y;
+        }
+
+        function dragended(event, d) {
+          if (!event.active) simulation.alphaTarget(0);
+          d.fx = null;
+          d.fy = null;
+        }
+      }
+
+      function formatShortDueDate(dateStr) {
+        if (!dateStr) return "";
+
+        const date = new Date(dateStr);
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+
+        const tomorrow = new Date(today);
+        tomorrow.setDate(tomorrow.getDate() + 1);
+
+        const daysUntilDue = Math.floor((date - today) / (1000 * 60 * 60 * 24));
+
+        if (daysUntilDue < 0) {
+          return "Overdue!";
+        } else if (date.getTime() === today.getTime()) {
+          return "Today";
+        } else if (date.getTime() === tomorrow.getTime()) {
+          return "Tomorrow";
+        } else {
+          // Return short format like "Oct 15"
+          return date.toLocaleDateString(undefined, {
+            month: "short",
+            day: "numeric",
+          });
+        }
+      }
+
+      function getDueDateTextColor(dateStr) {
+        if (!dateStr) return "#333";
+
+        const date = new Date(dateStr);
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+
+        const daysUntilDue = Math.floor((date - today) / (1000 * 60 * 60 * 24));
+
+        if (daysUntilDue < 0) {
+          return "#f44336"; // Red for overdue
+        } else if (daysUntilDue === 0) {
+          return "#ff9800"; // Orange for today
+        } else if (daysUntilDue === 1) {
+          return "#ffc107"; // Amber for tomorrow
+        } else {
+          return "#4caf50"; // Green for future dates
+        }
+      }
+
+      function extractTimeMarkers(text) {
+        const result = {
+          dueDate: null,
+          important: false,
+        };
+
+        // Check for importance marker
+        if (text.includes(TIME_MARKERS.IMPORTANT)) {
+          result.important = true;
+        }
+
+        // Check for date markers
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+
+        if (text.includes(TIME_MARKERS.TODAY)) {
+          result.dueDate = today.toISOString();
+        } else if (text.includes(TIME_MARKERS.TOMORROW)) {
+          const tomorrow = new Date(today);
+          tomorrow.setDate(tomorrow.getDate() + 1);
+          result.dueDate = tomorrow.toISOString();
+        } else if (text.includes(TIME_MARKERS.NEXT_WEEK)) {
+          const nextWeek = new Date(today);
+          nextWeek.setDate(nextWeek.getDate() + 7);
+          result.dueDate = nextWeek.toISOString();
+        } else if (text.includes(TIME_MARKERS.NEXT_MONTH)) {
+          const nextMonth = new Date(today);
+          nextMonth.setMonth(nextMonth.getMonth() + 1);
+          result.dueDate = nextMonth.toISOString();
+        }
+
+        return result;
+      }
+
+      function updateFilters() {
+        // Get all hashtags for filtering
+        const allHashtags = database.getAllHashtags();
+
+        // Clear filters
+        filterControls.innerHTML = "";
+
+        // Add "All" filter
+        const allFilter = document.createElement("div");
+        allFilter.className = `filter-tag ${
+          activeFilters.size === 0 ? "active" : ""
+        }`;
+        allFilter.textContent = "All";
+        allFilter.addEventListener("click", () => {
+          activeFilters.clear();
+          updateFilters();
+          createGraphVisualization();
+        });
+        filterControls.appendChild(allFilter);
+
+        // Add hashtag filters
+        allHashtags.forEach((tag) => {
+          const tagFilter = document.createElement("div");
+          tagFilter.className = `filter-tag ${
+            activeFilters.has(tag) ? "active" : ""
+          }`;
+          tagFilter.textContent = tag;
+          tagFilter.addEventListener("click", () => {
+            if (activeFilters.has(tag)) {
+              activeFilters.delete(tag);
+            } else {
+              activeFilters.add(tag);
+            }
+            updateFilters();
+            createGraphVisualization();
+          });
+          filterControls.appendChild(tagFilter);
+        });
+      }
+
+      function updateProgressFilters() {
+        // Set active class on the selected progress filter
+        document.querySelectorAll(".progress-filter").forEach((filter) => {
+          const progress = filter.getAttribute("data-progress");
+          if (progress === activeProgressFilter) {
+            filter.classList.add("active");
+          } else {
+            filter.classList.remove("active");
+          }
+        });
+      }
+
+      function showReshuffle() {
+        reshuffling = true;
+        reshuffleContainer.classList.add("show");
+
+        // Wait for animation and then refresh recommendations
+        setTimeout(() => {
+          database.reshuffleRecommendations();
+          reshuffleContainer.classList.remove("show");
+          reshuffling = false;
+          updateRecommendationView();
+        }, 2000); // 3 seconds for shuffle animation
+      }
+
+      function updateRecommendationView() {
+        // If we're in the process of reshuffling, don't update
+        if (reshuffling) return;
+        currentRecommendation = database.getRecommendation();
+
+        if (!currentRecommendation && database.notes.length > 0) {
+          // No recommendations available, show reshuffle animation
+          showReshuffle();
+          return;
+        } else if (!currentRecommendation) {
+          // No notes available to recommend
+          recommendationCard.innerHTML = "No notes available to recommend";
+          btnReject.disabled = true;
+          btnAccept.disabled = true;
+          return;
+        }
+
+        // Highlight hashtags
+        const highlightedContent = currentRecommendation.content.replace(
+          /#(\w+)/g,
+          '<span class="tag">#$1</span>'
+        );
+
+        // Create progress indicator
+        recommendationCard.innerHTML = `
+              <div style="display: flex; align-items: start; margin-bottom: 10px;">
+                <div style="margin-right: 10px;" class="progress-indicator ${currentRecommendation.progress}"></div>
+                <div>${highlightedContent}</div>
+              </div>
+            `;
+
+        btnReject.disabled = false;
+        btnAccept.disabled = false;
+      }
+
+      function handleEditorViewKeydown(e) {
+        // Only respond if we're in the editor view
+        if (editorView.classList.contains("hidden")) return;
+        if (isAutocompleteVisible) {
+          if (
+            ["ArrowDown", "ArrowUp", "Tab", "Enter", "Escape"].includes(e.key)
+          ) {
+            return; // Let the autocomplete handler manage these keys
+          }
+        }
+
+        // Ctrl+Enter to save and close
+        if (e.key === "Enter" && e.ctrlKey) {
+          e.preventDefault();
+          saveCurrentNote(true);
+        }
+
+        // Ctrl+S to save
+        if (e.key === "s" && e.ctrlKey) {
+          e.preventDefault();
+          saveCurrentNote(false);
+        }
+
+        // Escape to show menu
+        if (e.key === "Escape") {
+          e.preventDefault();
+          if (isProgressMenuOpen) {
+            toggleProgressMenu();
+          } else {
+            showView(menuView);
+          }
+        }
+      }
+
+      function handleMenuKeydown(e) {
+        if (menuView.classList.contains("hidden")) return;
+        // Escape to show menu
+        if (e.key === "Escape") {
+          e.preventDefault();
+          setEditorContent("");
+          showView(editorView);
+        }
+
+        // N for note, E for explore, R for recommend
+        if (e.key === "n") {
+          e.preventDefault();
+          setEditorContent("");
+          showView(editorView);
+        }
+
+        if (e.key === "e") {
+          e.preventDefault();
+          showView(exploreView);
+          updateFilters();
+          updateProgressFilters();
+          createGraphVisualization(); // Show graph with all notes by default
+        }
+
+        if (e.key === "r") {
+          e.preventDefault();
+          // Reset viewed notes when entering recommendation mode
+          showView(recommendationView);
+          viewedNoteIds.clear();
+          updateRecommendationView();
+        }
+
+        if (e.key === "t") {
+          e.preventDefault();
+          showView(tableView);
+          updateTagFilters();
+          renderNotesTable();
+        }
+      }
+
+      function handleRecommendationViewKeydown(e) {
+        if (recommendationView.classList.contains("hidden")) return;
+        // Escape to show menu
+        if (e.key === "Escape") {
+          e.preventDefault();
+          showView(menuView);
+        }
+
+        // Ctrl+R to reshuffle, left to reject, right to accept
+        if (e.key === "r" && e.ctrlKey) {
+          e.preventDefault();
+          showReshuffle();
+        }
+
+        if (e.key === "ArrowLeft") {
+          e.preventDefault();
+          btnReject.click();
+        }
+
+        if (e.key === "ArrowRight") {
+          e.preventDefault();
+          btnAccept.click();
+        }
+      }
+
+      function handleExploreViewKeydown(e) {
+        if (exploreView.classList.contains("hidden")) return;
+        // Escape to show menu
+        if (e.key === "Escape") {
+          e.preventDefault();
+          showView(menuView);
+        }
+      }
+
+      function handleTableViewKeydown(e) {
+        if (e.key === "Escape") {
+          e.preventDefault();
+          showView(menuView);
+        }
+      }
+
+      // Event Listeners
+      document.addEventListener("keydown", (e) => {
+        // Only respond if we're in the editor view
+        if (!recommendationView.classList.contains("hidden"))
+          return handleRecommendationViewKeydown(e);
+        if (!editorView.classList.contains("hidden"))
+          return handleEditorViewKeydown(e);
+        if (!exploreView.classList.contains("hidden"))
+          return handleExploreViewKeydown(e);
+
+        if (!tableView.classList.contains("hidden"))
+          return handleTableViewKeydown(e);
+        if (!menuView.classList.contains("hidden")) return handleMenuKeydown(e);
+      });
+
+      // Click outside to close progress menu
+      document.addEventListener("click", (e) => {
+        if (
+          isProgressMenuOpen &&
+          !progressButton.contains(e.target) &&
+          !progressMenu.contains(e.target)
+        ) {
+          toggleProgressMenu();
+        }
+      });
+
+      function markNoteAsUnsaved() {
+        lastNoteWasSaved = noteEditor.value === lastSavedNoteContent;
+        updateNoteStatus();
+      }
+
+      // Hashtag detection in editor
+      noteEditor.addEventListener("input", () => {
+        updateHashtagsDisplay();
+        markNoteAsUnsaved();
+        checkForAutocomplete();
+      });
+
+      // Progress button
+      progressButton.addEventListener("click", () => {
+        toggleProgressMenu();
+      });
+
+      // Progress options
+      document.querySelectorAll(".progress-option").forEach((option) => {
+        option.addEventListener("click", () => {
+          const progress = option.getAttribute("data-progress");
+          setNoteProgress(progress);
+        });
+      });
+
+      // Delete button
+      deleteNoteBtn.addEventListener("click", deleteCurrentNote);
+
+      // Mode selector buttons
+      document.querySelectorAll(".mode-btn").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          const mode = btn.getAttribute("data-mode");
+          if (mode === "explore") {
+            showView(exploreView);
+            updateFilters();
+            updateProgressFilters();
+            createGraphVisualization(); // Show graph with all notes by default
+          } else if (mode === "recommendation") {
+            showView(recommendationView);
+            // Reset viewed notes when entering recommendation mode
+            viewedNoteIds.clear();
+            updateRecommendationView();
+          } else if (mode === "editor") {
+            showView(editorView);
+            setEditorContent("");
+            currentNoteId = null;
+          }
+        });
+      });
+
+      // Back buttons
+      document.getElementById("explore-back").addEventListener("click", () => {
+        showView(menuView);
+      });
+
+      // Back buttons
+      document.getElementById("editor-back").addEventListener("click", () => {
+        showView(menuView);
+      });
+
+      document
+        .getElementById("recommendation-back")
+        .addEventListener("click", () => {
+          showView(menuView);
+        });
+
+      // Recommendation actions
+      btnReject.addEventListener("click", () => {
+        if (currentRecommendation && !reshuffling) {
+          database.adjustProbabilitiesRejected(currentRecommendation.id);
+          updateRecommendationView();
+        }
+      });
+
+      btnAccept.addEventListener("click", () => {
+        if (currentRecommendation && !reshuffling) {
+          database.adjustProbabilitiesAccepted(currentRecommendation.id);
+          setEditorContent(
+            currentRecommendation.content,
+            currentRecommendation.id
+          );
+          showView(editorView);
+        }
+      });
+
+      // Due date buttons
+      setDueDateBtn.addEventListener("click", () => {
+        const dateValue = dueDateInput.value;
+        if (dateValue) {
+          setNoteDueDate(new Date(dateValue).toISOString());
+        }
+      });
+
+      clearDueDateBtn.addEventListener("click", () => {
+        setNoteDueDate(null);
+        dueDateInput.value = "";
+      });
+
+      toggleImportanceBtn.addEventListener("click", toggleNoteImportance);
+
+      function setNoteDueDate(dateString) {
+        if (!currentNoteId) return;
+
+        const note = database.getNoteById(currentNoteId);
+        database.updateNote(
+          currentNoteId,
+          noteEditor.value,
+          note.progress,
+          dateString,
+          note.important
+        );
+        updateNoteBadges();
+
+        showStatus(dateString ? "Due date set" : "Due date cleared");
+      }
+
+      function toggleNoteImportance() {
+        if (!currentNoteId) return;
+
+        const note = database.getNoteById(currentNoteId);
+        const newImportance = !note.important;
+        database.updateNote(
+          currentNoteId,
+          noteEditor.value,
+          note.progress,
+          note.dueDate,
+          newImportance
+        );
+        updateNoteBadges();
+        showStatus(
+          newImportance ? "Marked as important" : "Importance removed"
+        );
+      }
+
+      function updateNoteBadges() {
+        noteBadges.innerHTML = "";
+
+        if (!currentNoteId) return;
+
+        const note = database.getNoteById(currentNoteId);
+        if (!note) return;
+
+        // Create due date badge if applicable
+        if (note.dueDate) {
+          const dueDateBadge = document.createElement("div");
+          dueDateBadge.className = `due-date-badge ${getDueDateClass(
+            note.dueDate
+          )}`;
+          dueDateBadge.textContent = formatDueDate(note.dueDate);
+          noteBadges.appendChild(dueDateBadge);
+
+          // Set the date input value
+          const dueDate = new Date(note.dueDate);
+          const formattedDate = dueDate.toISOString().split("T")[0];
+          dueDateInput.value = formattedDate;
+        } else {
+          dueDateInput.value = "";
+        }
+
+        // Create importance badge if applicable
+        if (note.important) {
+          const importanceBadge = document.createElement("div");
+          importanceBadge.className = "importance-badge";
+          importanceBadge.textContent = "⭐ Important";
+          noteBadges.appendChild(importanceBadge);
+        }
+      }
+
+      function formatDueDate(dateStr) {
+        if (!dateStr) return null;
+
+        const date = new Date(dateStr);
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+
+        const tomorrow = new Date(today);
+        tomorrow.setDate(tomorrow.getDate() + 1);
+
+        const daysUntilDue = Math.floor((date - today) / (1000 * 60 * 60 * 24));
+
+        if (daysUntilDue < 0) {
+          return `Overdue: ${date.toLocaleDateString()}`;
+        } else if (date.getTime() === today.getTime()) {
+          return "Due Today";
+        } else if (date.getTime() === tomorrow.getTime()) {
+          return "Due Tomorrow";
+        } else {
+          return `Due: ${date.toLocaleDateString()}`;
+        }
+      }
+
+      function getDueDateClass(dateStr) {
+        if (!dateStr) return "";
+
+        const date = new Date(dateStr);
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+
+        const tomorrow = new Date(today);
+        tomorrow.setDate(tomorrow.getDate() + 1);
+
+        const daysUntilDue = Math.floor((date - today) / (1000 * 60 * 60 * 24));
+
+        if (daysUntilDue < 0) {
+          return "due-today"; // Use the same urgent styling
+        } else if (date.getTime() === today.getTime()) {
+          return "due-today";
+        } else if (date.getTime() === tomorrow.getTime()) {
+          return "due-tomorrow";
+        } else if (daysUntilDue <= 7) {
+          return "due-week";
+        } else {
+          return "due-later";
+        }
+      }
+
+      // Date pill buttons
+      datePills.forEach((pill) => {
+        pill.addEventListener("click", () => {
+          const marker = pill.getAttribute("data-marker");
+          insertTimeMarker(marker);
+        });
+      });
+
+      function updateEditorUI() {
+        if (!currentNoteId) {
+          datePillsContainer.classList.add("hidden");
+          dueDateControlsContainer.classList.add("hidden");
+          progressButton.classList.add("hidden");
+          deleteNoteBtn.classList.add("hidden");
+          return;
+        }
+        datePillsContainer.classList.remove("hidden");
+        dueDateControlsContainer.classList.remove("hidden");
+        progressButton.classList.remove("hidden");
+        deleteNoteBtn.classList.remove("hidden");
+      }
+
+      function insertTimeMarker(marker) {
+        // Get cursor position
+        const cursorPos = noteEditor.selectionStart;
+        const text = noteEditor.value;
+
+        // Insert the marker at the current cursor position
+        const newText =
+          text.slice(0, cursorPos) + " " + marker + " " + text.slice(cursorPos);
+        noteEditor.value = newText;
+
+        // Update the cursor position after the marker
+        noteEditor.selectionStart = cursorPos + marker.length + 2;
+        noteEditor.selectionEnd = noteEditor.selectionStart;
+
+        // Trigger update of hashtags
+        updateHashtagsDisplay();
+
+        // Focus back on the editor
+        noteEditor.focus();
+      }
+
+      // Progress filters
+      document.querySelectorAll(".progress-filter").forEach((filter) => {
+        filter.addEventListener("click", () => {
+          const progress = filter.getAttribute("data-progress");
+          activeProgressFilter = progress;
+          updateProgressFilters();
+          createGraphVisualization();
+        });
+      });
+
+      // Variables for table mode
+      let selectedNoteIds = new Set();
+      let tableFilters = {
+        progress: "all",
+        importance: "all",
+        date: "all",
+        tags: new Set(),
+      };
+
+      // Function to render the table
+      function renderNotesTable() {
+        const filteredNotes = filterNotesForTable();
+
+        // Clear table
+        tableBody.innerHTML = "";
+
+        // Update empty message visibility
+        if (filteredNotes.length === 0) {
+          tableEmptyMessage.style.display = "block";
+          tableBody.style.display = "none";
+        } else {
+          tableEmptyMessage.style.display = "none";
+          tableBody.style.display = "table-row-group";
+
+          // Render each note
+          filteredNotes.forEach((note) => {
+            const row = document.createElement("tr");
+            row.setAttribute("data-note-id", note.id);
+            if (selectedNoteIds.has(note.id)) {
+              row.classList.add("table-row-selected");
+            }
+
+            // Checkbox cell
+            const checkboxCell = document.createElement("td");
+            const checkbox = document.createElement("input");
+            checkbox.type = "checkbox";
+            checkbox.checked = selectedNoteIds.has(note.id);
+            checkbox.addEventListener("change", (e) => {
+              if (e.target.checked) {
+                selectedNoteIds.add(note.id);
+                row.classList.add("table-row-selected");
+              } else {
+                selectedNoteIds.delete(note.id);
+                row.classList.remove("table-row-selected");
+              }
+              updateBulkActionButtons();
+            });
+            checkbox.addEventListener("click", (e) => {
+              e.stopPropagation();
+            });
+            checkboxCell.appendChild(checkbox);
+            row.appendChild(checkboxCell);
+
+            // Status cell
+            const statusCell = document.createElement("td");
+            const statusIndicator = document.createElement("div");
+            statusIndicator.className = `progress-indicator ${note.progress} table-progress-indicator`;
+            statusCell.appendChild(statusIndicator);
+            row.appendChild(statusCell);
+
+            // Importance cell
+            const importanceCell = document.createElement("td");
+            importanceCell.textContent = note.important ? "⭐" : "";
+            importanceCell.style.textAlign = "center";
+            row.appendChild(importanceCell);
+
+            // Content cell
+            const contentCell = document.createElement("td");
+            const content = document.createElement("div");
+            content.className = "table-content";
+            content.textContent = note.content.replace(
+              /!important|!today|!tomorrow|!nextweek|!nextmonth/g,
+              ""
+            );
+            content.title = "Click to expand/collapse";
+
+            content.addEventListener("click", () => {
+              content.classList.toggle("table-content-full");
+            });
+
+            contentCell.appendChild(content);
+            row.appendChild(contentCell);
+
+            // Tags cell
+            const tagsCell = document.createElement("td");
+            const tagsContainer = document.createElement("div");
+            tagsContainer.className = "table-tags";
+            note.hashtags.forEach((tag) => {
+              const tagSpan = document.createElement("span");
+              tagSpan.className = "table-tag";
+              tagSpan.textContent = tag;
+              tagsContainer.appendChild(tagSpan);
+            });
+            tagsCell.appendChild(tagsContainer);
+            row.appendChild(tagsCell);
+
+            // Due date cell
+            const dueDateCell = document.createElement("td");
+            dueDateCell.className = "table-due-date";
+            if (note.dueDate) {
+              dueDateCell.textContent = formatShortDueDate(note.dueDate);
+              dueDateCell.className += " " + getDueDateClass(note.dueDate);
+            } else {
+              dueDateCell.textContent = "—";
+            }
+            row.appendChild(dueDateCell);
+
+            // Actions cell
+            const actionsCell = document.createElement("td");
+            actionsCell.className = "table-actions-cell";
+
+            const editBtn = document.createElement("button");
+            editBtn.className = "table-action-btn";
+            editBtn.innerHTML = "✏️";
+            editBtn.title = "Edit";
+            editBtn.addEventListener("click", (e) => {
+              e.stopPropagation();
+              setEditorContent(note.content, note.id);
+              showView(editorView);
+            });
+
+            const deleteBtn = document.createElement("button");
+            deleteBtn.className = "table-action-btn";
+            deleteBtn.innerHTML = "🗑️";
+            deleteBtn.title = "Delete";
+            deleteBtn.addEventListener("click", (e) => {
+              e.stopPropagation();
+              if (
+                shiftPressed ||
+                confirm("Are you sure you want to delete this note?")
+              ) {
+                database.deleteNote(note.id);
+                renderNotesTable();
+
+                showStatus("Notes deleted");
+              }
+            });
+
+            row.addEventListener("click", (e) => {
+              if (shiftPressed || selectedNoteIds.size > 0) {
+                // checkbox.checked = !checkbox.checked;
+                // if (checkbox.checked) {
+                //   selectedNoteIds.add(note.id);
+                //   row.classList.add("table-row-selected");
+                // } else {
+                //   selectedNoteIds.delete(note.id);
+                //   row.classList.remove("table-row-selected");
+                // }
+                checkbox.click();
+              } else {
+                editBtn.click();
+              }
+            });
+
+            actionsCell.appendChild(editBtn);
+            actionsCell.appendChild(deleteBtn);
+            row.appendChild(actionsCell);
+
+            tableBody.appendChild(row);
+          });
+        }
+
+        updateBulkActionButtons();
+      }
+
+      // Filter notes based on table filter settings
+      function filterNotesForTable() {
+        let notes = database.notes;
+
+        // Filter by progress
+        if (tableFilters.progress !== "all") {
+          notes = notes.filter(
+            (note) => note.progress === tableFilters.progress
+          );
+        } else {
+          notes = notes.filter(
+            (note) => note.progress !== PROGRESS_STATES.DONE
+          );
+        }
+
+        // Filter by importance
+        if (tableFilters.importance === "important") {
+          notes = notes.filter((note) => note.important);
+        } else if (tableFilters.importance === "normal") {
+          notes = notes.filter((note) => !note.important);
+        }
+
+        // Filter by due date
+        if (tableFilters.date !== "all") {
+          const today = new Date();
+          today.setHours(0, 0, 0, 0);
+          const tomorrow = new Date(today);
+          tomorrow.setDate(tomorrow.getDate() + 1);
+          const oneWeek = new Date(today);
+          oneWeek.setDate(oneWeek.getDate() + 7);
+
+          if (tableFilters.date === "no-date") {
+            notes = notes.filter((note) => !note.dueDate);
+          } else if (tableFilters.date === "overdue") {
+            notes = notes.filter((note) => {
+              if (!note.dueDate) return false;
+              const dueDate = new Date(note.dueDate);
+              return dueDate < today;
+            });
+          } else if (tableFilters.date === "today") {
+            notes = notes.filter((note) => {
+              if (!note.dueDate) return false;
+              const dueDate = new Date(note.dueDate);
+              dueDate.setHours(0, 0, 0, 0);
+              return dueDate.getTime() === today.getTime();
+            });
+          } else if (tableFilters.date === "tomorrow") {
+            notes = notes.filter((note) => {
+              if (!note.dueDate) return false;
+              const dueDate = new Date(note.dueDate);
+              dueDate.setHours(0, 0, 0, 0);
+              return dueDate.getTime() === tomorrow.getTime();
+            });
+          } else if (tableFilters.date === "week") {
+            notes = notes.filter((note) => {
+              if (!note.dueDate) return false;
+              const dueDate = new Date(note.dueDate);
+              return dueDate >= today && dueDate <= oneWeek;
+            });
+          } else if (tableFilters.date === "future") {
+            notes = notes.filter((note) => {
+              if (!note.dueDate) return false;
+              const dueDate = new Date(note.dueDate);
+              return dueDate > oneWeek;
+            });
+          }
+        }
+
+        // Filter by tags
+        if (tableFilters.tags.size > 0) {
+          notes = notes.filter((note) =>
+            note.hashtags.some((tag) => tableFilters.tags.has(tag))
+          );
+        }
+
+        return notes;
+      }
+
+      // Update tag filters
+      function updateTagFilters() {
+        // Clear existing tag filters
+        tableTagFilters.innerHTML = "";
+
+        // Get all unique tags
+        const allTags = database.getAllHashtags();
+
+        // Create tag filter buttons
+        allTags.forEach((tag) => {
+          const tagButton = document.createElement("span");
+          tagButton.className = `table-tag-filter ${
+            tableFilters.tags.has(tag) ? "active" : ""
+          }`;
+          tagButton.textContent = tag;
+
+          tagButton.addEventListener("click", () => {
+            if (tableFilters.tags.has(tag)) {
+              tableFilters.tags.delete(tag);
+              tagButton.classList.remove("active");
+            } else {
+              tableFilters.tags.add(tag);
+              tagButton.classList.add("active");
+            }
+            renderNotesTable();
+          });
+
+          tableTagFilters.appendChild(tagButton);
+        });
+      }
+
+      // Update bulk action buttons
+      function updateBulkActionButtons() {
+        bulkDeleteBtn.disabled = selectedNoteIds.size === 0;
+        selectAllCheckbox.checked =
+          selectedNoteIds.size > 0 &&
+          selectedNoteIds.size === filterNotesForTable().length;
+      }
+
+      // Select all visible notes
+      function selectAllNotes() {
+        const visibleNotes = filterNotesForTable();
+        visibleNotes.forEach((note) => {
+          selectedNoteIds.add(note.id);
+        });
+        renderNotesTable();
+      }
+
+      // Deselect all notes
+      function deselectAllNotes() {
+        selectedNoteIds.clear();
+        renderNotesTable();
+      }
+
+      // Bulk delete selected notes
+      function bulkDeleteNotes() {
+        if (selectedNoteIds.size === 0) return;
+
+        if (
+          shiftPressed ||
+          confirm(
+            `Are you sure you want to delete ${selectedNoteIds.size} notes?`
+          )
+        ) {
+          selectedNoteIds.forEach((id) => {
+            database.deleteNote(id);
+          });
+
+          selectedNoteIds.clear();
+          renderNotesTable();
+          showStatus("Notes deleted");
+        }
+      }
+
+      function showStatus(message) {
+        statusMessage.textContent = message;
+        statusMessage.classList.add("show");
+        setTimeout(() => {
+          statusMessage.classList.remove("show");
+        }, 2000);
+      }
+
+      // Event listeners for table mode
+      function initializeTableMode() {
+        // Show table view when clicking the table mode button
+        document
+          .querySelector('.mode-btn[data-mode="table"]')
+          .addEventListener("click", () => {
+            showView(tableView);
+            updateTagFilters();
+            renderNotesTable();
+          });
+
+        // Back button
+        tableBackBtn.addEventListener("click", () => {
+          showView(menuView);
+        });
+
+        // Select all checkbox
+        selectAllCheckbox.addEventListener("change", (e) => {
+          if (e.target.checked) {
+            selectAllNotes();
+          } else {
+            deselectAllNotes();
+          }
+        });
+
+        // Bulk action buttons
+        tableSelectAllBtn.addEventListener("click", selectAllNotes);
+        tableDeselectAllBtn.addEventListener("click", deselectAllNotes);
+        bulkDeleteBtn.addEventListener("click", bulkDeleteNotes);
+
+        // Filter changes
+        tableProgressFilter.addEventListener("change", (e) => {
+          tableFilters.progress = e.target.value;
+          renderNotesTable();
+        });
+
+        tableImportanceFilter.addEventListener("change", (e) => {
+          tableFilters.importance = e.target.value;
+          renderNotesTable();
+        });
+
+        tableDateFilter.addEventListener("change", (e) => {
+          tableFilters.date = e.target.value;
+          renderNotesTable();
+        });
+      }
+
+      // Initialize the app
+      window.addEventListener("DOMContentLoaded", () => {
+        initializeTableMode();
+        showView(editorView);
+        setEditorContent("");
+
+        // Hide loading screen as soon as DOM is ready
+        hideLoadingScreen();
+      });
+
+      updateEditorUI();
+
+      // Handle window resize for graph visualization
+      window.addEventListener("resize", () => {
+        if (!exploreView.classList.contains("hidden")) {
+          createGraphVisualization();
+        }
+      });
+    </script>
+    <script src="/service-worker-registration.js"></script>
+  </body>
+</html>
