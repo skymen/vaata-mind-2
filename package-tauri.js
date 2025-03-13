@@ -4,7 +4,7 @@ const fs = require("fs");
 const path = require("path");
 
 const srcPath = path.join(__dirname, "src");
-const tauriAppPath = path.join(__dirname, "tauri-app/src");
+const tauriAppPath = path.join(__dirname, "tauri-app/dist");
 
 function removeDir(dir) {
   if (fs.existsSync(dir)) {
@@ -33,14 +33,14 @@ function copyDir(src, dest) {
   });
 }
 
-console.log("removing tauri-app/src");
+console.log("removing tauri-app/dist");
 removeDir(tauriAppPath);
 
-console.log("Copying files from src to tauri-app/src");
+console.log("Copying files from src to tauri-app/dist");
 copyDir(srcPath, tauriAppPath);
 
 // remove service-worker.js from tauri-app/src
-console.log("Removing service-worker.js from tauri-app/src");
+console.log("Removing service-worker.js from tauri-app/dist");
 fs.unlinkSync(path.join(tauriAppPath, "service-worker.js"));
 
 //empty content of service-worker-registration.js
