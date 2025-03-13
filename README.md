@@ -40,8 +40,12 @@ A powerful, cross-platform application built with Tauri.
 
 ## Features
 
+- 📝 **Notes**: Take notes on a minimalist editor and organize them with tags
+- ❤️ **Recommendation System**: Tinder like recommendation system for tasks
+- 📊 **Graph Visualization**: Visualize your tasks and progress in a beautiful graph view
+- 📅 **Table View**: See all your task in a more classic table view
 - 🚀 **Lightning Fast**: Built on Rust and modern web technologies
-- 💻 **Cross-Platform**: Available for Windows, macOS, and Linux
+- 💻 **Cross-Platform**: Available for Windows, macOS, Linux and online as a PWA
 - 🔄 **Automatic Updates**: Stay current with the latest features
 
 ## Screenshots
