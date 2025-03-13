@@ -1,5 +1,8 @@
 {
   "identifier": "com.vaata-mind.app",
+  "build": {
+    "frontendDist": "../dist"
+  },
   "app": {
     "withGlobalTauri": true,
     "windows": [
