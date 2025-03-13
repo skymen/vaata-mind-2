@@ -95,6 +95,11 @@ function updateReadme(newVersion) {
       `_${newVersion}_`
     );
 
+    readmeContent = readmeContent.replace(
+      /-\d+\.\d+\.\d+-/g,
+      `-${newVersion}-`
+    );
+
     fs.writeFileSync(readmePath, readmeContent);
     success(`Updated version in README.md to ${newVersion}`);
   } catch (err) {

@@ -24,7 +24,7 @@ A powerful, cross-platform application built with Tauri.
 
 [<img src="images/Linux AppImage.svg" alt="Linux AppImage" width="240"/>](https://github.com/skymen/vaata-mind-2/releases/download/vaata-mind-v0.3.0/vaata-mind_0.3.0_amd64.AppImage)
 [<img src="images/Linux DEB.svg" alt="Linux DEB" width="240"/>](https://github.com/skymen/vaata-mind-2/releases/download/vaata-mind-v0.3.0/vaata-mind_0.3.0_amd64.deb)
-[<img src="images/Linux RPM.svg" alt="Linux RPM" width="240"/>](https://github.com/skymen/vaata-mind-2/releases/download/vaata-mind-v0.3.0/vaata-mind-0.1.0-1.x86_64.rpm)
+[<img src="images/Linux RPM.svg" alt="Linux RPM" width="240"/>](https://github.com/skymen/vaata-mind-2/releases/download/vaata-mind-v0.3.0/vaata-mind-0.3.0-1.x86_64.rpm)
 
 </div>
 
