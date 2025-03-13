@@ -95,31 +95,3 @@ self.addEventListener("fetch", (event) => {
       })
   );
 });
-
-// Handle Push Notifications (if you implement them later)
-self.addEventListener("push", (event) => {
-  if (event.data) {
-    const data = event.data.json();
-
-    const options = {
-      body: data.body || "New notification from Vaata Mind",
-      icon: "/icons/icon-192x192.png",
-      badge: "/icons/badge-96x96.png",
-      vibrate: [100, 50, 100],
-      data: {
-        url: data.url || "/",
-      },
-    };
-
-    event.waitUntil(
-      self.registration.showNotification(data.title || "Vaata Mind", options)
-    );
-  }
-});
-
-// Handle notification click
-self.addEventListener("notificationclick", (event) => {
-  event.notification.close();
-
-  event.waitUntil(clients.openWindow(event.notification.data.url || "/"));
-});
