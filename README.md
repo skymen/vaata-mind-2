@@ -1,4 +1,4 @@
-# Vaata Mind <img src="src/logo.svg" alt="Vaata Mind Logo" width="24"/>
+<img src="src/logo.svg" alt="Vaata Mind Logo" width="96"/>
 
 ![Vaata Mind Banner](https://placehold.co/1200x300/6c63ff/FFFFFF?text=Vaata+Mind&font=montserrat)
 
@@ -24,8 +24,8 @@ A powerful, cross-platform application built with Tauri.
 
 ### macOS
 
-[<img src="images/macOS Intel.svg" alt="macOS Intel" width="240"/>](https://github.com/yourusername/vaata-mind/releases/download/v0.1.0/vaata-mind_aarch64.app.tar.gz)
 [<img src="images/macOS Apple Silicon.svg" alt="macOS Apple Silicon" width="240"/>](https://github.com/yourusername/vaata-mind/releases/download/v0.1.0/vaata-mind_0.1.0_aarch64.dmg)
+[<img src="images/macOS Intel.svg" alt="macOS Intel" width="240"/>](https://github.com/yourusername/vaata-mind/releases/download/v0.1.0/vaata-mind_aarch64.app.tar.gz)
 
 ### Linux
 
