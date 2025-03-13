@@ -1,6 +1,6 @@
 <img src="src/logo.svg" alt="Vaata Mind Logo" width="96"/>
 
-![Vaata Mind Banner](https://placehold.co/1200x300/6c63ff/FFFFFF?text=Vaata+Mind&font=montserrat)
+# Vaata Mind
 
 A powerful, cross-platform application built with Tauri.
 
