@@ -4,13 +4,6 @@
 
 A powerful, cross-platform application built with Tauri.
 
-## Features
-
-- 🚀 **Lightning Fast**: Built on Rust and modern web technologies
-- 🔒 **Secure**: Leveraging Tauri's security-first approach
-- 💻 **Cross-Platform**: Available for Windows, macOS, and Linux
-- 🔄 **Automatic Updates**: Stay current with the latest features
-
 ## Download
 
 ### Latest Version: 0.1.0
@@ -35,36 +28,13 @@ A powerful, cross-platform application built with Tauri.
 
 </div>
 
-<div align="center">
-  
-[<img src="https://placehold.co/240x40/6c63ff/FFFFFF?text=View+All+Releases&font=montserrat" alt="All Releases" width="240"/>](https://github.com/yourusername/vaata-mind/releases)
+<sub> [See all releases](https://github.com/skymen/vaata-mind-2/releases) </sub>
 
-</div>
+## Features
 
-## Development
-
-### Prerequisites
-
-- [Node.js](https://nodejs.org/) (v16 or later)
-- [Rust](https://www.rust-lang.org/tools/install)
-- [Tauri CLI](https://tauri.app/v1/guides/getting-started/prerequisites)
-
-### Setup
-
-```bash
-# Clone the repository
-git clone https://github.com/yourusername/vaata-mind.git
-cd vaata-mind
-
-# Install dependencies
-npm install
-
-# Run in development mode
-npm run tauri dev
-
-# Build for production
-npm run tauri build
-```
+- 🚀 **Lightning Fast**: Built on Rust and modern web technologies
+- 💻 **Cross-Platform**: Available for Windows, macOS, and Linux
+- 🔄 **Automatic Updates**: Stay current with the latest features
 
 ## Contributing
 
@@ -78,18 +48,17 @@ Contributions are welcome! Please feel free to submit a Pull Request.
 
 ## License
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+This project is licensed under the MIT License.
 
 ## Acknowledgments
 
 - [Tauri](https://tauri.app/) - For the amazing framework
 - [GitHub Actions](https://github.com/features/actions) - For CI/CD
-- All our [contributors](https://github.com/yourusername/vaata-mind/graphs/contributors)
 
 ---
 
 <div align="center">
-  
-Made with ❤️ by [Your Name](https://github.com/yourusername)
+
+Made with ❤️ by [Ossama Jouini](https://github.com/skymen)
 
 </div>
