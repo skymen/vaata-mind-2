@@ -10,7 +10,8 @@
       {
         "title": "vaata-mind",
         "width": 1280,
-        "height": 720
+        "height": 720,
+        "maximized": true
       }
     ],
     "security": {
