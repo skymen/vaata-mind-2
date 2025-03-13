@@ -101,7 +101,7 @@ try {
   process.exit(1);
 }
 
-const scriptTag = `<script type="module" src="tauri-updater.js"></script>`;
+const scriptTag = `<script src="tauri-updater.js"></script>`;
 const newHtml = indexHtml.replace("</body>", `${scriptTag}</body>`);
 fs.writeFileSync(path.join(tauriAppPath, "index.html"), newHtml);
 
