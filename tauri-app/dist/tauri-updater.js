@@ -1,114 +1,130 @@
-function t(e, s, n, i) {
-  if (typeof s == "function" ? e !== s || !0 : !s.has(e)) throw new TypeError("Cannot read private member from an object whose class did not declare it");
-  return n === "m" ? i : n === "a" ? i.call(e) : i ? i.value : s.get(e);
+function i(n, e, t, s) {
+  if (typeof e == "function" ? n !== e || !0 : !e.has(n)) throw new TypeError("Cannot read private member from an object whose class did not declare it");
+  return t === "m" ? s : t === "a" ? s.call(n) : s ? s.value : e.get(n);
 }
-function d(e, s, n, i, c) {
-  if (typeof s == "function" ? e !== s || !0 : !s.has(e)) throw new TypeError("Cannot write private member to an object whose class did not declare it");
-  return s.set(e, n), n;
+function c(n, e, t, s, d) {
+  if (typeof e == "function" ? n !== e || !0 : !e.has(n)) throw new TypeError("Cannot write private member to an object whose class did not declare it");
+  return e.set(n, t), t;
 }
-var o, a, r, h;
-const u = "__TAURI_TO_IPC_KEY__";
-function f(e, s = !1) {
-  return window.__TAURI_INTERNALS__.transformCallback(e, s);
+var r, a, l, h;
+const w = "__TAURI_TO_IPC_KEY__";
+function p(n, e = !1) {
+  return window.__TAURI_INTERNALS__.transformCallback(n, e);
 }
-class w {
+class f {
   constructor() {
-    this.__TAURI_CHANNEL_MARKER__ = !0, o.set(
+    this.__TAURI_CHANNEL_MARKER__ = !0, r.set(
       this,
       () => {
       }
       // the id is used as a mechanism to preserve message order
-    ), a.set(this, 0), r.set(this, []), this.id = f(({ message: s, id: n }) => {
-      if (n == t(this, a, "f"))
-        for (t(this, o, "f").call(this, s), d(this, a, t(this, a, "f") + 1); t(this, a, "f") in t(this, r, "f"); ) {
-          const i = t(this, r, "f")[t(this, a, "f")];
-          t(this, o, "f").call(this, i), delete t(this, r, "f")[t(this, a, "f")], d(this, a, t(this, a, "f") + 1);
+    ), a.set(this, 0), l.set(this, []), this.id = p(({ message: e, id: t }) => {
+      if (t == i(this, a, "f"))
+        for (i(this, r, "f").call(this, e), c(this, a, i(this, a, "f") + 1); i(this, a, "f") in i(this, l, "f"); ) {
+          const s = i(this, l, "f")[i(this, a, "f")];
+          i(this, r, "f").call(this, s), delete i(this, l, "f")[i(this, a, "f")], c(this, a, i(this, a, "f") + 1);
         }
       else
-        t(this, r, "f")[n] = s;
+        i(this, l, "f")[t] = e;
     });
   }
-  set onmessage(s) {
-    d(this, o, s);
+  set onmessage(e) {
+    c(this, r, e);
   }
   get onmessage() {
-    return t(this, o, "f");
+    return i(this, r, "f");
   }
-  [(o = /* @__PURE__ */ new WeakMap(), a = /* @__PURE__ */ new WeakMap(), r = /* @__PURE__ */ new WeakMap(), u)]() {
+  [(r = /* @__PURE__ */ new WeakMap(), a = /* @__PURE__ */ new WeakMap(), l = /* @__PURE__ */ new WeakMap(), w)]() {
     return `__CHANNEL__:${this.id}`;
   }
   toJSON() {
-    return this[u]();
+    return this[w]();
   }
 }
-async function l(e, s = {}, n) {
-  return window.__TAURI_INTERNALS__.invoke(e, s, n);
+async function o(n, e = {}, t) {
+  return window.__TAURI_INTERNALS__.invoke(n, e, t);
 }
 class _ {
   get rid() {
-    return t(this, h, "f");
+    return i(this, h, "f");
   }
-  constructor(s) {
-    h.set(this, void 0), d(this, h, s);
+  constructor(e) {
+    h.set(this, void 0), c(this, h, e);
   }
   /**
    * Destroys and cleans up this resource from memory.
    * **You should not call any method on this object anymore and should drop any reference to it.**
    */
   async close() {
-    return l("plugin:resources|close", {
+    return o("plugin:resources|close", {
       rid: this.rid
     });
   }
 }
 h = /* @__PURE__ */ new WeakMap();
-class p extends _ {
-  constructor(s) {
-    super(s.rid), this.available = s.available, this.currentVersion = s.currentVersion, this.version = s.version, this.date = s.date, this.body = s.body, this.rawJson = s.rawJson;
+class g extends _ {
+  constructor(e) {
+    super(e.rid), this.available = e.available, this.currentVersion = e.currentVersion, this.version = e.version, this.date = e.date, this.body = e.body, this.rawJson = e.rawJson;
   }
   /** Download the updater package */
-  async download(s, n) {
-    const i = new w();
-    s && (i.onmessage = s);
-    const c = await l("plugin:updater|download", {
-      onEvent: i,
+  async download(e, t) {
+    const s = new f();
+    e && (s.onmessage = e);
+    const d = await o("plugin:updater|download", {
+      onEvent: s,
       rid: this.rid,
-      ...n
+      ...t
     });
-    this.downloadedBytes = new _(c);
+    this.downloadedBytes = new _(d);
   }
   /** Install downloaded updater package */
   async install() {
     if (!this.downloadedBytes)
       throw new Error("Update.install called before Update.download");
-    await l("plugin:updater|install", {
+    await o("plugin:updater|install", {
       updateRid: this.rid,
       bytesRid: this.downloadedBytes.rid
     }), this.downloadedBytes = void 0;
   }
   /** Downloads the updater package and installs it */
-  async downloadAndInstall(s, n) {
-    const i = new w();
-    s && (i.onmessage = s), await l("plugin:updater|download_and_install", {
-      onEvent: i,
+  async downloadAndInstall(e, t) {
+    const s = new f();
+    e && (s.onmessage = e), await o("plugin:updater|download_and_install", {
+      onEvent: s,
       rid: this.rid,
-      ...n
+      ...t
     });
   }
   async close() {
-    var s;
-    await ((s = this.downloadedBytes) == null ? void 0 : s.close()), await super.close();
+    var e;
+    await ((e = this.downloadedBytes) == null ? void 0 : e.close()), await super.close();
   }
 }
-async function g(e) {
-  return await l("plugin:updater|check", {
-    ...e
-  }).then((s) => s.available ? new p(s) : null);
+async function y(n) {
+  return await o("plugin:updater|check", {
+    ...n
+  }).then((e) => e.available ? new g(e) : null);
 }
-async function y() {
-  await l("plugin:process|restart");
+async function b() {
+  await o("plugin:process|restart");
+}
+async function k(n, e) {
+  var s, d, u;
+  const t = typeof e == "string" ? { title: e } : e;
+  return await o("plugin:dialog|ask", {
+    message: n.toString(),
+    title: (s = t == null ? void 0 : t.title) == null ? void 0 : s.toString(),
+    kind: t == null ? void 0 : t.kind,
+    yesButtonLabel: (d = t == null ? void 0 : t.okLabel) == null ? void 0 : d.toString(),
+    noButtonLabel: (u = t == null ? void 0 : t.cancelLabel) == null ? void 0 : u.toString()
+  });
 }
 (async () => {
-  const e = await g();
-  e && (globalThis.showStatus && globalThis.showStatus("Update Available. Downloading..."), await e.downloadAndInstall(), globalThis.showStatus && globalThis.showStatus("Restarting..."), await y());
+  const n = await y();
+  n && (globalThis.showStatus && globalThis.showStatus("Update Available"), await k(`Update ${n.version} is available!`, {
+    title: "Update Available",
+    kind: "info",
+    okLabel: "Update now",
+    cancelLabel: "Cancel"
+  }) && (await n.downloadAndInstall(), globalThis.showStatus && globalThis.showStatus("Restarting..."), await b()));
 })();
