@@ -24,44 +24,58 @@ if ("serviceWorker" in navigator) {
 
   // Setup for PWA install prompt
   let deferredPrompt;
-  const installButton = document.createElement("button");
-  installButton.style.display = "none";
-  installButton.style.position = "absolute";
-  installButton.style.top = "1.5em";
-  installButton.classList.add("btn", "btn-primary");
-  installButton.textContent = "Install App";
-  document.querySelector(".mode-selector").after(installButton);
+
+  // We'll add the install button only when the DOM is fully loaded
+  document.addEventListener("DOMContentLoaded", () => {
+    const modeSelector = document.querySelector(".mode-selector");
+    if (modeSelector) {
+      const installButton = document.createElement("button");
+      installButton.style.display = "none";
+      installButton.style.position = "absolute";
+      installButton.style.top = "1.5em";
+      installButton.classList.add("btn", "btn-primary");
+      installButton.textContent = "Install App";
+      modeSelector.after(installButton);
+
+      // Event listener for the install button
+      installButton.addEventListener("click", async () => {
+        if (!deferredPrompt) return;
+
+        // Show the install prompt
+        deferredPrompt.prompt();
+
+        // Wait for the user to respond to the prompt
+        const { outcome } = await deferredPrompt.userChoice;
+        console.log(`User ${outcome} the installation`);
+
+        // We no longer need the prompt
+        deferredPrompt = null;
+
+        // Hide the install button
+        installButton.style.display = "none";
+      });
+    }
+  });
 
   window.addEventListener("beforeinstallprompt", (e) => {
     // Prevent the mini-infobar from appearing on mobile
     e.preventDefault();
     // Store the event so it can be triggered later
     deferredPrompt = e;
+
     // Update UI to notify the user they can install the PWA
-    installButton.style.display = "block";
-
-    // Event listener for the install button
-    installButton.addEventListener("click", async () => {
-      if (!deferredPrompt) return;
-
-      // Show the install prompt
-      deferredPrompt.prompt();
-
-      // Wait for the user to respond to the prompt
-      const { outcome } = await deferredPrompt.userChoice;
-      console.log(`User ${outcome} the installation`);
-
-      // We no longer need the prompt
-      deferredPrompt = null;
-
-      // Hide the install button
-      installButton.style.display = "none";
-    });
+    const installButton = document.querySelector(".btn.btn-primary");
+    if (installButton) {
+      installButton.style.display = "block";
+    }
   });
 
   // Add event listener for when the app is successfully installed
   window.addEventListener("appinstalled", (evt) => {
     console.log("Vaata Mind was installed");
-    installButton.style.display = "none";
+    const installButton = document.querySelector(".btn.btn-primary");
+    if (installButton) {
+      installButton.style.display = "none";
+    }
   });
 }

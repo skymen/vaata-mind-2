@@ -1,0 +1,218 @@
+/* Editor View Styles */
+
+.editor {
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.editor textarea {
+  flex-grow: 1;
+  border: none;
+  outline: none;
+  resize: none;
+  padding: 20px;
+  font-size: 16px;
+  line-height: 1.6;
+  background-color: var(--bg-color);
+  min-height: 300px;
+}
+
+.status-bar {
+  display: flex;
+  justify-content: space-between;
+  padding: 10px 20px;
+  font-size: 12px;
+  color: #777;
+}
+
+#hashtags-display {
+  font-size: 12px;
+}
+
+.note-unsaved {
+  font-style: italic;
+}
+
+.note-unsaved::before {
+  content: "* ";
+}
+
+/* Editor Controls */
+.editor-controls {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 10px;
+  padding: 10px;
+  background-color: #f5f5f5;
+  border-radius: 4px;
+}
+
+.editor-actions {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+/* Progress Menu */
+.progress-menu {
+  position: absolute;
+  background: white;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  z-index: 100;
+  overflow: hidden;
+}
+
+.progress-option {
+  padding: 8px 16px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.progress-option:hover {
+  background-color: #f5f5f5;
+}
+
+.progress-filter > .progress-indicator {
+  width: 12px;
+  height: 12px;
+}
+
+/* Due Date Controls */
+.due-date-controls {
+  display: flex;
+  gap: 5px;
+  margin-top: 5px;
+}
+
+.date-pill {
+  background-color: #f0f0f0;
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.date-pill:hover {
+  background-color: #e0e0e0;
+}
+
+.date-pill.active {
+  background-color: var(--accent-color);
+  color: white;
+}
+
+/* Due date badges */
+.due-date-badge {
+  display: inline-flex;
+  align-items: center;
+  background-color: #f0f0f0;
+  padding: 3px 8px;
+  border-radius: 12px;
+  font-size: 12px;
+  margin-right: 5px;
+}
+
+.due-today {
+  background-color: var(--due-today-color);
+  color: white;
+}
+
+.due-tomorrow {
+  background-color: var(--due-tomorrow-color);
+  color: white;
+}
+
+.due-week {
+  background-color: var(--due-week-color);
+}
+
+.due-later {
+  background-color: var(--due-later-color);
+  color: white;
+}
+
+.importance-badge {
+  display: inline-flex;
+  align-items: center;
+  background-color: var(--important-color);
+  color: white;
+  padding: 3px 8px;
+  border-radius: 12px;
+  font-size: 12px;
+  margin-right: 5px;
+}
+
+.due-date-selector {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 5px;
+}
+
+.due-date-selector input {
+  padding: 5px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.due-date-selector button {
+  background-color: #f0f0f0;
+  border: none;
+  padding: 5px 10px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.due-date-selector button:hover {
+  background-color: #e0e0e0;
+}
+
+/* Badges in the main editor */
+.note-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  margin-bottom: 5px;
+}
+
+/* Autocomplete */
+.autocomplete-container {
+  position: absolute;
+  background: white;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  max-height: 200px;
+  overflow-y: auto;
+  z-index: 1000;
+  font-size: 12px;
+}
+
+.autocomplete-item {
+  padding: 6px 10px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.autocomplete-item:hover {
+  background-color: #f5f5f5;
+}
+
+.autocomplete-item.selected {
+  background-color: var(--accent-color);
+  color: white;
+}
+
+.autocomplete-info {
+  padding: 4px 8px;
+  font-style: italic;
+  color: #888;
+  font-size: 10px;
+  border-bottom: 1px solid #eee;
+}

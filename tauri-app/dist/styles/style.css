@@ -1,0 +1,306 @@
+:root {
+  --bg-color: #fafafa;
+  --text-color: #333;
+  --accent-color: #6c63ff;
+  --secondary-color: #03dac6;
+  --error-color: #b00020;
+  --shadow-color: rgba(0, 0, 0, 0.1);
+  --done-color: #aaaaaa;
+  --not-started-color: #fff;
+  --in-progress-color: #ffb74d;
+  --completed-color: #66bb6a;
+  --due-today-color: #f44336;
+  --due-tomorrow-color: #ff9800;
+  --due-week-color: #ffc107;
+  --due-later-color: #4caf50;
+  --important-color: #ff5252;
+
+  --in-progress-color: #000;
+  --completed-color: #000;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen,
+    Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
+  margin: 0;
+  padding: 0;
+  background-color: var(--bg-color);
+  color: var(--text-color);
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.container {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 20px;
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+
+.hidden {
+  display: none !important;
+}
+
+.back-btn {
+  position: absolute;
+  top: 20px;
+  left: 20px;
+  background-color: rgba(255, 255, 255, 0.8);
+  color: var(--accent-color);
+  border: none;
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  font-size: 1.1em;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 10;
+  box-shadow: 0 0 8px rgba(0, 0, 0, 0.1);
+  transition: background-color 0.2s, box-shadow 0.2s, transform 0.2s ease-out;
+}
+
+.back-btn:hover {
+  background-color: white;
+  box-shadow: 0 0 12px 2px rgba(0, 0, 0, 0.3);
+  transform: translate(0, -3px);
+}
+
+.btn {
+  padding: 10px 20px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: all 0.2s;
+}
+
+.btn:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.btn:active {
+  transform: translateY(0);
+}
+
+.btn:disabled {
+  opacity: 0.5;
+  cursor: auto;
+}
+
+.btn-primary {
+  background-color: var(--accent-color);
+  color: white;
+}
+
+.btn-secondary {
+  background-color: #eee;
+  color: var(--text-color);
+}
+
+.btn.btn-danger {
+  background-color: var(--error-color);
+  color: white;
+}
+
+.btn-icon {
+  padding: 10px 10px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: all 0.2s;
+}
+
+.btn-icon:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.btn-icon.btn-danger {
+  border: 1px solid var(--error-color);
+  color: var(--text-color);
+}
+
+.btn-icon.btn-danger:hover {
+  background-color: rgba(240, 14, 55, 0.3);
+  color: var(--error-color);
+}
+
+.btn-icon:disabled {
+  opacity: 0.5;
+  cursor: auto;
+}
+
+.tag {
+  color: var(--accent-color);
+  font-weight: 500;
+}
+
+/* Loading Screen */
+#loading-screen {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: var(--bg-color);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+}
+
+.loading-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: opacity 0.2s ease-in;
+}
+
+.logo-container {
+  width: 100px;
+  height: 100px;
+  margin-bottom: 20px;
+  position: relative;
+}
+
+.loading-logo {
+  width: 100%;
+  height: 100%;
+  animation: logo-pulse 2s ease-in-out infinite alternate,
+    logo-spin 8s linear infinite;
+}
+
+.loading-text {
+  font-size: 18px;
+  color: var(--accent-color);
+  margin-bottom: 20px;
+  font-weight: 300;
+}
+
+.loading-spinner {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+}
+
+.spinner-dot {
+  width: 10px;
+  height: 10px;
+  background-color: var(--accent-color);
+  border-radius: 50%;
+  opacity: 0.3;
+}
+
+.spinner-dot:nth-child(1) {
+  animation: dot-pulse 1.4s ease-in-out 0s infinite;
+}
+
+.spinner-dot:nth-child(2) {
+  animation: dot-pulse 1.4s ease-in-out 0.2s infinite;
+}
+
+.spinner-dot:nth-child(3) {
+  animation: dot-pulse 1.4s ease-in-out 0.4s infinite;
+}
+
+@keyframes logo-pulse {
+  0% {
+    transform: scale(0.9);
+  }
+  100% {
+    transform: scale(1.1);
+  }
+}
+
+@keyframes logo-spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes dot-pulse {
+  0%,
+  100% {
+    opacity: 0.3;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+/* Status Message */
+.status-message {
+  position: fixed;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: rgba(0, 0, 0, 0.7);
+  color: white;
+  padding: 8px 16px;
+  border-radius: 4px;
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+
+.status-message.show {
+  opacity: 1;
+}
+
+/* Progress Indicator */
+.progress-indicator {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  border: 2px solid #000;
+  position: relative;
+  cursor: pointer;
+  display: inline-block;
+  margin-right: 8px;
+  vertical-align: middle;
+  box-shadow: rgba(0, 0, 0, 0.6) 2.5px 2.5px 1px 0px;
+  background-color: #fff;
+  display: none;
+}
+
+.progress-indicator::before {
+  content: "";
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  clip-path: polygon(0 100%, 100% 0, 100% 100%);
+  border-radius: 50%;
+  border: 1px solid #000;
+  display: none;
+}
+
+.progress-indicator.not-started {
+  display: block;
+}
+
+.progress-indicator.in-progress {
+  display: block;
+}
+
+.progress-indicator.in-progress::before {
+  background-color: var(--in-progress-color);
+  display: inline-block;
+}
+
+.progress-indicator.done {
+  background-color: var(--completed-color);
+  display: block;
+}

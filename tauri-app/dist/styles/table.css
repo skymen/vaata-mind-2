@@ -1,0 +1,159 @@
+/* Table View Styles */
+
+.table-container {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  width: 100%;
+  user-select: none;
+}
+
+.table-top-bar {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 10px;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.table-filters {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.table-filters select {
+  padding: 6px;
+  border-radius: 4px;
+  border: 1px solid #ddd;
+}
+
+.table-actions {
+  display: flex;
+  gap: 10px;
+}
+
+.table-wrapper {
+  overflow-x: auto;
+  flex-grow: 1;
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+  max-width: 100%;
+}
+
+.notes-table {
+  width: 100%;
+  display: table;
+  table-layout: fixed;
+  border-collapse: collapse;
+  white-space: nowrap;
+}
+
+.notes-table th {
+  background-color: #f5f5f5;
+  padding: 10px;
+  text-align: left;
+  border-bottom: 2px solid #ddd;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.notes-table td {
+  padding: 10px;
+  border-bottom: 1px solid #eee;
+  vertical-align: middle;
+  overflow: hidden;
+}
+
+.notes-table tr:hover {
+  background-color: rgba(0, 0, 0, 0.03);
+  cursor: pointer;
+}
+
+.table-row-selected {
+  background-color: rgba(98, 0, 238, 0.05) !important;
+}
+
+.table-content {
+  max-width: 300px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.table-content-full {
+  white-space: normal;
+  cursor: pointer;
+}
+
+.table-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.table-tag {
+  background-color: rgba(98, 0, 238, 0.1);
+  color: var(--accent-color);
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 12px;
+}
+
+.table-due-date {
+  white-space: nowrap;
+}
+
+.table-actions-cell {
+  display: flex;
+  gap: 5px;
+}
+
+.table-action-btn {
+  border: none;
+  background: none;
+  cursor: pointer;
+  font-size: 16px;
+  padding: 2px 5px;
+  border-radius: 4px;
+  opacity: 0.7;
+  transition: all 0.2s;
+}
+
+.table-action-btn:hover {
+  opacity: 1;
+  background-color: rgba(0, 0, 0, 0.05);
+}
+
+.table-progress-indicator {
+  width: 20px;
+  height: 20px;
+  cursor: auto;
+}
+
+.empty-message {
+  display: none;
+  padding: 40px;
+  text-align: center;
+  color: #777;
+  font-style: italic;
+}
+
+.table-tag-filter {
+  display: inline-block;
+  padding: 4px 8px;
+  background-color: #f0f0f0;
+  border-radius: 4px;
+  margin: 2px;
+  cursor: pointer;
+  user-select: none;
+  font-size: 12px;
+}
+
+.table-tag-filter.active {
+  background-color: var(--accent-color);
+  color: white;
+}

@@ -1,0 +1,244 @@
+/* Component Styles */
+
+/* Due Date Badges */
+.due-date-badge {
+  display: inline-flex;
+  align-items: center;
+  background-color: #f0f0f0;
+  padding: 3px 8px;
+  border-radius: 12px;
+  font-size: 12px;
+  margin-right: 5px;
+}
+
+.due-today {
+  background-color: var(--due-today-color);
+  color: white;
+}
+
+.due-tomorrow {
+  background-color: var(--due-tomorrow-color);
+  color: white;
+}
+
+.due-week {
+  background-color: var(--due-week-color);
+}
+
+.due-later {
+  background-color: var(--due-later-color);
+  color: white;
+}
+
+.importance-badge {
+  display: inline-flex;
+  align-items: center;
+  background-color: var(--important-color);
+  color: white;
+  padding: 3px 8px;
+  border-radius: 12px;
+  font-size: 12px;
+  margin-right: 5px;
+}
+
+/* Progress Indicator Styles */
+.progress-indicator {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  border: 2px solid #000;
+  position: relative;
+  cursor: pointer;
+  display: inline-block;
+  margin-right: 8px;
+  vertical-align: middle;
+  box-shadow: rgba(0, 0, 0, 0.6) 2.5px 2.5px 1px 0px;
+  background-color: #fff;
+  display: none;
+}
+
+.progress-filter > .progress-indicator {
+  width: 12px;
+  height: 12px;
+}
+
+.progress-indicator::before {
+  content: "";
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  clip-path: polygon(0 100%, 100% 0, 100% 100%);
+  border-radius: 50%;
+  border: 1px solid #000;
+  display: none;
+}
+
+.progress-indicator.not-started {
+  display: block;
+}
+
+.progress-indicator.in-progress {
+  display: block;
+}
+
+.progress-indicator.in-progress::before {
+  background-color: var(--in-progress-color);
+  display: inline-block;
+}
+
+.progress-indicator.done {
+  background-color: var(--completed-color);
+  display: block;
+}
+
+/* Progress Menu */
+.progress-menu {
+  position: absolute;
+  background: white;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  z-index: 100;
+  overflow: hidden;
+}
+
+.progress-option {
+  padding: 8px 16px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.progress-option:hover {
+  background-color: #f5f5f5;
+}
+
+/* Autocomplete Container */
+.autocomplete-container {
+  position: absolute;
+  background: white;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  max-height: 200px;
+  overflow-y: auto;
+  z-index: 1000;
+  font-size: 12px;
+}
+
+.autocomplete-item {
+  padding: 6px 10px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.autocomplete-item:hover {
+  background-color: #f5f5f5;
+}
+
+.autocomplete-item.selected {
+  background-color: var(--accent-color);
+  color: white;
+}
+
+.autocomplete-info {
+  padding: 4px 8px;
+  font-style: italic;
+  color: #888;
+  font-size: 10px;
+  border-bottom: 1px solid #eee;
+}
+
+/* Buttons and Action Components */
+.btn {
+  padding: 10px 20px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: all 0.2s;
+}
+
+.btn:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.btn:active {
+  transform: translateY(0);
+}
+
+.btn:disabled {
+  opacity: 0.5;
+  cursor: auto;
+}
+
+.btn-primary {
+  background-color: var(--accent-color);
+  color: white;
+}
+
+.btn-secondary {
+  background-color: #eee;
+  color: var(--text-color);
+}
+
+.btn.btn-danger {
+  background-color: var(--error-color);
+  color: white;
+}
+
+.btn-icon {
+  padding: 10px 10px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: all 0.2s;
+}
+
+.btn-icon:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.btn-icon.btn-danger {
+  border: 1px solid var(--error-color);
+  color: var(--text-color);
+}
+
+.btn-icon.btn-danger:hover {
+  background-color: rgba(240, 14, 55, 0.3);
+  color: var(--error-color);
+}
+
+.btn-icon:disabled {
+  opacity: 0.5;
+  cursor: auto;
+}
+
+/* Tag Styles */
+.tag {
+  color: var(--accent-color);
+  font-weight: 500;
+}
+
+/* Status Message */
+.status-message {
+  position: fixed;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: rgba(0, 0, 0, 0.7);
+  color: white;
+  padding: 8px 16px;
+  border-radius: 4px;
+  opacity: 0;
+  transition: opacity 0.3s;
+  z-index: 1000;
+}
+
+.status-message.show {
+  opacity: 1;
+}
