@@ -1,0 +1,19 @@
+{
+  "version": "2.1.1",
+  "notes": "See the assets to download this version and install.",
+  "pub_date": "2025-03-14T15:39:14.594Z",
+  "platforms": {
+    "darwin-aarch64": {
+      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVSZXNLUm1tNnpzMWdySDAzakxKaVBmMGZQcGVyOWUvT0RjSWVxMmxXYTdLYUFVK2IrbzBqeDVCUGhQcjVuQm9kdmtsano0VWVIZ1pJOHRiM1c4T0djb2xGUzUyY1VoNWdFPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzQxOTY2NDQzCWZpbGU6VmFhdGEgTWluZC5hcHAudGFyLmd6CmFuSHdYdU9qTkI1bUdSdzB6Y0JUMTZlR0Nra1Y2YTN1bHBRRHRNZ1lCQUZ0RFJZM0xNUmw5eXRERENLR2R6M2dFU3ZSck04WVdBWkVlektqb3pYbkRBPT0K",
+      "url": "https://github.com/skymen/vaata-mind-2/releases/download/vaata-mind-v2.1.1/Vaata.Mind_aarch64.app.tar.gz"
+    },
+    "linux-x86_64": {
+      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVSZXNLUm1tNnpzMXBwRWNaWFA5MTVIaUpSaGFmeE1FNGREV05SZkRYU2dwNWdJdUpkaUt1WDFKNGp6b1dsZGFySUVEaFRONGsxTzE4Y1ZqUkNNb3VURzlYenZMeW81UEFRPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzQxOTY2Njc0CWZpbGU6VmFhdGEgTWluZF8yLjEuMV9hbWQ2NC5BcHBJbWFnZQpZVWFLUjhZRGw3TFdoeFVQWEkyS1c5dWhTRjJNbm0wZC83N1A4Ry9XVTNBNHM1NTdvdWY4UjI3SHRra05yNkppTXpNcjNWMitQU1ozWEQ2UE9ERkJDUT09Cg==",
+      "url": "https://github.com/skymen/vaata-mind-2/releases/download/vaata-mind-v2.1.1/Vaata.Mind_2.1.1_amd64.AppImage"
+    },
+    "windows-x86_64": {
+      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVSZXNLUm1tNnpzMW1oZkpBdzE3SUpWSlA3cXNXVWxSK2ZSZnFqL1Zxb2xCRVg0QXJVSVI0NFFMU3kycHVmYVYxK3UvSUNUS1ltQy85cTkvSE4vT2VzK3hHTC8xNDlIRWc0PQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzQxOTY2NzUyCWZpbGU6VmFhdGEgTWluZF8yLjEuMV94NjQtc2V0dXAuZXhlClhSVForL29ENlFxQis1eGJEYlFWODE0Nmd5MHYzelZyelQ2VXQ3MlVFQVQ2OFA3a1dkMEh3My92Q0lXUjB3K2ZadFlUUTNqcUtoSTIxSzlWWTRXckJRPT0K",
+      "url": "https://github.com/skymen/vaata-mind-2/releases/download/vaata-mind-v2.1.1/Vaata.Mind_2.1.1_x64-setup.exe"
+    }
+  }
+}
