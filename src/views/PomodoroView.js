@@ -25,6 +25,8 @@ window.PomodoroView = (() => {
   let isBreak = false;
   let breakCount = 0;
 
+  let audio = null;
+
   /**
    * Initialize the Pomodoro view
    */
@@ -249,13 +251,22 @@ window.PomodoroView = (() => {
   }
 
   /**
+   * Play a notification sound
+   */
+  function playNotification() {
+    audio = audio || new Audio("assets/notification.mp3");
+    audio.currentTime = 0;
+    audio.play();
+  }
+
+  /**
    * Update the timer every second
    */
   function updateTimer() {
     if (timeRemaining <= 0) {
       clearInterval(timer);
       timer = null;
-
+      playNotification();
       if (isBreak) {
         // Break is over, move to the next task
         isBreak = false;
