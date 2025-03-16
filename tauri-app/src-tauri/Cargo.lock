@@ -4566,7 +4566,7 @@ dependencies = [
 
 [[package]]
 name = "vaata-mind"
-version = "2.1.1"
+version = "2.1.5"
 dependencies = [
  "serde",
  "serde_json",
