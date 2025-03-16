@@ -11,5 +11,6 @@
     "updater:default",
     "updater:allow-check",
     "updater:allow-download-and-install",
+    "dialog:allow-ask"
   ]
 }

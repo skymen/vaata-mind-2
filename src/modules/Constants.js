@@ -39,6 +39,7 @@ const Constants = {
     RECOMMENDATION: "recommendation-view",
     TABLE: "table-view",
     SETTINGS: "settings-view",
+    POMODORO: "pomodoro-view",
   },
 
   // Local storage key
@@ -46,4 +47,14 @@ const Constants = {
 
   // Application version key
   VERSION_KEY: "vaata_mind_version",
+
+  // Pomodoro settings
+  POMODORO: {
+    WORK_TIME: 25 * 60, // 25 minutes in seconds
+    SHORT_BREAK: 5 * 60, // 5 minutes in seconds
+    LONG_BREAK: 15 * 60, // 15 minutes in seconds
+    MAX_TASKS: 7,
+    WARNING_TASKS: 3, // Turn orange at this many tasks
+    DANGER_TASKS: 5, // Turn red at this many tasks
+  },
 };

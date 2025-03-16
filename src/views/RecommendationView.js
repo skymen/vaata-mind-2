@@ -10,11 +10,14 @@ window.RecommendationView = (() => {
   let btnReject = null;
   let btnAccept = null;
   let reshuffleContainer = null;
+  let taskListContainer = null;
+  let startPomodoroBtn = null;
 
   // State
   let currentRecommendation = null;
   let viewedNoteIds = new Set();
   let reshuffling = false;
+  let selectedTasks = [];
 
   /**
    * Initialize the recommendation view
@@ -39,6 +42,8 @@ window.RecommendationView = (() => {
     btnReject = document.getElementById("btn-reject");
     btnAccept = document.getElementById("btn-accept");
     reshuffleContainer = document.getElementById("reshuffle-container");
+    taskListContainer = document.getElementById("task-list-container");
+    startPomodoroBtn = document.getElementById("start-pomodoro-btn");
 
     // Attach event listeners
     attachEventListeners();
@@ -58,12 +63,14 @@ window.RecommendationView = (() => {
     viewElement.innerHTML = `
       <button class="back-btn" id="recommendation-back">←</button>
       <div class="recommendation-container">
-        <div class="note-card" id="recommendation-card">
-          <p>No notes available yet. Start by creating some notes!</p>
-        </div>
-        <div class="recommendation-actions">
-          <button class="btn btn-secondary" id="btn-reject">Reject</button>
-          <button class="btn btn-primary" id="btn-accept">Accept</button>
+        <div class="recommendation-main">
+          <div class="note-card" id="recommendation-card">
+            <p>No notes available yet. Start by creating some notes!</p>
+          </div>
+          <div class="recommendation-actions">
+            <button class="btn btn-secondary" id="btn-reject">Reject</button>
+            <button class="btn btn-primary" id="btn-accept">Accept</button>
+          </div>
         </div>
 
         <!-- Reshuffle Animation -->
@@ -76,6 +83,19 @@ window.RecommendationView = (() => {
           <div class="reshuffle-text">Reshuffling notes...</div>
         </div>
       </div>
+      <div class="task-list-container" id="task-list-container">
+        <h3>Selected Tasks</h3>
+        <div id="list-full-warning" class="list-full-warning">
+          Maximum number of tasks reached. Remove a task before adding more.
+        </div>
+        <div class="task-list" id="task-list">
+          <!-- Tasks will be added here -->
+          <div class="empty-task-list">No tasks selected yet</div>
+        </div>
+        <button class="btn btn-primary start-pomodoro-btn" id="start-pomodoro-btn" disabled>
+          Start Pomodoro
+        </button>
+      </div>
     `;
 
     // Re-cache elements
@@ -84,6 +104,8 @@ window.RecommendationView = (() => {
     btnAccept = document.getElementById("btn-accept");
     reshuffleContainer = document.getElementById("reshuffle-container");
     backButton = document.getElementById("recommendation-back");
+    taskListContainer = document.getElementById("task-list-container");
+    startPomodoroBtn = document.getElementById("start-pomodoro-btn");
   }
 
   /**
@@ -111,8 +133,22 @@ window.RecommendationView = (() => {
       btnAccept.addEventListener("click", () => {
         if (currentRecommendation && !reshuffling) {
           Database.adjustProbabilitiesAccepted(currentRecommendation.id);
-          ViewManager.showView(Constants.VIEWS.EDITOR, {
-            noteId: currentRecommendation.id,
+
+          // Instead of opening in editor, add to task list
+          addToTaskList(currentRecommendation);
+
+          // Show next recommendation
+          updateRecommendationView();
+        }
+      });
+    }
+
+    // Start Pomodoro button
+    if (startPomodoroBtn) {
+      startPomodoroBtn.addEventListener("click", () => {
+        if (selectedTasks.length > 0) {
+          ViewManager.showView(Constants.VIEWS.POMODORO, {
+            tasks: selectedTasks,
           });
         }
       });
@@ -162,6 +198,121 @@ window.RecommendationView = (() => {
   }
 
   /**
+   * Add a note to the task list
+   * @param {Object} note - Note to add to task list
+   */
+  function addToTaskList(note) {
+    // Check if we've reached the maximum number of tasks
+    if (selectedTasks.length >= Constants.POMODORO.MAX_TASKS) {
+      const listFullWarning = document.getElementById("list-full-warning");
+      if (listFullWarning) {
+        listFullWarning.classList.add("show");
+
+        // Hide the warning after 3 seconds
+        setTimeout(() => {
+          listFullWarning.classList.remove("show");
+        }, 3000);
+      }
+
+      StatusMessage.show(
+        `Cannot add more than ${Constants.POMODORO.MAX_TASKS} tasks!`,
+        3000
+      );
+      return;
+    }
+
+    // Check if the note is already in the task list
+    if (selectedTasks.some((task) => task.id === note.id)) {
+      StatusMessage.show("This task is already in your list", 2000);
+      return;
+    }
+
+    // Add to the selected tasks array
+    selectedTasks.push(note);
+
+    // Update the task list UI
+    updateTaskListUI();
+  }
+
+  /**
+   * Update the task list UI
+   */
+  function updateTaskListUI() {
+    const taskList = document.getElementById("task-list");
+    if (!taskList) return;
+
+    taskList.innerHTML = "";
+
+    if (selectedTasks.length === 0) {
+      taskList.innerHTML =
+        '<div class="empty-task-list">No tasks selected yet</div>';
+      if (startPomodoroBtn) {
+        startPomodoroBtn.disabled = true;
+      }
+      return;
+    }
+
+    selectedTasks.forEach((task, index) => {
+      const taskElement = document.createElement("div");
+      taskElement.className = "task-item";
+
+      // Highlight hashtags in the content
+      const highlightedContent = task.content.replace(
+        /#(\w+)/g,
+        '<span class="tag">#$1</span>'
+      );
+
+      taskElement.innerHTML = `
+        <div class="task-progress">
+          <div class="progress-indicator ${task.progress}"></div>
+        </div>
+        <div class="task-content">${highlightedContent}</div>
+        <div class="task-actions">
+          <button class="task-remove-btn" data-index="${index}">×</button>
+        </div>
+      `;
+
+      taskList.appendChild(taskElement);
+
+      // Add event listener to remove button
+      const removeBtn = taskElement.querySelector(".task-remove-btn");
+      if (removeBtn) {
+        removeBtn.addEventListener("click", (e) => {
+          const idx = parseInt(e.target.getAttribute("data-index"));
+          removeTaskFromList(idx);
+        });
+      }
+    });
+
+    // Update button state
+    if (startPomodoroBtn) {
+      startPomodoroBtn.disabled = selectedTasks.length === 0;
+    }
+
+    // Update container styling based on number of tasks
+    if (taskListContainer) {
+      taskListContainer.classList.remove("warning", "danger");
+
+      if (selectedTasks.length >= Constants.POMODORO.DANGER_TASKS) {
+        taskListContainer.classList.add("danger");
+      } else if (selectedTasks.length >= Constants.POMODORO.WARNING_TASKS) {
+        taskListContainer.classList.add("warning");
+      }
+    }
+  }
+
+  /**
+   * Remove a task from the list by index
+   * @param {number} index - Index of the task to remove
+   */
+  function removeTaskFromList(index) {
+    if (index >= 0 && index < selectedTasks.length) {
+      selectedTasks.splice(index, 1);
+      updateTaskListUI();
+    }
+  }
+
+  /**
    * Show the reshuffle animation
    */
   function showReshuffle() {
@@ -185,6 +336,9 @@ window.RecommendationView = (() => {
     // Reset viewed notes when entering recommendation mode
     viewedNoteIds.clear();
     updateRecommendationView();
+
+    // Show the task list
+    updateTaskListUI();
   }
 
   /**
