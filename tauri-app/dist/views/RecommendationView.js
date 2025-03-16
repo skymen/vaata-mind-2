@@ -293,9 +293,9 @@ window.RecommendationView = (() => {
     if (taskListContainer) {
       taskListContainer.classList.remove("warning", "danger");
 
-      if (selectedTasks.length >= Constants.POMODORO.DANGER_TASKS) {
+      if (selectedTasks.length > Constants.POMODORO.DANGER_TASKS) {
         taskListContainer.classList.add("danger");
-      } else if (selectedTasks.length >= Constants.POMODORO.WARNING_TASKS) {
+      } else if (selectedTasks.length > Constants.POMODORO.WARNING_TASKS) {
         taskListContainer.classList.add("warning");
       }
     }
