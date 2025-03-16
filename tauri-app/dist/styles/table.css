@@ -108,8 +108,7 @@
 }
 
 .table-actions-cell {
-  display: flex;
-  gap: 5px;
+  display: table-cell;
 }
 
 .table-action-btn {
@@ -117,7 +116,7 @@
   background: none;
   cursor: pointer;
   font-size: 16px;
-  padding: 2px 5px;
+  padding: 2px 10px;
   border-radius: 4px;
   opacity: 0.7;
   transition: all 0.2s;

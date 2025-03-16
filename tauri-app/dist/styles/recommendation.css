@@ -266,18 +266,18 @@
 /* Responsive layout */
 @media (max-width: 768px) {
   #recommendation-view {
-    flex-direction: column;
+    flex-direction: column-reverse;
   }
 
   .recommendation-container {
-    margin-top: 60px;
+    /* margin-top: 60px; */
     width: calc(100% - 40px);
   }
 
   .task-list-container {
     width: calc(100% - 40px);
-    margin-top: 20px;
-    height: 45%;
+    margin-top: 80px;
+    height: 40%;
   }
 }
 
