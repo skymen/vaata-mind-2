@@ -145,6 +145,21 @@ window.PomodoroView = (() => {
             <div class="confetti"></div>
             <div class="confetti"></div>
             <div class="confetti"></div>
+            <div class="confetti"></div>
+            <div class="confetti"></div>
+            <div class="confetti"></div>
+            <div class="confetti"></div>
+            <div class="confetti"></div>
+            <div class="confetti"></div>
+            <div class="confetti"></div>
+            <div class="confetti"></div>
+            <div class="confetti"></div>
+            <div class="confetti"></div>
+            <div class="firework"></div>
+            <div class="firework"></div>
+            <div class="firework"></div>
+            <div class="firework"></div>
+            <div class="firework"></div>
           </div>
         </div>
       </div>
@@ -168,6 +183,24 @@ window.PomodoroView = (() => {
             <div class="grand-confetti"></div>
             <div class="grand-confetti"></div>
             <div class="grand-confetti"></div>
+            <div class="grand-confetti"></div>
+            <div class="grand-confetti"></div>
+            <div class="grand-confetti"></div>
+            <div class="grand-confetti"></div>
+            <div class="grand-confetti"></div>
+            <div class="grand-confetti"></div>
+            <div class="grand-confetti"></div>
+            <div class="grand-confetti"></div>
+            <div class="grand-confetti"></div>
+            <div class="grand-confetti"></div>
+            <div class="grand-firework"></div>
+            <div class="grand-firework"></div>
+            <div class="grand-firework"></div>
+            <div class="grand-firework"></div>
+            <div class="grand-firework"></div>
+            <div class="grand-firework"></div>
+            <div class="grand-firework"></div>
+            <div class="grand-firework"></div>
           </div>
         </div>
       </div>
@@ -201,7 +234,20 @@ window.PomodoroView = (() => {
     // Skip button
     if (skipButton) {
       skipButton.addEventListener("click", () => {
-        if (confirm("Are you sure you want to skip this task?")) {
+        // Show a custom prompt to ask for task status
+        if (tasks.length === 0) return;
+        
+        const skipAction = confirm(
+          "Do you want to mark this task as done before skipping?\n\n" +
+          "Press OK to mark as done and skip.\n" +
+          "Press Cancel to skip without marking as done."
+        );
+
+        if (skipAction) {
+          // Mark as done and skip
+          completeTask();
+        } else {
+          // Skip without marking as done
           moveToNextTask();
         }
       });
@@ -421,29 +467,24 @@ window.PomodoroView = (() => {
       // Show celebration
       showCelebration();
 
-      // Move to the next task after a delay
-      setTimeout(() => {
-        // Remove the completed task from the list
-        tasks.splice(currentTaskIndex, 1);
-        saveTasksToStorage();
+      // Remove the completed task from the list
+      tasks.splice(currentTaskIndex, 1);
+      saveTasksToStorage();
 
-        // Reset the current task index if needed
-        if (currentTaskIndex >= tasks.length) {
-          currentTaskIndex = 0;
-        }
+      // Reset the current task index if needed
+      if (currentTaskIndex >= tasks.length) {
+        currentTaskIndex = 0;
+      }
 
-        // Check if we're done with all tasks
-        if (tasks.length === 0) {
-          showGrandCelebration();
-          resetTimer();
-          return;
-        }
-
-        // Move to next task
-        updateTaskDisplay();
-        updateTaskList();
+      // Check if we're done with all tasks
+      if (tasks.length === 0) {
+        showGrandCelebration();
         resetTimer();
-      }, 1000);
+        return;
+      }
+
+      // Start a break after completing a task
+      startBreak();
     }
   }
 
@@ -690,26 +731,63 @@ window.PomodoroView = (() => {
     celebration.classList.add("show");
 
     // Add random colors to confetti
-    document.querySelectorAll(".confetti").forEach((confetti) => {
+    document.querySelectorAll(".confetti").forEach((confetti, index) => {
       const colors = [
-        "#f44336",
-        "#e91e63",
-        "#9c27b0",
-        "#673ab7",
-        "#3f51b5",
-        "#2196f3",
-        "#03a9f4",
-        "#00bcd4",
-        "#009688",
-        "#4caf50",
+        "#f44336", // red
+        "#e91e63", // pink
+        "#9c27b0", // purple
+        "#673ab7", // deep purple
+        "#3f51b5", // indigo
+        "#2196f3", // blue
+        "#03a9f4", // light blue
+        "#00bcd4", // cyan
+        "#009688", // teal
+        "#4caf50", // green
+        "#ffc107", // amber
+        "#ff9800", // orange
+        "#ff5722", // deep orange
       ];
-      confetti.style.backgroundColor =
-        colors[Math.floor(Math.random() * colors.length)];
+      
+      const color = colors[Math.floor(Math.random() * colors.length)];
+      confetti.style.backgroundColor = color;
+      
+      // Random size, rotation, and delay for more dynamic animation
+      const size = 0.7 + Math.random() * 0.6;
+      const rotation = Math.random() * 360;
+      const delay = Math.random() * 0.5;
+      
+      confetti.style.transform = `rotate(${rotation}deg) scale(${size})`;
+      confetti.style.animationDelay = `${delay}s`;
     });
+    
+    // Add effects to firework elements
+    document.querySelectorAll(".firework").forEach((firework, index) => {
+      const colors = [
+        "#f44336", // red
+        "#e91e63", // pink
+        "#9c27b0", // purple
+        "#ff9800", // orange
+        "#ffc107", // amber
+        "#ffeb3b", // yellow
+      ];
+      
+      const color = colors[Math.floor(Math.random() * colors.length)];
+      const delay = 0.5 + Math.random() * 1;
+      const size = 0.8 + Math.random() * 0.4;
+      
+      firework.style.backgroundColor = color;
+      firework.style.animationDelay = `${delay}s`;
+      firework.style.transform = `scale(${size})`;
+    });
+    
+    // Play a success sound
+    const successSound = new Audio("assets/notification.mp3");
+    successSound.play();
 
+    // Keep the celebration visible for longer
     setTimeout(() => {
       celebration.classList.remove("show");
-    }, 3000);
+    }, 4000);
   }
 
   /**
@@ -721,35 +799,99 @@ window.PomodoroView = (() => {
     );
     grandCelebration.classList.add("show");
 
-    // Add random colors to confetti
-    document.querySelectorAll(".grand-confetti").forEach((confetti) => {
+    // Add random colors to confetti with enhanced animations
+    document.querySelectorAll(".grand-confetti").forEach((confetti, index) => {
       const colors = [
-        "#f44336",
-        "#e91e63",
-        "#9c27b0",
-        "#673ab7",
-        "#3f51b5",
-        "#2196f3",
-        "#03a9f4",
-        "#00bcd4",
-        "#009688",
-        "#4caf50",
+        "#f44336", // red
+        "#e91e63", // pink
+        "#9c27b0", // purple
+        "#673ab7", // deep purple
+        "#3f51b5", // indigo
+        "#2196f3", // blue
+        "#03a9f4", // light blue
+        "#00bcd4", // cyan
+        "#009688", // teal
+        "#4caf50", // green
+        "#ffc107", // amber
+        "#ff9800", // orange
+        "#ff5722", // deep orange
+        "#ffeb3b", // yellow
+        "#cddc39", // lime
       ];
-      confetti.style.backgroundColor =
-        colors[Math.floor(Math.random() * colors.length)];
-
-      // Random rotation and size for more diversity
-      confetti.style.transform = `rotate(${Math.random() * 360}deg) scale(${
-        0.8 + Math.random() * 0.5
-      })`;
+      
+      const color = colors[Math.floor(Math.random() * colors.length)];
+      confetti.style.backgroundColor = color;
+      
+      // Random size, rotation, and delay for more dynamic animation
+      const size = 0.7 + Math.random() * 0.8;
+      const rotation = Math.random() * 720 - 360; // -360 to 360 degrees
+      const delay = Math.random() * 0.8;
+      
+      confetti.style.transform = `rotate(${rotation}deg) scale(${size})`;
+      confetti.style.animationDelay = `${delay}s`;
+      
+      // Random animation duration for more varied motion
+      const duration = 3 + Math.random() * 3;
+      confetti.style.animationDuration = `${duration}s`;
     });
+    
+    // Add sparkle effects to firework elements
+    document.querySelectorAll(".grand-firework").forEach((firework, index) => {
+      const colors = [
+        "#f44336", // red
+        "#e91e63", // pink
+        "#9c27b0", // purple
+        "#ff9800", // orange
+        "#ffc107", // amber
+        "#ffeb3b", // yellow
+        "#cddc39", // lime
+        "#76ff03", // light green
+      ];
+      
+      const color = colors[Math.floor(Math.random() * colors.length)];
+      const delay = 0.6 + Math.random() * 1.5;
+      const size = 0.9 + Math.random() * 0.6;
+      
+      firework.style.backgroundColor = color;
+      firework.style.animationDelay = `${delay}s`;
+      firework.style.transform = `scale(${size})`;
+      
+      // Random position for more spread
+      const left = Math.random() * 80 + 10; // 10% to 90%
+      const top = Math.random() * 80 + 10; // 10% to 90%
+      firework.style.left = `${left}%`;
+      firework.style.top = `${top}%`;
+    });
+    
+    // Play multiple success sounds in sequence for a more impressive sound effect
+    const successSound1 = new Audio("assets/notification.mp3");
+    successSound1.play();
+    
+    setTimeout(() => {
+      const successSound2 = new Audio("assets/notification.mp3");
+      successSound2.play();
+    }, 300);
+    
+    setTimeout(() => {
+      const successSound3 = new Audio("assets/notification.mp3");
+      successSound3.play();
+    }, 600);
 
+    // Pulse animation for the celebration text
+    const celebrationText = document.querySelector(".grand-celebration-text");
+    if (celebrationText) {
+      celebrationText.style.animation = "pulse 0.5s infinite alternate";
+      celebrationText.style.fontSize = "52px";
+      celebrationText.style.textShadow = "0 0 20px rgba(255,255,255,0.8)";
+    }
+
+    // Keep the celebration visible for longer
     setTimeout(() => {
       grandCelebration.classList.remove("show");
 
       // Go back to the menu view after the celebration
       ViewManager.showView(Constants.VIEWS.MENU);
-    }, 5000);
+    }, 7000); // Extended celebration time
   }
 
   /**
@@ -870,6 +1012,36 @@ window.PomodoroView = (() => {
     }
     
     return added;
+  }
+
+  /**
+   * Start a break after completing a work session
+   */
+  function startBreak() {
+    // Increment break count
+    breakCount++;
+    
+    // Set break flag
+    isBreak = true;
+    
+    // Set the timer based on break type (short or long)
+    if (breakCount % 4 === 0) {
+      // Long break after 4 pomodoros
+      timeRemaining = Constants.POMODORO.LONG_BREAK;
+      titleElement.textContent = "LONG BREAK";
+    } else {
+      // Short break
+      timeRemaining = Constants.POMODORO.SHORT_BREAK;
+      titleElement.textContent = "SHORT BREAK";
+    }
+    
+    // Update the display
+    updateTimerDisplay();
+    updateProgress();
+    
+    // Auto-start the break timer
+    isPaused = true; // Set to true first so togglePauseResume will set to false
+    togglePauseResume();
   }
 
   // Public API
