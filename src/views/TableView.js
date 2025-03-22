@@ -127,7 +127,7 @@ window.TableView = (() => {
                 <th>Content</th>
                 <th>Tags</th>
                 <th>Due Date</th>
-                <th width="105px">Actions</th>
+                <th width="120px">Actions</th>
               </tr>
             </thead>
             <tbody id="table-body">
@@ -536,9 +536,7 @@ window.TableView = (() => {
         e.stopPropagation();
 
         // Ask if the user wants to switch to pomodoro view
-        const switchToPomodoro = confirm(
-          "Add this note to Pomodoro and switch to Pomodoro view?"
-        );
+        const switchToPomodoro = true
 
         // Add the note to pomodoro
         const added = PomodoroView.addTaskFromView(
