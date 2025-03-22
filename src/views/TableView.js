@@ -525,7 +525,7 @@ window.TableView = (() => {
       editBtn.title = "Edit";
       editBtn.addEventListener("click", (e) => {
         e.stopPropagation();
-        NoteEditor.show({ noteId: note.id });
+        ViewManager.showView(Constants.VIEWS.EDITOR, { noteId: note.id });
       });
 
       const pomodoroBtn = document.createElement("button");
