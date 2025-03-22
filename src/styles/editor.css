@@ -54,6 +54,12 @@
   align-items: center;
 }
 
+.editor-buttons {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
 /* Progress Menu */
 .progress-menu {
   position: absolute;

@@ -8,6 +8,7 @@ window.TableView = (() => {
   let tableBody = null;
   let backButton = null;
   let bulkDeleteBtn = null;
+  let bulkPomodoroBtn = null; // Add this line
   let tableSelectAllBtn = null;
   let tableDeselectAllBtn = null;
   let selectAllCheckbox = null;
@@ -47,6 +48,7 @@ window.TableView = (() => {
     backButton = document.getElementById("table-back");
     tableBody = document.getElementById("table-body");
     bulkDeleteBtn = document.getElementById("bulk-delete-btn");
+    bulkPomodoroBtn = document.getElementById("bulk-pomodoro-btn");
     tableSelectAllBtn = document.getElementById("table-select-all-btn");
     tableDeselectAllBtn = document.getElementById("table-deselect-all-btn");
     selectAllCheckbox = document.getElementById("select-all-checkbox");
@@ -78,6 +80,9 @@ window.TableView = (() => {
           <div class="table-actions">
             <button id="bulk-delete-btn" class="btn btn-danger" disabled>
               Delete Selected
+            </button>
+            <button id="bulk-pomodoro-btn" class="btn btn-primary" disabled>
+              Send Selected to Pomodoro
             </button>
             <button id="table-select-all-btn" class="btn btn-secondary">
               Select All
@@ -122,7 +127,7 @@ window.TableView = (() => {
                 <th>Content</th>
                 <th>Tags</th>
                 <th>Due Date</th>
-                <th width="80px">Actions</th>
+                <th width="105px">Actions</th>
               </tr>
             </thead>
             <tbody id="table-body">
@@ -170,6 +175,10 @@ window.TableView = (() => {
 
     if (bulkDeleteBtn) {
       bulkDeleteBtn.addEventListener("click", bulkDeleteNotes);
+    }
+
+    if (bulkPomodoroBtn) {
+      bulkPomodoroBtn.addEventListener("click", bulkSendToPomodoro);
     }
 
     // Filter changes
@@ -236,16 +245,52 @@ window.TableView = (() => {
   }
 
   /**
+   * Bulk send selected notes to Pomodoro
+   */
+  function bulkSendToPomodoro() {
+    if (selectedNoteIds.size === 0) return;
+
+    // Ask if the user wants to switch to pomodoro view
+    const switchToPomodoro = confirm(
+      `Add ${selectedNoteIds.size} notes to Pomodoro and switch to Pomodoro view?`
+    );
+
+    let addedCount = 0;
+    // Add each selected note to pomodoro
+    selectedNoteIds.forEach((id) => {
+      const added = PomodoroView.addTaskFromView(id, false, false);
+      if (added) addedCount++;
+    });
+
+    // Show status message
+    StatusMessage.show(
+      `Added ${addedCount} notes to Pomodoro queue`,
+      2000,
+      true
+    );
+
+    // Optionally switch to pomodoro view
+    if (switchToPomodoro && addedCount > 0) {
+      ViewManager.showView(Constants.VIEWS.POMODORO);
+    }
+  }
+
+  /**
    * Update bulk action buttons
    */
   function updateBulkActionButtons() {
     if (!bulkDeleteBtn) return;
 
-    bulkDeleteBtn.disabled = selectedNoteIds.size === 0;
+    const hasSelectedNotes = selectedNoteIds.size > 0;
+    bulkDeleteBtn.disabled = !hasSelectedNotes;
+
+    if (bulkPomodoroBtn) {
+      bulkPomodoroBtn.disabled = !hasSelectedNotes;
+    }
 
     if (selectAllCheckbox) {
       selectAllCheckbox.checked =
-        selectedNoteIds.size > 0 &&
+        hasSelectedNotes &&
         selectedNoteIds.size === filterNotesForTable().length;
     }
   }
@@ -483,6 +528,30 @@ window.TableView = (() => {
         ViewManager.showView(Constants.VIEWS.EDITOR, { noteId: note.id });
       });
 
+      const pomodoroBtn = document.createElement("button");
+      pomodoroBtn.className = "table-action-btn";
+      pomodoroBtn.innerHTML = "⏱️";
+      pomodoroBtn.title = "Add to Pomodoro";
+      pomodoroBtn.addEventListener("click", (e) => {
+        e.stopPropagation();
+
+        // Ask if the user wants to switch to pomodoro view
+        const switchToPomodoro = confirm(
+          "Add this note to Pomodoro and switch to Pomodoro view?"
+        );
+
+        // Add the note to pomodoro
+        const added = PomodoroView.addTaskFromView(
+          note.id,
+          false,
+          switchToPomodoro
+        );
+
+        if (added && !switchToPomodoro) {
+          StatusMessage.show("Added to Pomodoro queue", 2000, true);
+        }
+      });
+
       const deleteBtn = document.createElement("button");
       deleteBtn.className = "table-action-btn";
       deleteBtn.innerHTML = "🗑️";
@@ -508,12 +577,11 @@ window.TableView = (() => {
       });
 
       actionsCell.appendChild(editBtn);
+      actionsCell.appendChild(pomodoroBtn);
       actionsCell.appendChild(deleteBtn);
       row.appendChild(actionsCell);
-
       tableBody.appendChild(row);
     });
-
     updateBulkActionButtons();
   }
 
