@@ -310,6 +310,7 @@
   opacity: 0.9;
   animation: fall 3s ease-out forwards;
   border-radius: 2px;
+  top: 0; /* Add this to position confetti at the top */
 }
 
 .grand-confetti {

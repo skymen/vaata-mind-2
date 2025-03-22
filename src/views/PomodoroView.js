@@ -234,22 +234,17 @@ window.PomodoroView = (() => {
     // Skip button
     if (skipButton) {
       skipButton.addEventListener("click", () => {
-        // Show a custom prompt to ask for task status
         if (tasks.length === 0) return;
         
-        const skipAction = confirm(
-          "Do you want to mark this task as done before skipping?\n\n" +
-          "Press OK to mark as done and skip.\n" +
-          "Press Cancel to skip without marking as done."
-        );
-
-        if (skipAction) {
-          // Mark as done and skip
-          completeTask();
-        } else {
-          // Skip without marking as done
-          moveToNextTask();
+        // Pause the timer
+        if (!isPaused) {
+          clearInterval(timer);
+          timer = null;
+          isPaused = true;
         }
+        
+        // Show the end prompt instead of an alert
+        showEndPrompt();
       });
     }
 
@@ -313,12 +308,19 @@ window.PomodoroView = (() => {
     if (isPaused) {
       // Pause the timer
       clearInterval(timer);
+      timer = null;
       startPauseButton.textContent = "Resume";
       startPauseButton.classList.remove("btn-secondary");
       startPauseButton.classList.add("btn-primary");
     } else {
       // Start or resume the timer
-      if (!timer) {
+      // Always clear the existing timer first to prevent multiple timers
+      if (timer) {
+        clearInterval(timer);
+        timer = null;
+      }
+      
+      if (!timeRemaining) {
         // If this is the first start
         timeRemaining = Constants.POMODORO.WORK_TIME;
         updateTimerDisplay();
@@ -367,23 +369,67 @@ window.PomodoroView = (() => {
   }
 
   /**
+   * Play a notification sound multiple times and focus the window
+   * @param {number} count - Number of times to play the sound
+   */
+  function playTimerEndNotification(count = 3) {
+    // Play sound multiple times
+    for (let i = 0; i < count; i++) {
+      setTimeout(() => {
+        audio = audio || new Audio("assets/notification.mp3");
+        audio.currentTime = 0;
+        audio.play();
+      }, i * 500); // Play every 500ms
+    }
+    
+    // Focus the window if it isn't focused
+    if (!document.hasFocus()) {
+      // Flash the title to get user's attention
+      let originalTitle = document.title;
+      let notificationTitle = "⏰ TIME'S UP! ⏰";
+      let isOriginalTitle = false;
+      
+      // Flash the title between original and notification message
+      const titleInterval = setInterval(() => {
+        document.title = isOriginalTitle ? originalTitle : notificationTitle;
+        isOriginalTitle = !isOriginalTitle;
+      }, 1000);
+      
+      // Stop flashing when window gets focus
+      window.addEventListener('focus', function stopTitleFlash() {
+        clearInterval(titleInterval);
+        document.title = originalTitle;
+        window.removeEventListener('focus', stopTitleFlash);
+      });
+      
+      // Try to focus the window (may be blocked by browser)
+      try {
+        window.focus();
+      } catch (e) {
+        console.log("Could not focus window due to browser restrictions");
+      }
+    }
+  }
+
+  /**
    * Update the timer every second
    */
   function updateTimer() {
     if (timeRemaining <= 0) {
       clearInterval(timer);
       timer = null;
-      playNotification();
       
       if (isBreak) {
         // Break is over
+        playNotification(); // Simple notification for break endings
         isBreak = false;
         titleElement.textContent = "READY";
         
         // Start next task
         moveToNextTask();
       } else {
-        // Work period is over
+        // Work period is over - use enhanced notification
+        playTimerEndNotification(3); // Play sound 3 times and focus window
         titleElement.textContent = "TIME'S UP";
         
         // Show end prompt to decide what to do with the task
@@ -652,6 +698,9 @@ window.PomodoroView = (() => {
     
     // Check if removing the current task
     const isCurrentTask = index === currentTaskIndex;
+    
+    // Store the task ID before removing
+    const taskId = tasks[index].id;
     
     // Remove the task
     tasks.splice(index, 1);
@@ -955,6 +1004,13 @@ window.PomodoroView = (() => {
     const circumference = 2 * Math.PI * 140;
     circle.style.strokeDasharray = `${circumference} ${circumference}`;
     circle.style.strokeDashoffset = `${circumference}`;
+    
+    // Ensure start/pause button shows "Start" initially
+    if (startPauseButton) {
+      startPauseButton.textContent = "Start";
+      startPauseButton.classList.remove("btn-secondary");
+      startPauseButton.classList.add("btn-primary");
+    }
     
     // Hide end prompt
     hideEndPrompt();
