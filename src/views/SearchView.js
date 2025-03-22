@@ -327,7 +327,7 @@ window.SearchView = (() => {
       // Create card content
       resultCard.innerHTML = `
         <div class="search-result-header">
-          <div class="search-result-progress ${note.progress}"></div>
+          <div class="progress-indicator ${note.progress}"></div>
           ${note.important ? '<div class="search-result-important">⭐</div>' : ''}
           ${note.dueDate ? `<div class="search-result-due ${NoteUtils.getDueDateClass(note.dueDate)}">${NoteUtils.formatShortDueDate(note.dueDate)}</div>` : ''}
         </div>

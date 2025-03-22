@@ -114,23 +114,11 @@
   gap: 10px;
 }
 
-.search-result-progress {
+.search-result-header .progress-indicator {
   width: 16px;
   height: 16px;
-  border-radius: 50%;
-  border: 2px solid #ccc;
-}
-
-.search-result-progress.not-started {
-  background-color: var(--not-started-color);
-}
-
-.search-result-progress.in-progress {
-  background: linear-gradient(90deg, var(--in-progress-color) 50%, transparent 50%);
-}
-
-.search-result-progress.done {
-  background-color: var(--completed-color);
+  margin-right: 5px;
+  box-shadow: rgba(0, 0, 0, 0.4) 1.5px 1.5px 1px 0px;
 }
 
 .search-result-important {
