@@ -72,6 +72,7 @@ const App = (() => {
       Constants.VIEWS.TABLE,
       Constants.VIEWS.SETTINGS,
       Constants.VIEWS.POMODORO,
+      Constants.VIEWS.SEARCH,
     ];
 
     // Check each view container and create if missing
@@ -102,6 +103,7 @@ const App = (() => {
       { name: "TableView", id: Constants.VIEWS.TABLE },
       { name: "SettingsView", id: Constants.VIEWS.SETTINGS },
       { name: "PomodoroView", id: Constants.VIEWS.POMODORO },
+      { name: "SearchView", id: Constants.VIEWS.SEARCH },
     ];
 
     // Initialize each view module
