@@ -232,6 +232,9 @@ window.RecommendationView = (() => {
 
     // Update the task list UI
     updateTaskListUI();
+    
+    // Also add to the Pomodoro task list
+    PomodoroView.addTask(note);
   }
 
   /**
@@ -307,9 +310,39 @@ window.RecommendationView = (() => {
    */
   function removeTaskFromList(index) {
     if (index >= 0 && index < selectedTasks.length) {
+      // Get the task ID before removing it
+      const taskId = selectedTasks[index].id;
+      
+      // Remove from recommendation view
       selectedTasks.splice(index, 1);
       updateTaskListUI();
+      
+      // Also find and remove the task from the Pomodoro task list if it exists there
+      // This maintains synchronization between the two views
+      const pomodoroTasks = JSON.parse(localStorage.getItem('pomodoro_tasks') || '[]');
+      const pomodoroTaskIndex = pomodoroTasks.findIndex(task => task.id === taskId);
+      
+      if (pomodoroTaskIndex !== -1) {
+        pomodoroTasks.splice(pomodoroTaskIndex, 1);
+        localStorage.setItem('pomodoro_tasks', JSON.stringify(pomodoroTasks));
+      }
     }
+  }
+
+  /**
+   * Load tasks from Pomodoro storage to keep views in sync
+   */
+  function loadTasksFromPomodoro() {
+    const pomodoroTasks = JSON.parse(localStorage.getItem('pomodoro_tasks') || '[]');
+    
+    // Only add tasks that aren't already in the selected tasks list
+    pomodoroTasks.forEach(task => {
+      if (!selectedTasks.some(t => t.id === task.id)) {
+        selectedTasks.push(task);
+      }
+    });
+    
+    updateTaskListUI();
   }
 
   /**
@@ -325,6 +358,9 @@ window.RecommendationView = (() => {
       if (reshuffleContainer) reshuffleContainer.classList.remove("show");
       reshuffling = false;
       viewedNoteIds.clear();
+      selectedTasks.forEach((task) => {
+        viewedNoteIds.add(task.id);
+      });
       updateRecommendationView();
     }, 2000); // 2 seconds for shuffle animation
   }
@@ -333,6 +369,9 @@ window.RecommendationView = (() => {
    * Show the recommendation view
    */
   function show() {
+    // Load tasks from Pomodoro to sync the lists
+    loadTasksFromPomodoro();
+    
     // Reset viewed notes when entering recommendation mode
     viewedNoteIds.clear();
     updateRecommendationView();

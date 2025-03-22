@@ -56,6 +56,11 @@ window.MenuView = (() => {
           New Note
           <span class="mode-btn-tip">[N]</span>
         </button>
+        <button class="mode-btn" data-mode="search">
+          <span class="mode-btn-icon">🔎</span>
+          Search Notes
+          <span class="mode-btn-tip">[S]</span>
+        </button>
         <button class="mode-btn" data-mode="explore">
           <span class="mode-btn-icon">🔍</span>
           Explore Mode
@@ -110,6 +115,9 @@ window.MenuView = (() => {
       case "editor":
         ViewManager.showView(Constants.VIEWS.EDITOR);
         break;
+      case "search":
+        ViewManager.showView(Constants.VIEWS.SEARCH);
+        break;
       case "explore":
         ViewManager.showView(Constants.VIEWS.EXPLORE);
         break;
@@ -152,6 +160,13 @@ window.MenuView = (() => {
     if (e.key === "n") {
       e.preventDefault();
       ViewManager.showView(Constants.VIEWS.EDITOR);
+      return;
+    }
+    
+    // S for search
+    if (e.key === "s") {
+      e.preventDefault();
+      ViewManager.showView(Constants.VIEWS.SEARCH);
       return;
     }
 

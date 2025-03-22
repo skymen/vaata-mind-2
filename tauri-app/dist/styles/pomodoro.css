@@ -5,18 +5,19 @@
   height: 100%;
   padding: 20px;
   gap: 40px;
-  width: calc(100% - 80px);
+  max-width: 1200px;
+  margin: 0 auto;
 }
 
 /* Timer section styles */
 .pomodoro-timer-section {
-  flex: 1;
+  flex: 1.2;
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
-  position: relative; /* Ensure positioning context */
-  padding-top: 40px; /* Add space at top to prevent cut-off */
+  justify-content: flex-start;
+  position: relative;
+  padding-top: 40px;
 }
 
 .pomodoro-progress-container {
@@ -26,6 +27,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  margin-bottom: 30px;
 }
 
 .pomodoro-progress-ring {
@@ -54,10 +56,10 @@
 
 .pomodoro-state {
   position: absolute;
-  top: -30px; /* Position above the timer */
+  top: -30px;
   font-size: 14px;
   text-transform: uppercase;
-  letter-spacing: 1px;
+  letter-spacing: 2px;
   color: #666;
   font-weight: bold;
 }
@@ -68,15 +70,16 @@
   display: flex;
   flex-direction: column;
   min-width: 300px;
+  max-width: 500px;
+  gap: 20px;
 }
 
 .pomodoro-task {
   background-color: white;
   border-radius: 8px;
   padding: 20px;
-  margin-bottom: 20px;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
-  flex-grow: 1;
+  height: 20%;
 }
 
 .pomodoro-task h3 {
@@ -100,6 +103,7 @@
   display: flex;
   margin-bottom: 15px;
   gap: 10px;
+  align-items: center;
 }
 
 .pomodoro-task-progress {
@@ -107,16 +111,138 @@
 }
 
 /* Action buttons */
-.pomodoro-actions,
-.pomodoro-task-actions,
-.pomodoro-break-actions {
+.pomodoro-actions {
   display: flex;
   gap: 10px;
-  margin-top: 20px;
+  margin-top: 10px;
 }
 
-.pomodoro-break-actions {
+/* End prompt styles */
+.pomodoro-end-prompt {
   display: none;
+  flex-direction: column;
+  align-items: center;
+  background-color: white;
+  border-radius: 8px;
+  padding: 20px;
+  margin-top: 20px;
+  box-shadow: 0 2px 15px rgba(0, 0, 0, 0.1);
+  text-align: center;
+}
+
+.pomodoro-end-prompt h3 {
+  margin-top: 0;
+  color: var(--accent-color);
+}
+
+.pomodoro-end-prompt p {
+  margin-bottom: 20px;
+  font-size: 16px;
+}
+
+.pomodoro-end-buttons {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+/* Task list styles */
+.pomodoro-task-list-wrapper {
+  background-color: white;
+  border-radius: 8px;
+  padding: 20px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+  flex-grow: 1;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.pomodoro-task-list-wrapper h3 {
+  margin-top: 0;
+  margin-bottom: 15px;
+  color: var(--accent-color);
+  font-weight: 500;
+}
+
+.pomodoro-task-list {
+  overflow-y: auto;
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  overflow-y: visible;
+}
+
+.pomodoro-task-item {
+  background-color: #f9f9f9;
+  border-radius: 6px;
+  padding: 10px 15px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border-left: 4px solid transparent;
+  overflow: hidden;
+}
+
+.pomodoro-task-item:hover {
+  background-color: #f0f0f0;
+  transform: translateX(5px);
+}
+
+.pomodoro-task-item.current {
+  border-left-color: var(--accent-color);
+  background-color: #f0f0f0;
+}
+
+.task-item-content {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex: 1;
+  overflow: hidden;
+  padding: 3px 0px;
+}
+
+.task-item-content .task-content {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.task-item-actions {
+  display: flex;
+  align-items: center;
+}
+
+.task-remove-btn {
+  background: none;
+  border: none;
+  color: #aaa;
+  font-size: 18px;
+  cursor: pointer;
+  transition: color 0.2s;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+}
+
+.task-remove-btn:hover {
+  color: var(--error-color);
+  background-color: rgba(244, 67, 54, 0.1);
+}
+
+.empty-task-list {
+  color: #888;
+  font-style: italic;
+  text-align: center;
+  padding: 20px 0;
 }
 
 /* Success button */
@@ -133,7 +259,7 @@
   left: 0;
   width: 100%;
   height: 100%;
-  background-color: rgba(0, 0, 0, 0.5);
+  background-color: rgba(0, 0, 0, 0.7);
   display: flex;
   justify-content: center;
   align-items: center;
@@ -152,46 +278,60 @@
 .celebration-container,
 .grand-celebration-container {
   text-align: center;
+  width: 100%;
+  height: 100%;
+  position: relative;
+  overflow: hidden;
 }
 
 .celebration-text,
 .grand-celebration-text {
   color: white;
-  font-size: 32px;
+  font-size: 38px;
+  font-weight: bold;
   margin-bottom: 20px;
-  text-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+  text-shadow: 0 0 15px rgba(255, 255, 255, 0.7);
+  position: relative;
+  z-index: 2;
+  margin-top: 20%;
 }
 
 .grand-celebration-text {
-  font-size: 48px;
-  font-weight: bold;
+  font-size: 52px;
   animation: pulse 2s infinite alternate;
 }
 
-/* Confetti animations */
+/* Confetti and firework animations */
 .celebration-animation,
 .grand-celebration-animation {
-  position: relative;
+  position: absolute;
+  top: 0;
+  left: 0;
   width: 100%;
-  height: 300px;
+  height: 100%;
+  pointer-events: none;
 }
 
 .confetti,
 .grand-confetti {
   position: absolute;
-  width: 10px;
-  height: 20px;
+  width: 12px;
+  height: 25px;
   background-color: var(--accent-color);
-  opacity: 0.8;
+  opacity: 0.9;
   animation: fall 3s ease-out forwards;
+  border-radius: 2px;
+  top: -50px; /* Start above the visible area */
 }
 
 .grand-confetti {
   width: 15px;
   height: 30px;
   animation: grand-fall 5s ease-out forwards;
+  top: -100px; /* Start further above for grand celebration */
 }
 
+/* Confetti positioning and timing variations */
 .confetti:nth-child(odd),
 .grand-confetti:nth-child(odd) {
   animation-duration: 2.5s;
@@ -200,6 +340,17 @@
 .confetti:nth-child(3n),
 .grand-confetti:nth-child(3n) {
   animation-duration: 3.5s;
+}
+
+.confetti:nth-child(5n),
+.grand-confetti:nth-child(5n) {
+  animation-timing-function: cubic-bezier(0.45, 0.05, 0.55, 0.95);
+}
+
+.confetti:nth-child(2n),
+.grand-confetti:nth-child(2n) {
+  width: 15px;
+  height: 10px;
 }
 
 .confetti:nth-child(1) {
@@ -284,24 +435,258 @@
   animation-delay: 0.6s;
 }
 
-@keyframes fall {
+/* Define the firework animations */
+@keyframes firework {
   0% {
-    transform: translateY(-50px) rotate(0deg);
+    transform: scale(0.1);
+    opacity: 0;
+    box-shadow: 0 0 0 0 rgba(255, 255, 255, 0.5);
+  }
+  20% {
+    opacity: 1;
+  }
+  50% {
+    transform: scale(2);
+    opacity: 0.8;
+    box-shadow: 0 0 20px 10px rgba(255, 215, 0, 0.7);
+  }
+  100% {
+    transform: scale(2.5);
+    opacity: 0;
+    box-shadow: 0 0 40px 20px rgba(255, 255, 255, 0);
+  }
+}
+
+@keyframes grand-firework {
+  0% {
+    transform: scale(0.1);
+    opacity: 0;
+    box-shadow: 0 0 0 0 rgba(255, 255, 255, 0.5);
+  }
+  10% {
+    opacity: 1;
+  }
+  40% {
+    transform: scale(2.5);
+    opacity: 0.9;
+    box-shadow: 0 0 30px 15px rgba(255, 215, 0, 0.7);
+  }
+  100% {
+    transform: scale(3);
+    opacity: 0;
+    box-shadow: 0 0 50px 25px rgba(255, 255, 255, 0);
+  }
+}
+
+@keyframes star-burst {
+  0% {
+    width: 0;
+    height: 0;
+    border-color: rgba(255, 255, 255, 0);
+    transform: scale(0) rotate(0deg);
+    opacity: 1;
+  }
+  50% {
+    width: 50px;
+    height: 50px;
+    border-color: rgba(255, 235, 59, 0.8);
+    transform: scale(1) rotate(180deg);
+    opacity: 0.8;
+    box-shadow: 0 0 20px rgba(255, 235, 59, 0.5);
+  }
+  100% {
+    width: 100px;
+    height: 100px;
+    border-color: rgba(255, 235, 59, 0);
+    transform: scale(1.5) rotate(360deg);
+    opacity: 0;
+    box-shadow: 0 0 0 rgba(255, 235, 59, 0);
+  }
+}
+
+@keyframes grand-star-burst {
+  0% {
+    width: 0;
+    height: 0;
+    border-color: rgba(255, 255, 255, 0);
+    transform: scale(0) rotate(0deg);
+    opacity: 1;
+  }
+  50% {
+    width: 80px;
+    height: 80px;
+    border-color: rgba(255, 215, 0, 0.8);
+    transform: scale(1.2) rotate(240deg);
+    opacity: 0.9;
+    box-shadow: 0 0 30px rgba(255, 215, 0, 0.6);
+  }
+  100% {
+    width: 150px;
+    height: 150px;
+    border-color: rgba(255, 215, 0, 0);
+    transform: scale(2) rotate(480deg);
+    opacity: 0;
+    box-shadow: 0 0 0 rgba(255, 215, 0, 0);
+  }
+}
+
+/* Trophy animation */
+.trophy-animation {
+  position: absolute;
+  bottom: 50%;
+  left: 50%;
+  transform: translateX(-50%) scale(0);
+  width: 100px;
+  height: 100px;
+  animation: trophy-appear 1s ease-out forwards 0.5s;
+  z-index: 3;
+}
+
+.trophy-animation::before {
+  content: '🏆';
+  position: absolute;
+  font-size: 80px;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  filter: drop-shadow(0 0 20px rgba(255, 215, 0, 0.8));
+}
+
+@keyframes trophy-appear {
+  0% {
+    transform: translateX(-50%) scale(0) rotate(-20deg);
+    opacity: 0;
+  }
+  50% {
+    transform: translateX(-50%) scale(1.2) rotate(10deg);
+    opacity: 1;
+  }
+  75% {
+    transform: translateX(-50%) scale(0.9) rotate(-5deg);
+  }
+  100% {
+    transform: translateX(-50%) scale(1) rotate(0);
+    opacity: 1;
+  }
+}
+
+/* Sparkle animation for the trophy */
+.trophy-sparkle {
+  position: absolute;
+  width: 4px;
+  height: 4px;
+  background: white;
+  border-radius: 50%;
+  animation: sparkle 1.5s linear infinite;
+}
+
+.trophy-sparkle::before,
+.trophy-sparkle::after {
+  content: '';
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  background: inherit;
+  border-radius: inherit;
+}
+
+.trophy-sparkle::before {
+  transform: rotate(45deg);
+}
+
+.trophy-sparkle::after {
+  transform: rotate(-45deg);
+}
+
+@keyframes sparkle {
+  0%, 100% {
+    opacity: 0;
+    transform: scale(0);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* Improved star burst styles */
+.star-burst {
+  position: absolute;
+  pointer-events: none;
+  width: 20px;
+  height: 20px;
+  background: radial-gradient(circle, rgba(255,215,0,1) 0%, rgba(255,215,0,0) 70%);
+  animation: star-pulse 1.5s ease-out forwards;
+  opacity: 0;
+  filter: blur(1px);
+}
+
+.grand-star-burst {
+  position: absolute;
+  pointer-events: none;
+  width: 30px;
+  height: 30px;
+  background: radial-gradient(circle, rgba(255,223,0,1) 0%, rgba(255,236,179,0.8) 30%, rgba(255,215,0,0) 70%);
+  animation: grand-star-pulse 2s ease-out forwards;
+  opacity: 0;
+  filter: blur(2px);
+}
+
+@keyframes star-pulse {
+  0% {
+    transform: scale(0.1) rotate(0deg);
+    opacity: 0;
+  }
+  50% {
+    transform: scale(2) rotate(180deg);
     opacity: 1;
   }
   100% {
-    transform: translateY(300px) rotate(360deg);
+    transform: scale(3) rotate(360deg);
+    opacity: 0;
+  }
+}
+
+@keyframes grand-star-pulse {
+  0% {
+    transform: scale(0.1) rotate(0deg);
+    opacity: 0;
+  }
+  50% {
+    transform: scale(3) rotate(240deg);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(4) rotate(480deg);
+    opacity: 0;
+  }
+}
+
+/* Existing animations */
+@keyframes fall {
+  0% {
+    transform: translateY(0) rotate(0deg);
+    opacity: 1;
+  }
+  25% {
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(800px) rotate(360deg);
     opacity: 0;
   }
 }
 
 @keyframes grand-fall {
   0% {
-    transform: translateY(-100px) rotate(0deg) scale(1);
+    transform: translateY(0) rotate(0deg) scale(1);
+    opacity: 1;
+  }
+  20% {
     opacity: 1;
   }
   100% {
-    transform: translateY(500px) rotate(720deg) scale(0);
+    transform: translateY(1000px) rotate(720deg) scale(0.5);
     opacity: 0;
   }
 }
@@ -317,16 +702,37 @@
   }
 }
 
+/* Responsive styles */
 @media (max-width: 768px) {
   .pomodoro-container {
     flex-direction: column;
+    padding: 10px;
+    gap: 20px;
   }
 
   .pomodoro-timer-section {
     flex: 0.7;
   }
+  
+  .pomodoro-progress-container {
+    height: 250px;
+    margin-bottom: 20px;
+  }
+
+  .pomodoro-progress-ring {
+    transform: scale(0.8) rotate(-90deg);
+  }
 
   .pomodoro-timer {
     font-size: 36px;
+  }
+  
+  .pomodoro-end-buttons {
+    flex-direction: column;
+    width: 100%;
+  }
+  
+  .pomodoro-end-buttons button {
+    width: 100%;
   }
 }

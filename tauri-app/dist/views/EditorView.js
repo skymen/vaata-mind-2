@@ -9,6 +9,7 @@ window.EditorView = (() => {
   let hashtagsDisplay = null;
   let backButton = null;
   let deleteNoteBtn = null;
+  let addToPomodoroBtn = null;
   let noteStatus = null;
 
   // State
@@ -42,6 +43,7 @@ window.EditorView = (() => {
     hashtagsDisplay = document.getElementById("hashtags-display");
     backButton = document.getElementById("editor-back");
     deleteNoteBtn = document.getElementById("delete-note");
+    addToPomodoroBtn = document.getElementById("add-to-pomodoro");
     noteStatus = document.getElementById("note-status");
 
     // Check if elements were found
@@ -50,6 +52,7 @@ window.EditorView = (() => {
       !hashtagsDisplay ||
       !backButton ||
       !deleteNoteBtn ||
+      !addToPomodoroBtn ||
       !noteStatus
     ) {
       console.error(
@@ -59,6 +62,7 @@ window.EditorView = (() => {
       console.log("EditorView: hashtagsDisplay =", hashtagsDisplay);
       console.log("EditorView: backButton =", backButton);
       console.log("EditorView: deleteNoteBtn =", deleteNoteBtn);
+      console.log("EditorView: addToPomodoroBtn =", addToPomodoroBtn);
       console.log("EditorView: noteStatus =", noteStatus);
       return false;
     }
@@ -124,7 +128,10 @@ window.EditorView = (() => {
           </div>
           <div id="note-status"></div>
         </div>
-        <button id="delete-note" class="btn-icon btn-danger">🗑️ Delete</button>
+        <div class="editor-buttons">
+          <button id="add-to-pomodoro" class="btn-icon btn-secondary" title="Add to Pomodoro">⏱️ Pomodoro</button>
+          <button id="delete-note" class="btn-icon btn-danger">🗑️ Delete</button>
+        </div>
       </div>
 
       <!-- Due Date and Importance Controls -->
@@ -174,6 +181,11 @@ window.EditorView = (() => {
     // Delete button
     if (deleteNoteBtn) {
       deleteNoteBtn.addEventListener("click", deleteCurrentNote);
+    }
+    
+    // Add to Pomodoro button
+    if (addToPomodoroBtn) {
+      addToPomodoroBtn.addEventListener("click", addCurrentNoteToPomodoro);
     }
 
     // Note editor input event
@@ -520,6 +532,31 @@ window.EditorView = (() => {
     StatusMessage.show(
       newImportance ? "Marked as important" : "Importance removed"
     );
+  }
+  
+  /**
+   * Add the current note to the Pomodoro
+   */
+  function addCurrentNoteToPomodoro() {
+    // First save the current note if it's new or has unsaved changes
+    if (!currentNoteId || !lastNoteWasSaved) {
+      saveCurrentNote(false);
+    }
+    
+    if (!currentNoteId) {
+      StatusMessage.show("Please create a note first", 2000, true);
+      return;
+    }
+    
+    // Ask if the user wants to switch to pomodoro view
+    const switchToPomodoro = confirm("Add this note to Pomodoro and switch to Pomodoro view?");
+    
+    // Add the note to pomodoro
+    const added = PomodoroView.addTaskFromView(currentNoteId, false, switchToPomodoro);
+    
+    if (added && !switchToPomodoro) {
+      StatusMessage.show("Added to Pomodoro queue", 2000, true);
+    }
   }
 
   /**
