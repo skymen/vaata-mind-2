@@ -105,8 +105,8 @@ window.PomodoroView = (() => {
             <p>How would you like to proceed with this task?</p>
             <div class="pomodoro-end-buttons">
               <button id="pomodoro-task-done" class="btn btn-success">Mark as Done</button>
-              <button id="pomodoro-task-not-done" class="btn btn-secondary">Not Done Yet</button>
               <button id="pomodoro-continue-task" class="btn btn-primary">Continue Working on It</button>
+              <button id="pomodoro-task-not-done" class="btn btn-secondary">Move on to Another Task</button>
             </div>
           </div>
         </div>
@@ -145,6 +145,27 @@ window.PomodoroView = (() => {
             <div class="confetti"></div>
             <div class="confetti"></div>
             <div class="confetti"></div>
+            <div class="confetti"></div>
+            <div class="confetti"></div>
+            <div class="confetti"></div>
+            <div class="confetti"></div>
+            <div class="confetti"></div>
+            <div class="confetti"></div>
+            <div class="confetti"></div>
+            <div class="confetti"></div>
+            <div class="confetti"></div>
+            <div class="confetti"></div>
+            <div class="confetti"></div>
+            <div class="confetti"></div>
+            <div class="confetti"></div>
+            <div class="confetti"></div>
+            <div class="confetti"></div>
+            <div class="confetti"></div>
+            <div class="confetti"></div>
+            <div class="confetti"></div>
+            <div class="confetti"></div>
+            <div class="confetti"></div>
+            <div class="confetti"></div>
           </div>
         </div>
       </div>
@@ -168,6 +189,32 @@ window.PomodoroView = (() => {
             <div class="grand-confetti"></div>
             <div class="grand-confetti"></div>
             <div class="grand-confetti"></div>
+            <div class="grand-confetti"></div>
+            <div class="grand-confetti"></div>
+            <div class="grand-confetti"></div>
+            <div class="grand-confetti"></div>
+            <div class="grand-confetti"></div>
+            <div class="grand-confetti"></div>
+            <div class="grand-confetti"></div>
+            <div class="grand-confetti"></div>
+            <div class="grand-confetti"></div>
+            <div class="grand-confetti"></div>
+            <div class="grand-confetti"></div>
+            <div class="grand-confetti"></div>
+            <div class="grand-confetti"></div>
+            <div class="grand-confetti"></div>
+            <div class="grand-confetti"></div>
+            <div class="grand-confetti"></div>
+            <div class="grand-confetti"></div>
+            <div class="grand-confetti"></div>
+            <div class="grand-confetti"></div>
+            <div class="grand-confetti"></div>
+            <div class="grand-confetti"></div>
+            <div class="grand-confetti"></div>
+            <div class="grand-confetti"></div>
+            <div class="grand-confetti"></div>
+            <div class="grand-confetti"></div>
+            <div class="trophy-animation"></div>
           </div>
         </div>
       </div>
@@ -201,9 +248,17 @@ window.PomodoroView = (() => {
     // Skip button
     if (skipButton) {
       skipButton.addEventListener("click", () => {
-        if (confirm("Are you sure you want to skip this task?")) {
-          moveToNextTask();
+        if (tasks.length === 0) return;
+        
+        // Pause the timer
+        if (!isPaused) {
+          clearInterval(timer);
+          timer = null;
+          isPaused = true;
         }
+        
+        // Show the end prompt instead of an alert
+        showEndPrompt();
       });
     }
 
@@ -228,6 +283,23 @@ window.PomodoroView = (() => {
         hideEndPrompt();
       });
     }
+    
+    // Add click handlers to celebration overlays
+    const celebration = document.getElementById("pomodoro-celebration");
+    const grandCelebration = document.getElementById("pomodoro-grand-celebration");
+    
+    if (celebration) {
+      celebration.addEventListener("click", () => {
+        celebration.classList.remove("show");
+      });
+    }
+    
+    if (grandCelebration) {
+      grandCelebration.addEventListener("click", () => {
+        grandCelebration.classList.remove("show");
+        ViewManager.showView(Constants.VIEWS.MENU);
+      });
+    }
   }
 
   /**
@@ -247,9 +319,66 @@ window.PomodoroView = (() => {
    * Show the end prompt
    */
   function showEndPrompt() {
-    if (endPromptContainer) {
-      endPromptContainer.style.display = "flex";
+    if (!endPromptContainer) return;
+    
+    if (isBreak) {
+      // During breaks, just show a simple message
+      endPromptContainer.innerHTML = `
+        <h3>Break Time's Up!</h3>
+        <p>Ready to start working?</p>
+        <div class="pomodoro-end-buttons">
+          <button id="pomodoro-continue-task" class="btn btn-primary">Start Next Session</button>
+        </div>
+      `;
+      
+      // Re-attach event listener for the continue button
+      const continueBtn = endPromptContainer.querySelector("#pomodoro-continue-task");
+      if (continueBtn) {
+        continueBtn.addEventListener("click", () => {
+          startNextPomodoroForCurrentTask();
+          hideEndPrompt();
+        });
+      }
+    } else {
+      // During work sessions, show the full prompt
+      endPromptContainer.innerHTML = `
+        <h3>Time's up!</h3>
+        <p>How would you like to proceed with this task?</p>
+        <div class="pomodoro-end-buttons">
+          <button id="pomodoro-task-done" class="btn btn-success">Mark as Done</button>
+          <button id="pomodoro-continue-task" class="btn btn-primary">Continue Working on It</button>
+          <button id="pomodoro-task-not-done" class="btn btn-secondary">Move on to Another Task</button>
+        </div>
+      `;
+      
+      // Re-attach event listeners
+      const doneBtn = endPromptContainer.querySelector("#pomodoro-task-done");
+      const notDoneBtn = endPromptContainer.querySelector("#pomodoro-task-not-done");
+      const continueBtn = endPromptContainer.querySelector("#pomodoro-continue-task");
+      
+      if (doneBtn) {
+        doneBtn.addEventListener("click", () => {
+          completeTask();
+          hideEndPrompt();
+        });
+      }
+      
+      if (notDoneBtn) {
+        notDoneBtn.addEventListener("click", () => {
+          moveToNextTask();
+          hideEndPrompt();
+        });
+      }
+      
+      if (continueBtn) {
+        continueBtn.addEventListener("click", () => {
+          startNextPomodoroForCurrentTask();
+          hideEndPrompt();
+        });
+      }
     }
+    
+    endPromptContainer.style.display = "flex";
     
     if (actionButtons) {
       actionButtons.style.display = "none";
@@ -267,12 +396,19 @@ window.PomodoroView = (() => {
     if (isPaused) {
       // Pause the timer
       clearInterval(timer);
+      timer = null;
       startPauseButton.textContent = "Resume";
       startPauseButton.classList.remove("btn-secondary");
       startPauseButton.classList.add("btn-primary");
     } else {
       // Start or resume the timer
-      if (!timer) {
+      // Always clear the existing timer first to prevent multiple timers
+      if (timer) {
+        clearInterval(timer);
+        timer = null;
+      }
+      
+      if (!timeRemaining) {
         // If this is the first start
         timeRemaining = Constants.POMODORO.WORK_TIME;
         updateTimerDisplay();
@@ -296,13 +432,14 @@ window.PomodoroView = (() => {
           // Update local task status
           tasks[currentTaskIndex].progress = Constants.PROGRESS_STATES.IN_PROGRESS;
           
-          // Update the task display and progress indicator
+          // Update both the task display and task list
           updateTaskDisplay();
-          
-          // Save updated tasks
-          saveTasksToStorage();
+          updateTaskList(); // Make sure sidebar updates immediately
         }
       }
+
+      // Always enable the skip button when timer is running
+      skipButton.disabled = false;
 
       timer = setInterval(updateTimer, 1000);
       startPauseButton.textContent = "Pause";
@@ -321,23 +458,65 @@ window.PomodoroView = (() => {
   }
 
   /**
+   * Play a notification sound multiple times and focus the window
+   * @param {number} count - Number of times to play the sound
+   */
+  function playTimerEndNotification(count = 3) {
+    // Play sound multiple times
+    for (let i = 0; i < count; i++) {
+      setTimeout(() => {
+        playNotification();
+      }, i * 2000);
+    }
+    
+    // Focus the window if it isn't focused
+    if (!document.hasFocus()) {
+      // Flash the title to get user's attention
+      let originalTitle = document.title;
+      let notificationTitle = "⏰ TIME'S UP! ⏰";
+      let isOriginalTitle = false;
+      
+      // Flash the title between original and notification message
+      const titleInterval = setInterval(() => {
+        document.title = isOriginalTitle ? originalTitle : notificationTitle;
+        isOriginalTitle = !isOriginalTitle;
+      }, 1000);
+      
+      // Stop flashing when window gets focus
+      window.addEventListener('focus', function stopTitleFlash() {
+        clearInterval(titleInterval);
+        document.title = originalTitle;
+        window.removeEventListener('focus', stopTitleFlash);
+      });
+      
+      // Try to focus the window (may be blocked by browser)
+      try {
+        window.focus();
+      } catch (e) {
+        console.log("Could not focus window due to browser restrictions");
+      }
+    }
+  }
+
+  /**
    * Update the timer every second
    */
   function updateTimer() {
     if (timeRemaining <= 0) {
       clearInterval(timer);
       timer = null;
-      playNotification();
       
       if (isBreak) {
         // Break is over
+        playNotification(); // Simple notification for break endings
         isBreak = false;
         titleElement.textContent = "READY";
         
         // Start next task
         moveToNextTask();
       } else {
-        // Work period is over
+        // Work period is over - use enhanced notification
+        playTimerEndNotification(3); // Play sound 3 times and focus window
         titleElement.textContent = "TIME'S UP";
         
         // Show end prompt to decide what to do with the task
@@ -384,20 +563,23 @@ window.PomodoroView = (() => {
    * Start the next pomodoro for the current task
    */
   function startNextPomodoroForCurrentTask() {
-    // Reset the timer
+    // Clear the current timer
     clearInterval(timer);
     timer = null;
     isPaused = true;
-    timeRemaining = Constants.POMODORO.WORK_TIME;
-    isBreak = false;
-    
+    taskInProgress = false;
+
     // Update UI
-    titleElement.textContent = "WORK";
-    updateTimerDisplay();
-    updateProgress();
-    
-    // Auto-start the timer
-    togglePauseResume();
+    startPauseButton.textContent = "Start";
+    startPauseButton.classList.remove("btn-secondary");
+    startPauseButton.classList.add("btn-primary");
+
+    // Reset the timer
+    startBreak();
+
+    // Update the task display
+    updateTaskDisplay();
+    updateTaskList();
   }
 
   /**
@@ -418,32 +600,32 @@ window.PomodoroView = (() => {
       tasks[currentTaskIndex].progress = Constants.PROGRESS_STATES.DONE;
       saveTasksToStorage();
 
-      // Show celebration
+      // Remove the completed task from the list
+      tasks.splice(currentTaskIndex, 1);
+      saveTasksToStorage();
+
+      // Reset the current task index if needed
+      if (currentTaskIndex >= tasks.length) {
+        currentTaskIndex = 0;
+      }
+
+      // Check if we're done with all tasks
+      if (tasks.length === 0) {
+        // Only show the grand celebration for all tasks completed
+        showGrandCelebration();
+        resetTimer();
+        return;
+      }
+
+      // Only show regular celebration if it's not the last task
       showCelebration();
 
-      // Move to the next task after a delay
-      setTimeout(() => {
-        // Remove the completed task from the list
-        tasks.splice(currentTaskIndex, 1);
-        saveTasksToStorage();
+      // Start a break after completing a task
+      startBreak();
 
-        // Reset the current task index if needed
-        if (currentTaskIndex >= tasks.length) {
-          currentTaskIndex = 0;
-        }
-
-        // Check if we're done with all tasks
-        if (tasks.length === 0) {
-          showGrandCelebration();
-          resetTimer();
-          return;
-        }
-
-        // Move to next task
-        updateTaskDisplay();
-        updateTaskList();
-        resetTimer();
-      }, 1000);
+      // Update the task display
+      updateTaskDisplay();
+      updateTaskList();
     }
   }
 
@@ -468,10 +650,11 @@ window.PomodoroView = (() => {
     }
 
     // Reset the timer
-    resetTimer();
+    startBreak();
 
     // Update the task display
     updateTaskDisplay();
+    updateTaskList();
   }
 
   /**
@@ -539,6 +722,7 @@ window.PomodoroView = (() => {
     
     // Update task list
     updateTaskList();
+    
   }
 
   /**
@@ -580,12 +764,16 @@ window.PomodoroView = (() => {
       taskElement.addEventListener("click", (e) => {
         // Ignore if clicking the remove button
         if (e.target.classList.contains('task-remove-btn')) return;
-        
+        if (currentTaskIndex === index) return;
         if (timer && !confirm("Timer is running. Switch tasks?")) return;
         
         currentTaskIndex = index;
         resetTimer();
         updateTaskDisplay();
+        // update resumePause button text
+        startPauseButton.textContent = "Start";
+        startPauseButton.classList.remove("btn-secondary");
+        startPauseButton.classList.add("btn-primary");
       });
       
       // Add event listener to remove button
@@ -611,6 +799,9 @@ window.PomodoroView = (() => {
     
     // Check if removing the current task
     const isCurrentTask = index === currentTaskIndex;
+    
+    // Store the task ID before removing
+    const taskId = tasks[index].id;
     
     // Remove the task
     tasks.splice(index, 1);
@@ -662,13 +853,14 @@ window.PomodoroView = (() => {
    * Save tasks to localStorage
    */
   function saveTasksToStorage() {
-    localStorage.setItem('pomodoro_tasks', JSON.stringify(tasks));
+    //localStorage.setItem('pomodoro_tasks', JSON.stringify(tasks));
   }
 
   /**
    * Load tasks from localStorage
    */
   function loadTasksFromStorage() {
+    return;
     const savedTasks = localStorage.getItem('pomodoro_tasks');
     
     if (savedTasks) {
@@ -687,29 +879,57 @@ window.PomodoroView = (() => {
    */
   function showCelebration() {
     const celebration = document.getElementById("pomodoro-celebration");
+    
+    // Reset any existing animation by removing and re-adding the element
+    const celebrationContainer = celebration.querySelector(".celebration-container");
+    const clonedContainer = celebrationContainer.cloneNode(true);
+    celebrationContainer.parentNode.replaceChild(clonedContainer, celebrationContainer);
+    
     celebration.classList.add("show");
 
     // Add random colors to confetti
-    document.querySelectorAll(".confetti").forEach((confetti) => {
+    document.querySelectorAll(".confetti").forEach((confetti, index) => {
       const colors = [
-        "#f44336",
-        "#e91e63",
-        "#9c27b0",
-        "#673ab7",
-        "#3f51b5",
-        "#2196f3",
-        "#03a9f4",
-        "#00bcd4",
-        "#009688",
-        "#4caf50",
+        "#f44336", // red
+        "#e91e63", // pink
+        "#9c27b0", // purple
+        "#673ab7", // deep purple
+        "#3f51b5", // indigo
+        "#2196f3", // blue
+        "#03a9f4", // light blue
+        "#00bcd4", // cyan
+        "#009688", // teal
+        "#4caf50", // green
+        "#ffc107", // amber
+        "#ff9800", // orange
+        "#ff5722", // deep orange
       ];
-      confetti.style.backgroundColor =
-        colors[Math.floor(Math.random() * colors.length)];
+      
+      const color = colors[Math.floor(Math.random() * colors.length)];
+      confetti.style.backgroundColor = color;
+      
+      // Random size, rotation, and delay for more dynamic animation
+      const size = 0.7 + Math.random() * 0.6;
+      const rotation = Math.random() * 360;
+      const delay = Math.random() * 0.5;
+      
+      // Add random horizontal offset for more natural motion
+      const horizontalOffset = (Math.random() * 40) - 20; // -20px to +20px
+      
+      confetti.style.transform = `rotate(${rotation}deg) scale(${size})`;
+      confetti.style.animationDelay = `${delay}s`;
+      confetti.style.left = `calc(${confetti.style.left || '50%'} + ${horizontalOffset}px)`;
+      
+      // Reset animation
+      confetti.style.animation = 'none';
+      confetti.offsetHeight; // Trigger reflow
+      confetti.style.animation = null;
     });
 
+    // Keep the celebration visible for longer
     setTimeout(() => {
       celebration.classList.remove("show");
-    }, 3000);
+    }, 4000);
   }
 
   /**
@@ -719,37 +939,87 @@ window.PomodoroView = (() => {
     const grandCelebration = document.getElementById(
       "pomodoro-grand-celebration"
     );
+    
+    // Reset any existing animation by removing and re-adding the element
+    const grandCelebrationContainer = grandCelebration.querySelector(".grand-celebration-container");
+    const clonedContainer = grandCelebrationContainer.cloneNode(true);
+    grandCelebrationContainer.parentNode.replaceChild(clonedContainer, grandCelebrationContainer);
+    
     grandCelebration.classList.add("show");
 
-    // Add random colors to confetti
-    document.querySelectorAll(".grand-confetti").forEach((confetti) => {
-      const colors = [
-        "#f44336",
-        "#e91e63",
-        "#9c27b0",
-        "#673ab7",
-        "#3f51b5",
-        "#2196f3",
-        "#03a9f4",
-        "#00bcd4",
-        "#009688",
-        "#4caf50",
-      ];
-      confetti.style.backgroundColor =
-        colors[Math.floor(Math.random() * colors.length)];
+    // Add trophy sparkles
+    const trophy = grandCelebration.querySelector(".trophy-animation");
+    if (trophy) {
+      // Add 8 sparkles around the trophy
+      for (let i = 0; i < 8; i++) {
+        const sparkle = document.createElement('div');
+        sparkle.className = 'trophy-sparkle';
+        
+        // Position sparkles in a circle around the trophy
+        const angle = (i / 8) * Math.PI * 2;
+        const radius = 60; // Distance from trophy center
+        const left = 50 + Math.cos(angle) * radius;
+        const top = 50 + Math.sin(angle) * radius;
+        
+        sparkle.style.left = `${left}px`;
+        sparkle.style.top = `${top}px`;
+        sparkle.style.animationDelay = `${i * 0.2}s`;
+        
+        trophy.appendChild(sparkle);
+      }
+    }
 
-      // Random rotation and size for more diversity
-      confetti.style.transform = `rotate(${Math.random() * 360}deg) scale(${
-        0.8 + Math.random() * 0.5
-      })`;
+    // Add random colors to confetti with enhanced animations
+    document.querySelectorAll(".grand-confetti").forEach((confetti, index) => {
+      const colors = [
+        "#f44336", // red
+        "#e91e63", // pink
+        "#9c27b0", // purple
+        "#673ab7", // deep purple
+        "#3f51b5", // indigo
+        "#2196f3", // blue
+        "#03a9f4", // light blue
+        "#00bcd4", // cyan
+        "#009688", // teal
+        "#4caf50", // green
+        "#ffc107", // amber
+        "#ff9800", // orange
+        "#ff5722", // deep orange
+        "#ffeb3b", // yellow
+        "#cddc39", // lime
+      ];
+      
+      const color = colors[Math.floor(Math.random() * colors.length)];
+      confetti.style.backgroundColor = color;
+      
+      // Random size, rotation, and delay for more dynamic animation
+      const size = 0.7 + Math.random() * 0.8;
+      const rotation = Math.random() * 720 - 360; // -360 to 360 degrees
+      const delay = Math.random() * 0.8;
+      
+      // Add random horizontal offset to make movement more natural
+      const horizontalOffset = (Math.random() * 60) - 30; // -30px to +30px
+      
+      confetti.style.transform = `rotate(${rotation}deg) scale(${size})`;
+      confetti.style.animationDelay = `${delay}s`;
+      confetti.style.left = `calc(${confetti.style.left || '50%'} + ${horizontalOffset}px)`;
+      
+      // Reset animation
+      confetti.style.animation = 'none';
+      confetti.offsetHeight; // Trigger reflow
+      confetti.style.animation = null;
+      
+      // Random animation duration for more varied motion
+      const duration = 3 + Math.random() * 3;
+      confetti.style.animationDuration = `${duration}s`;
     });
 
+    // Keep the celebration visible for longer
     setTimeout(() => {
       grandCelebration.classList.remove("show");
-
       // Go back to the menu view after the celebration
       ViewManager.showView(Constants.VIEWS.MENU);
-    }, 5000);
+    }, 7000);
   }
 
   /**
@@ -814,6 +1084,13 @@ window.PomodoroView = (() => {
     circle.style.strokeDasharray = `${circumference} ${circumference}`;
     circle.style.strokeDashoffset = `${circumference}`;
     
+    // Ensure start/pause button shows "Start" initially
+    if (startPauseButton) {
+      startPauseButton.textContent = "Start";
+      startPauseButton.classList.remove("btn-secondary");
+      startPauseButton.classList.add("btn-primary");
+    }
+    
     // Hide end prompt
     hideEndPrompt();
   }
@@ -870,6 +1147,36 @@ window.PomodoroView = (() => {
     }
     
     return added;
+  }
+
+  /**
+   * Start a break after completing a work session
+   */
+  function startBreak() {
+    // Increment break count
+    breakCount++;
+    
+    // Set break flag
+    isBreak = true;
+    
+    // Set the timer based on break type (short or long)
+    if (breakCount % 4 === 0) {
+      // Long break after 4 pomodoros
+      timeRemaining = Constants.POMODORO.LONG_BREAK;
+      titleElement.textContent = "LONG BREAK";
+    } else {
+      // Short break
+      timeRemaining = Constants.POMODORO.SHORT_BREAK;
+      titleElement.textContent = "SHORT BREAK";
+    }
+    
+    // Update the display
+    updateTimerDisplay();
+    updateProgress();
+    
+    // Auto-start the break timer
+    isPaused = true; // Set to true first so togglePauseResume will set to false
+    togglePauseResume();
   }
 
   // Public API
