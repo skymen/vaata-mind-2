@@ -40,6 +40,7 @@ const Constants = {
     TABLE: "table-view",
     SETTINGS: "settings-view",
     POMODORO: "pomodoro-view",
+    SEARCH: "search-view",
   },
 
   // Local storage key
