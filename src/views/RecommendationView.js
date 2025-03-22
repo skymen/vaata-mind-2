@@ -325,6 +325,9 @@ window.RecommendationView = (() => {
       if (reshuffleContainer) reshuffleContainer.classList.remove("show");
       reshuffling = false;
       viewedNoteIds.clear();
+      selectedTasks.forEach((task) => {
+        viewedNoteIds.add(task.id);
+      });
       updateRecommendationView();
     }, 2000); // 2 seconds for shuffle animation
   }
