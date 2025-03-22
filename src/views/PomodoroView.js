@@ -9,12 +9,16 @@ window.PomodoroView = (() => {
   let taskDisplay = null;
   let actionButtons = null;
   let backButton = null;
-  let pauseButton = null;
+  let startPauseButton = null;
   let skipButton = null;
-  let doneButton = null;
-  let notDoneButton = null;
-  let continueButton = null;
+  let taskListContainer = null;
+  let endPromptContainer = null;
+  let taskDoneBtn = null;
+  let taskNotDoneBtn = null;
+  let continueTaskBtn = null;
   let timerProgress = null;
+  let titleElement = null;
+  let taskProgressIndicator = null;
 
   // State
   let tasks = [];
@@ -24,7 +28,7 @@ window.PomodoroView = (() => {
   let isPaused = true;
   let isBreak = false;
   let breakCount = 0;
-
+  let taskInProgress = false;
   let audio = null;
 
   /**
@@ -49,15 +53,22 @@ window.PomodoroView = (() => {
     taskDisplay = document.getElementById("pomodoro-task");
     actionButtons = document.getElementById("pomodoro-actions");
     backButton = document.getElementById("pomodoro-back");
-    pauseButton = document.getElementById("pomodoro-pause");
+    startPauseButton = document.getElementById("pomodoro-start-pause");
     skipButton = document.getElementById("pomodoro-skip");
-    doneButton = document.getElementById("pomodoro-done");
-    notDoneButton = document.getElementById("pomodoro-not-done");
-    continueButton = document.getElementById("pomodoro-continue");
-    timerProgress = document.getElementById("pomodoro-progress-ring");
+    taskListContainer = document.getElementById("pomodoro-task-list");
+    endPromptContainer = document.getElementById("pomodoro-end-prompt");
+    taskDoneBtn = document.getElementById("pomodoro-task-done");
+    taskNotDoneBtn = document.getElementById("pomodoro-task-not-done");
+    continueTaskBtn = document.getElementById("pomodoro-continue-task");
+    timerProgress = document.querySelector(".pomodoro-progress-ring-circle");
+    titleElement = document.getElementById("pomodoro-state");
+    taskProgressIndicator = document.getElementById("pomodoro-task-progress");
 
     // Attach event listeners
     attachEventListeners();
+
+    // Load stored tasks from localStorage
+    loadTasksFromStorage();
 
     // Register with view manager
     ViewManager.registerView(Constants.VIEWS.POMODORO, {
@@ -76,35 +87,46 @@ window.PomodoroView = (() => {
       <div class="pomodoro-container">
         <div class="pomodoro-timer-section">
           <div class="pomodoro-progress-container">
-            <svg class="pomodoro-progress-ring" id="pomodoro-progress-ring" width="300" height="300">
+            <svg class="pomodoro-progress-ring" width="300" height="300">
               <circle class="pomodoro-progress-ring-bg" cx="150" cy="150" r="140" />
               <circle class="pomodoro-progress-ring-circle" cx="150" cy="150" r="140" />
             </svg>
             <div class="pomodoro-timer" id="pomodoro-timer">25:00</div>
             <div class="pomodoro-state" id="pomodoro-state">WORK</div>
           </div>
+          
+          <div class="pomodoro-actions" id="pomodoro-actions">
+            <button id="pomodoro-start-pause" class="btn btn-primary">Start</button>
+            <button id="pomodoro-skip" class="btn btn-secondary" disabled>Skip</button>
+          </div>
+          
+          <div class="pomodoro-end-prompt" id="pomodoro-end-prompt">
+            <h3>Time's up!</h3>
+            <p>How would you like to proceed with this task?</p>
+            <div class="pomodoro-end-buttons">
+              <button id="pomodoro-task-done" class="btn btn-success">Mark as Done</button>
+              <button id="pomodoro-task-not-done" class="btn btn-secondary">Not Done Yet</button>
+              <button id="pomodoro-continue-task" class="btn btn-primary">Continue Working on It</button>
+            </div>
+          </div>
         </div>
         
         <div class="pomodoro-task-section">
           <div class="pomodoro-task" id="pomodoro-task">
-            <div class="pomodoro-task-header" id="pomodoro-task-header">
+            <div class="pomodoro-task-header">
+              <div class="pomodoro-task-progress">
+                <div id="pomodoro-task-progress" class="progress-indicator not-started"></div>
+              </div>
               <h3>Current Task</h3>
             </div>
             <div class="pomodoro-task-content">Select a task to start</div>
           </div>
           
-          <div class="pomodoro-actions" id="pomodoro-actions">
-            <button id="pomodoro-pause" class="btn btn-primary">Start</button>
-            <button id="pomodoro-skip" class="btn btn-secondary" disabled>Skip</button>
-          </div>
-          
-          <div class="pomodoro-task-actions" id="pomodoro-task-actions">
-            <button id="pomodoro-done" class="btn btn-success" disabled>Mark as Done</button>
-            <button id="pomodoro-not-done" class="btn btn-secondary" disabled>Not Done Yet</button>
-          </div>
-          
-          <div class="pomodoro-break-actions" id="pomodoro-break-actions">
-            <button id="pomodoro-continue" class="btn btn-primary">Continue to Next Task</button>
+          <div class="pomodoro-task-list-wrapper">
+            <h3>Task Queue</h3>
+            <div class="pomodoro-task-list" id="pomodoro-task-list">
+              <!-- Tasks will be displayed here -->
+            </div>
           </div>
         </div>
       </div>
@@ -150,12 +172,6 @@ window.PomodoroView = (() => {
         </div>
       </div>
     `;
-
-    // Re-cache elements
-    timerDisplay = document.getElementById("pomodoro-timer");
-    taskDisplay = document.getElementById("pomodoro-task");
-    actionButtons = document.getElementById("pomodoro-actions");
-    backButton = document.getElementById("pomodoro-back");
   }
 
   /**
@@ -169,37 +185,74 @@ window.PomodoroView = (() => {
           if (confirm("Timer is running. Are you sure you want to exit?")) {
             clearInterval(timer);
             timer = null;
-            ViewManager.showView(Constants.VIEWS.RECOMMENDATION);
+            ViewManager.showView(Constants.VIEWS.MENU);
           }
         } else {
-          ViewManager.showView(Constants.VIEWS.RECOMMENDATION);
+          ViewManager.showView(Constants.VIEWS.MENU);
         }
       });
     }
 
-    // Pause/Resume button
-    if (pauseButton) {
-      pauseButton.addEventListener("click", togglePauseResume);
+    // Start/Pause button
+    if (startPauseButton) {
+      startPauseButton.addEventListener("click", togglePauseResume);
     }
 
     // Skip button
     if (skipButton) {
-      skipButton.addEventListener("click", skipTask);
+      skipButton.addEventListener("click", () => {
+        if (confirm("Are you sure you want to skip this task?")) {
+          moveToNextTask();
+        }
+      });
     }
 
-    // Done button
-    if (doneButton) {
-      doneButton.addEventListener("click", completeTask);
+    // End prompt buttons
+    if (taskDoneBtn) {
+      taskDoneBtn.addEventListener("click", () => {
+        completeTask();
+        hideEndPrompt();
+      });
     }
 
-    // Not done button
-    if (notDoneButton) {
-      notDoneButton.addEventListener("click", moveToNextTask);
+    if (taskNotDoneBtn) {
+      taskNotDoneBtn.addEventListener("click", () => {
+        moveToNextTask();
+        hideEndPrompt();
+      });
     }
 
-    // Continue button
-    if (continueButton) {
-      continueButton.addEventListener("click", startNextTask);
+    if (continueTaskBtn) {
+      continueTaskBtn.addEventListener("click", () => {
+        startNextPomodoroForCurrentTask();
+        hideEndPrompt();
+      });
+    }
+  }
+
+  /**
+   * Hide the end prompt
+   */
+  function hideEndPrompt() {
+    if (endPromptContainer) {
+      endPromptContainer.style.display = "none";
+    }
+    
+    if (actionButtons) {
+      actionButtons.style.display = "flex";
+    }
+  }
+
+  /**
+   * Show the end prompt
+   */
+  function showEndPrompt() {
+    if (endPromptContainer) {
+      endPromptContainer.style.display = "flex";
+    }
+    
+    if (actionButtons) {
+      actionButtons.style.display = "none";
     }
   }
 
@@ -214,9 +267,9 @@ window.PomodoroView = (() => {
     if (isPaused) {
       // Pause the timer
       clearInterval(timer);
-      pauseButton.textContent = "Resume";
-      pauseButton.classList.remove("btn-secondary");
-      pauseButton.classList.add("btn-primary");
+      startPauseButton.textContent = "Resume";
+      startPauseButton.classList.remove("btn-secondary");
+      startPauseButton.classList.add("btn-primary");
     } else {
       // Start or resume the timer
       if (!timer) {
@@ -227,26 +280,34 @@ window.PomodoroView = (() => {
 
         // Enable controls
         skipButton.disabled = false;
-        doneButton.disabled = false;
-        notDoneButton.disabled = false;
 
-        // Update task status
-        if (tasks[currentTaskIndex]) {
+        // Update task status to In Progress
+        if (tasks[currentTaskIndex] && !taskInProgress) {
+          taskInProgress = true;
+          
+          // Update database
+          const task = tasks[currentTaskIndex];
           Database.updateNote(
-            tasks[currentTaskIndex].id,
-            tasks[currentTaskIndex].content,
+            task.id,
+            task.content,
             Constants.PROGRESS_STATES.IN_PROGRESS
           );
-
-          // Update the task display
+          
+          // Update local task status
+          tasks[currentTaskIndex].progress = Constants.PROGRESS_STATES.IN_PROGRESS;
+          
+          // Update the task display and progress indicator
           updateTaskDisplay();
+          
+          // Save updated tasks
+          saveTasksToStorage();
         }
       }
 
       timer = setInterval(updateTimer, 1000);
-      pauseButton.textContent = "Pause";
-      pauseButton.classList.remove("btn-primary");
-      pauseButton.classList.add("btn-secondary");
+      startPauseButton.textContent = "Pause";
+      startPauseButton.classList.remove("btn-primary");
+      startPauseButton.classList.add("btn-secondary");
     }
   }
 
@@ -267,35 +328,20 @@ window.PomodoroView = (() => {
       clearInterval(timer);
       timer = null;
       playNotification();
+      
       if (isBreak) {
-        // Break is over, move to the next task
+        // Break is over
         isBreak = false;
-        document.getElementById("pomodoro-state").textContent = "READY";
-        document.getElementById("pomodoro-break-actions").style.display =
-          "flex";
-        document.getElementById("pomodoro-actions").style.display = "none";
-        document.getElementById("pomodoro-task-actions").style.display = "none";
+        titleElement.textContent = "READY";
+        
+        // Start next task
+        moveToNextTask();
       } else {
-        // Work period is over, start a break
-        isBreak = true;
-
-        // Show celebration
-        showCelebration();
-
-        // Determine break length (long break after every 4 pomodoros)
-        breakCount++;
-        if (breakCount % 4 === 0) {
-          timeRemaining = Constants.POMODORO.LONG_BREAK;
-          document.getElementById("pomodoro-state").textContent = "LONG BREAK";
-        } else {
-          timeRemaining = Constants.POMODORO.SHORT_BREAK;
-          document.getElementById("pomodoro-state").textContent = "SHORT BREAK";
-        }
-
-        // Restart the timer for the break
-        updateTimerDisplay();
-        updateProgress(true);
-        timer = setInterval(updateTimer, 1000);
+        // Work period is over
+        titleElement.textContent = "TIME'S UP";
+        
+        // Show end prompt to decide what to do with the task
+        showEndPrompt();
       }
       return;
     }
@@ -319,10 +365,7 @@ window.PomodoroView = (() => {
   /**
    * Update the progress ring
    */
-  function updateProgress(isBreak = false) {
-    const progressRing = document.querySelector(
-      ".pomodoro-progress-ring-circle"
-    );
+  function updateProgress() {
     const circumference = 2 * Math.PI * 140; // 140 is the radius of our circle
 
     const totalTime = isBreak
@@ -333,17 +376,28 @@ window.PomodoroView = (() => {
 
     const dashoffset = circumference * (1 - timeRemaining / totalTime);
 
-    progressRing.style.strokeDashoffset = dashoffset;
-    progressRing.style.strokeDasharray = `${circumference} ${circumference}`;
+    timerProgress.style.strokeDashoffset = dashoffset;
+    timerProgress.style.strokeDasharray = `${circumference} ${circumference}`;
   }
 
   /**
-   * Skip the current task
+   * Start the next pomodoro for the current task
    */
-  function skipTask() {
-    if (confirm("Are you sure you want to skip this task?")) {
-      moveToNextTask();
-    }
+  function startNextPomodoroForCurrentTask() {
+    // Reset the timer
+    clearInterval(timer);
+    timer = null;
+    isPaused = true;
+    timeRemaining = Constants.POMODORO.WORK_TIME;
+    isBreak = false;
+    
+    // Update UI
+    titleElement.textContent = "WORK";
+    updateTimerDisplay();
+    updateProgress();
+    
+    // Auto-start the timer
+    togglePauseResume();
   }
 
   /**
@@ -353,53 +407,63 @@ window.PomodoroView = (() => {
     const task = tasks[currentTaskIndex];
 
     if (task) {
-      // Mark the task as done
+      // Mark the task as done in the database
       Database.updateNote(
         task.id,
         task.content,
         Constants.PROGRESS_STATES.DONE
       );
 
+      // Update local task state
+      tasks[currentTaskIndex].progress = Constants.PROGRESS_STATES.DONE;
+      saveTasksToStorage();
+
       // Show celebration
       showCelebration();
 
-      // Remove the task from the list
-      tasks.splice(currentTaskIndex, 1);
+      // Move to the next task after a delay
+      setTimeout(() => {
+        // Remove the completed task from the list
+        tasks.splice(currentTaskIndex, 1);
+        saveTasksToStorage();
 
-      // Reset the current task index if needed
-      if (currentTaskIndex >= tasks.length) {
-        currentTaskIndex = 0;
-      }
+        // Reset the current task index if needed
+        if (currentTaskIndex >= tasks.length) {
+          currentTaskIndex = 0;
+        }
 
-      // Check if we're done with all tasks
-      if (tasks.length === 0) {
-        showGrandCelebration();
+        // Check if we're done with all tasks
+        if (tasks.length === 0) {
+          showGrandCelebration();
+          resetTimer();
+          return;
+        }
+
+        // Move to next task
+        updateTaskDisplay();
+        updateTaskList();
         resetTimer();
-        return;
-      }
-
-      // Move to next task
-      moveToNextTask(true);
+      }, 1000);
     }
   }
 
   /**
    * Move to the next task without marking as done
-   * @param {boolean} skipCounting - Whether to skip incrementing the current task index
    */
-  function moveToNextTask(skipCounting = false) {
+  function moveToNextTask() {
     // Clear the current timer
     clearInterval(timer);
     timer = null;
     isPaused = true;
+    taskInProgress = false;
 
     // Update UI
-    pauseButton.textContent = "Start";
-    pauseButton.classList.remove("btn-secondary");
-    pauseButton.classList.add("btn-primary");
+    startPauseButton.textContent = "Start";
+    startPauseButton.classList.remove("btn-secondary");
+    startPauseButton.classList.add("btn-primary");
 
     // Move to next task if we have any
-    if (!skipCounting) {
+    if (tasks.length > 0) {
       currentTaskIndex = (currentTaskIndex + 1) % tasks.length;
     }
 
@@ -411,21 +475,6 @@ window.PomodoroView = (() => {
   }
 
   /**
-   * Start the next task after a break
-   */
-  function startNextTask() {
-    document.getElementById("pomodoro-break-actions").style.display = "none";
-    document.getElementById("pomodoro-actions").style.display = "flex";
-    document.getElementById("pomodoro-task-actions").style.display = "flex";
-    document.getElementById("pomodoro-state").textContent = "WORK";
-
-    // Reset and start the timer
-    resetTimer();
-    isPaused = true; // So that togglePauseResume will start the timer
-    togglePauseResume();
-  }
-
-  /**
    * Reset the timer to initial state
    */
   function resetTimer() {
@@ -433,13 +482,19 @@ window.PomodoroView = (() => {
     timer = null;
     timeRemaining = Constants.POMODORO.WORK_TIME;
     isBreak = false;
+    isPaused = true;
+    taskInProgress = false;
+    
+    // Update UI
+    titleElement.textContent = "READY";
     updateTimerDisplay();
     updateProgress();
 
     // Disable controls
     skipButton.disabled = true;
-    doneButton.disabled = true;
-    notDoneButton.disabled = true;
+    
+    // Hide end prompt if visible
+    hideEndPrompt();
   }
 
   /**
@@ -447,14 +502,16 @@ window.PomodoroView = (() => {
    */
   function updateTaskDisplay() {
     const taskContent = document.querySelector(".pomodoro-task-content");
-    const taskHeader = document.querySelector(".pomodoro-task-header");
-
-    if (!taskHeader || !taskContent) return;
+    
+    if (!taskContent) return;
 
     if (tasks.length === 0) {
       taskContent.textContent =
-        "No tasks available. Add tasks from the recommendation view.";
-      taskHeader.innerHTML = "<h3>Current Task</h3>";
+        "No tasks available. Add tasks from other views.";
+        
+      if (taskProgressIndicator) {
+        taskProgressIndicator.className = "progress-indicator not-started";
+      }
       return;
     }
 
@@ -466,18 +523,162 @@ window.PomodoroView = (() => {
         '<span class="tag">#$1</span>'
       );
 
-      // Add the progress indicator in the header
-      taskHeader.innerHTML = `
-        <div class="pomodoro-task-progress">
-          <div class="progress-indicator ${task.progress}"></div>
-        </div>
-        <h3>Current Task</h3>
-      `;
+      // Update task progress indicator
+      if (taskProgressIndicator) {
+        taskProgressIndicator.className = `progress-indicator ${task.progress}`;
+      }
 
       taskContent.innerHTML = highlightedContent;
     } else {
       taskContent.textContent = "Error: Task not found";
-      taskHeader.innerHTML = "<h3>Current Task</h3>";
+      
+      if (taskProgressIndicator) {
+        taskProgressIndicator.className = "progress-indicator not-started";
+      }
+    }
+    
+    // Update task list
+    updateTaskList();
+  }
+
+  /**
+   * Update the pomodoro task list
+   */
+  function updateTaskList() {
+    if (!taskListContainer) return;
+    
+    taskListContainer.innerHTML = "";
+    
+    if (tasks.length === 0) {
+      taskListContainer.innerHTML = '<div class="empty-task-list">No tasks in queue</div>';
+      return;
+    }
+    
+    tasks.forEach((task, index) => {
+      const taskElement = document.createElement("div");
+      taskElement.className = `pomodoro-task-item ${index === currentTaskIndex ? 'current' : ''}`;
+      
+      // Highlight hashtags in the content
+      const highlightedContent = task.content.replace(
+        /#(\w+)/g,
+        '<span class="tag">#$1</span>'
+      );
+      
+      taskElement.innerHTML = `
+        <div class="task-item-content">
+          <div class="task-progress">
+            <div class="progress-indicator ${task.progress}"></div>
+          </div>
+          <div class="task-content">${highlightedContent}</div>
+        </div>
+        <div class="task-item-actions">
+          <button class="task-remove-btn" data-index="${index}" title="Remove Task">×</button>
+        </div>
+      `;
+      
+      // Add event listener to task element for selecting
+      taskElement.addEventListener("click", (e) => {
+        // Ignore if clicking the remove button
+        if (e.target.classList.contains('task-remove-btn')) return;
+        
+        if (timer && !confirm("Timer is running. Switch tasks?")) return;
+        
+        currentTaskIndex = index;
+        resetTimer();
+        updateTaskDisplay();
+      });
+      
+      // Add event listener to remove button
+      const removeBtn = taskElement.querySelector(".task-remove-btn");
+      if (removeBtn) {
+        removeBtn.addEventListener("click", (e) => {
+          e.stopPropagation();
+          const idx = parseInt(e.target.getAttribute("data-index"));
+          removeTask(idx);
+        });
+      }
+      
+      taskListContainer.appendChild(taskElement);
+    });
+  }
+
+  /**
+   * Remove a task from the list
+   * @param {number} index - Index of the task to remove
+   */
+  function removeTask(index) {
+    if (index < 0 || index >= tasks.length) return;
+    
+    // Check if removing the current task
+    const isCurrentTask = index === currentTaskIndex;
+    
+    // Remove the task
+    tasks.splice(index, 1);
+    
+    // Adjust current task index if needed
+    if (isCurrentTask) {
+      // Reset to first task, or just reset the timer
+      currentTaskIndex = tasks.length > 0 ? 0 : 0;
+      resetTimer();
+    } else if (index < currentTaskIndex) {
+      // Adjust current task index if we removed a task before it
+      currentTaskIndex--;
+    }
+    
+    // Save changes
+    saveTasksToStorage();
+    
+    // Update UI
+    updateTaskDisplay();
+    updateTaskList();
+  }
+
+  /**
+   * Add a task to the pomodoro queue
+   * @param {Object} task - The task to add
+   */
+  function addTask(task) {
+    // Check if the task is already in the list
+    const taskExists = tasks.some(t => t.id === task.id);
+    
+    if (taskExists) {
+      return false;
+    }
+    
+    // Add the task
+    tasks.push(task);
+    
+    // Save changes
+    saveTasksToStorage();
+    
+    // Update UI
+    updateTaskDisplay();
+    updateTaskList();
+    
+    return true;
+  }
+
+  /**
+   * Save tasks to localStorage
+   */
+  function saveTasksToStorage() {
+    localStorage.setItem('pomodoro_tasks', JSON.stringify(tasks));
+  }
+
+  /**
+   * Load tasks from localStorage
+   */
+  function loadTasksFromStorage() {
+    const savedTasks = localStorage.getItem('pomodoro_tasks');
+    
+    if (savedTasks) {
+      try {
+        tasks = JSON.parse(savedTasks);
+        currentTaskIndex = 0;
+      } catch (e) {
+        console.error('Error loading pomodoro tasks:', e);
+        tasks = [];
+      }
     }
   }
 
@@ -546,24 +747,37 @@ window.PomodoroView = (() => {
     setTimeout(() => {
       grandCelebration.classList.remove("show");
 
-      // Go back to the recommendation view after the celebration
-      ViewManager.showView(Constants.VIEWS.RECOMMENDATION);
+      // Go back to the menu view after the celebration
+      ViewManager.showView(Constants.VIEWS.MENU);
     }, 5000);
   }
 
   /**
    * Set the tasks for the Pomodoro
    * @param {Array} taskList - List of tasks to work on
+   * @param {boolean} replace - Whether to replace existing tasks
    */
-  function setTasks(taskList) {
-    tasks = [...taskList];
+  function setTasks(taskList, replace = false) {
+    if (replace) {
+      tasks = [...taskList];
+    } else {
+      // Filter out tasks that are already in the list
+      const newTasks = taskList.filter(
+        task => !tasks.some(t => t.id === task.id)
+      );
+      
+      tasks = [...tasks, ...newTasks];
+    }
+    
     currentTaskIndex = 0;
+    saveTasksToStorage();
 
     // Reset the timer
     resetTimer();
 
     // Update task display
     updateTaskDisplay();
+    updateTaskList();
   }
 
   /**
@@ -573,14 +787,23 @@ window.PomodoroView = (() => {
   function show(options = {}) {
     // Set tasks if provided
     if (options.tasks && Array.isArray(options.tasks)) {
-      setTasks(options.tasks);
+      const replace = options.replace === true;
+      setTasks(options.tasks, replace);
     }
-
-    // Initialize the UI
-    document.getElementById("pomodoro-break-actions").style.display = "none";
-    document.getElementById("pomodoro-actions").style.display = "flex";
-    document.getElementById("pomodoro-task-actions").style.display = "flex";
-    document.getElementById("pomodoro-state").textContent = "WORK";
+    
+    // Add single task if provided
+    if (options.task) {
+      const added = addTask(options.task);
+      if (added && options.autoStart === true) {
+        // Set the current task index to the last task (the one we just added)
+        currentTaskIndex = tasks.length - 1;
+        updateTaskDisplay();
+        // Auto start the pomodoro
+        setTimeout(() => {
+          togglePauseResume();
+        }, 500);
+      }
+    }
 
     // Initialize timer display
     resetTimer();
@@ -590,6 +813,9 @@ window.PomodoroView = (() => {
     const circumference = 2 * Math.PI * 140;
     circle.style.strokeDasharray = `${circumference} ${circumference}`;
     circle.style.strokeDashoffset = `${circumference}`;
+    
+    // Hide end prompt
+    hideEndPrompt();
   }
 
   /**
@@ -610,12 +836,40 @@ window.PomodoroView = (() => {
         if (confirm("Timer is running. Are you sure you want to exit?")) {
           clearInterval(timer);
           timer = null;
-          ViewManager.showView(Constants.VIEWS.RECOMMENDATION);
+          ViewManager.showView(Constants.VIEWS.MENU);
         }
       } else {
-        ViewManager.showView(Constants.VIEWS.RECOMMENDATION);
+        ViewManager.showView(Constants.VIEWS.MENU);
       }
     }
+  }
+
+  /**
+   * Utility function to add a task to pomodoro from any view
+   * @param {string} noteId - ID of the note to add as a task
+   * @param {boolean} autoStart - Whether to auto-start the timer
+   * @param {boolean} switchToPomodoro - Whether to switch to pomodoro view
+   * @returns {boolean} Success status
+   */
+  function addTaskFromView(noteId, autoStart = false, switchToPomodoro = true) {
+    // Get the note from the database
+    const note = Database.getNoteById(noteId);
+    if (!note) return false;
+    
+    // Add the task to the pomodoro
+    const added = addTask(note);
+    
+    // If added successfully and switchToPomodoro is true, switch to pomodoro view
+    if (added && switchToPomodoro) {
+      const options = {
+        task: note,
+        autoStart: autoStart
+      };
+      
+      ViewManager.showView(Constants.VIEWS.POMODORO, options);
+    }
+    
+    return added;
   }
 
   // Public API
@@ -625,5 +879,7 @@ window.PomodoroView = (() => {
     hide,
     handleKeyDown,
     setTasks,
+    addTask,
+    addTaskFromView,
   };
 })();

@@ -1,37 +1,65 @@
-# Vaata Mind Development Guide
+# Claude Code Assistant Document for Vaata Mind
 
-## Build & Run Commands
-- `npm run package-tauri` - Package web app for Tauri
-- `npm run build-tauri` - Build Tauri application
-- `npm run deploy` - Run deployment script (updates versions)
+This document contains information and instructions for Claude to understand when working on this project.
 
-## Code Style Guidelines
+## Vaata Mind
 
-### Structure
-- Use module pattern: `const Module = (() => { /* private scope */ return { /* public API */ }; })();`
-- Export public methods via object return at module end
+Vaata Mind is a note-taking application with task management features. It uses a module pattern for organization and localStorage for persistent data storage.
 
-### Naming Conventions
-- Modules/Components/Views: PascalCase (EditorView, Database)
-- Functions/Variables: camelCase (getNoteById, currentNote)
-- Constants: UPPER_SNAKE_CASE (TIME_MARKERS, PROGRESS_STATES)
+## Key Features
 
-### Formatting
-- 2-space indentation
-- Use semicolons consistently
-- Double quotes for strings
-- JSDoc comments for documentation
+- **Note Taking**: Create and manage notes with hashtags and metadata
+- **Task Management**: Track task progress (not-started, in-progress, done)
+- **Pomodoro Timer**: Focus on tasks with 25-minute work periods
+- **Views**: Different ways to interact with notes (Editor, Table, Explore, Pomodoro)
 
-### Error Handling
-- Use try/catch blocks with specific error messages
-- Log errors via console.error with context
+## Common Operations
 
-### Types
-- Use JSDoc for indicating types in comments
-- Document parameters and return values
+### Linting and Testing
 
-### File Organization
-- /src/components/ - UI components
-- /src/modules/ - Core functionality
-- /src/views/ - View controllers
-- /src/styles/ - CSS styles
+Run the following commands to lint the code:
+```bash
+# No specific linting commands defined yet
+```
+
+### Pomodoro Functionality
+
+The Pomodoro timer follows these steps:
+1. Add tasks to the queue from any view
+2. Select a task to work on
+3. Start the timer (25 min)
+4. When timer ends, make a decision (mark as done, not done, or continue)
+5. Take breaks between work sessions
+
+### Progress States
+
+Progress states for tasks are:
+```javascript
+PROGRESS_STATES: {
+  NOT_STARTED: "not-started",
+  IN_PROGRESS: "in-progress", 
+  DONE: "done",
+}
+```
+
+### Accessing Pomodoro
+
+You can add tasks to Pomodoro from:
+- Editor View: Click the ⏱️ Pomodoro button in the editor controls
+- Table View: Click the ⏱️ button in the actions column
+- Explore View: Shift+Click on any task node in the graph
+
+### Important Files
+
+- `/src/views/PomodoroView.js`: Pomodoro timer implementation
+- `/src/views/EditorView.js`: Note editor interface
+- `/src/views/TableView.js`: Table-based view of notes
+- `/src/views/ExploreView.js`: Graph-based visualization
+- `/src/modules/Database.js`: Data storage management
+- `/src/modules/Constants.js`: Application constants
+- `/src/modules/ViewManager.js`: View registration and navigation
+- `/src/styles/pomodoro.css`: Styling for pomodoro interface
+
+## Project Structure
+
+The project follows a modular pattern with views handling different ways to interact with the application data.

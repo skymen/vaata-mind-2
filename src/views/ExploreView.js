@@ -83,6 +83,9 @@ window.ExploreView = (() => {
             Done
           </div>
         </div>
+        <div class="explore-hint">
+          <p>Tip: Click to edit a task, Shift+Click to add it to Pomodoro</p>
+        </div>
         <div class="graph-container" id="graph-container">
           <!-- Graph will be rendered here -->
         </div>
@@ -322,8 +325,21 @@ window.ExploreView = (() => {
           .on("end", dragended)
       )
       .on("click", function (event, d) {
-        // Click on node to edit
-        ViewManager.showView(Constants.VIEWS.EDITOR, { noteId: d.id });
+        // Check if shift key is pressed
+        if (event.shiftKey) {
+          // Add to Pomodoro if shift key is pressed
+          const switchToPomodoro = confirm("Add this note to Pomodoro and switch to Pomodoro view?");
+          
+          // Add the note to pomodoro
+          const added = PomodoroView.addTaskFromView(d.id, false, switchToPomodoro);
+          
+          if (added && !switchToPomodoro) {
+            StatusMessage.show("Added to Pomodoro queue", 2000, true);
+          }
+        } else {
+          // Regular click to edit
+          ViewManager.showView(Constants.VIEWS.EDITOR, { noteId: d.id });
+        }
       });
 
     // Add circles for nodes
