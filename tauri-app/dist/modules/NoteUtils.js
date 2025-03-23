@@ -9,45 +9,134 @@ const NoteUtils = (() => {
    * @returns {string[]} Array of hashtags
    */
   function extractHashtags(text) {
-    const hashtagRegex = /#(\w+)/g;
-    const matches = text.match(hashtagRegex);
-    return matches ? matches.map((tag) => tag.trim()) : [];
+    if (!text) return [];
+    
+    const hashtags = [];
+    const regex = /#(\w+)/g;
+    let match;
+    
+    while ((match = regex.exec(text)) !== null) {
+      hashtags.push(match[1]);
+    }
+    
+    return hashtags;
   }
 
   /**
    * Extract time markers from text
    * @param {string} text - Text to extract time markers from
-   * @returns {Object} Object with dueDate and important properties
+   * @returns {Object} Object with dueDate, important properties, and updatedText
    */
   function extractTimeMarkers(text) {
+    if (!text) {
+      return {
+        dueDate: null,
+        important: false,
+        updatedText: text
+      };
+    }
+
     const result = {
       dueDate: null,
       important: false,
+      updatedText: text
     };
 
     // Check for importance marker
     if (text.includes(Constants.TIME_MARKERS.IMPORTANT)) {
       result.important = true;
+      result.updatedText = result.updatedText.replace(Constants.TIME_MARKERS.IMPORTANT, '').trim();
     }
 
-    // Check for date markers
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
+    // Check for no due date marker first
+    if (text.includes(Constants.TIME_MARKERS.NO_DUE_DATE)) {
+      // Clear the due date
+      result.dueDate = null;
+      result.updatedText = result.updatedText.replace(Constants.TIME_MARKERS.NO_DUE_DATE, '').trim();
+      return result; // No need to process other date markers
+    }
 
-    if (text.includes(Constants.TIME_MARKERS.TODAY)) {
-      result.dueDate = today.toISOString();
-    } else if (text.includes(Constants.TIME_MARKERS.TOMORROW)) {
-      const tomorrow = new Date(today);
-      tomorrow.setDate(tomorrow.getDate() + 1);
-      result.dueDate = tomorrow.toISOString();
-    } else if (text.includes(Constants.TIME_MARKERS.NEXT_WEEK)) {
-      const nextWeek = new Date(today);
-      nextWeek.setDate(nextWeek.getDate() + 7);
-      result.dueDate = nextWeek.toISOString();
-    } else if (text.includes(Constants.TIME_MARKERS.NEXT_MONTH)) {
-      const nextMonth = new Date(today);
-      nextMonth.setMonth(nextMonth.getMonth() + 1);
-      result.dueDate = nextMonth.toISOString();
+    // Look for the date markers in order of priority
+    let dateMarkerFound = false;
+    
+    // Process custom due date first (due:DD/MM/YYYY or due:MM/DD/YYYY)
+    // Support both due: and !due: formats with international date formats
+    const dueRegex = /(?:!?due:)(\d{1,2}\/\d{1,2}\/\d{4})/g;
+    const dueMatch = dueRegex.exec(text);
+    
+    if (dueMatch) {
+      const dateParts = dueMatch[1].split('/');
+      
+      // Create date object with day and month reversed both ways to determine which is valid
+      // Assume DD/MM/YYYY format first (international format)
+      const day = parseInt(dateParts[0], 10);
+      const month = parseInt(dateParts[1], 10) - 1;
+      const year = parseInt(dateParts[2], 10);
+      
+      let customDate = new Date(year, month, day);
+      
+      // Check if the date is valid - if not, try MM/DD/YYYY format
+      if (isNaN(customDate.getTime()) || customDate.getDate() !== day) {
+        // Try MM/DD/YYYY format (US format)
+        const month = parseInt(dateParts[0], 10) - 1;
+        const day = parseInt(dateParts[1], 10);
+        customDate = new Date(year, month, day);
+      }
+      
+      // If date is valid, use it
+      if (!isNaN(customDate.getTime())) {
+        result.dueDate = customDate.toISOString();
+        result.updatedText = result.updatedText.replace(dueMatch[0], '').trim();
+        dateMarkerFound = true;
+        
+        // Manually hide the calendar if it's visible
+        if (typeof DatePicker !== 'undefined' && DatePicker.isVisible && DatePicker.isVisible()) {
+          DatePicker.hideCalendar();
+        }
+      }
+    }
+    
+    // Look for just due: or !due: without a date (for calendar trigger)
+    if (!dateMarkerFound) {
+      // If we find a bare !due: or due: without date, don't modify the text yet
+      // The calendar will handle it when a date is selected
+      const bareRegex = /(?:!?due:)(?!\d)/;
+      if (bareRegex.test(text)) {
+        return result;
+      }
+    }
+    
+    // Only process other markers if no due: was found
+    if (!dateMarkerFound) {
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      
+      const timeMarkers = [
+        {
+          marker: Constants.TIME_MARKERS.TODAY,
+          date: today.toISOString()
+        },
+        {
+          marker: Constants.TIME_MARKERS.TOMORROW,
+          date: new Date(today.getTime() + 24 * 60 * 60 * 1000).toISOString()
+        },
+        {
+          marker: Constants.TIME_MARKERS.NEXT_WEEK,
+          date: new Date(today.getTime() + 7 * 24 * 60 * 60 * 1000).toISOString()
+        },
+        {
+          marker: Constants.TIME_MARKERS.NEXT_MONTH,
+          date: new Date(today.getFullYear(), today.getMonth() + 1, today.getDate()).toISOString()
+        }
+      ];
+      
+      for (const { marker, date } of timeMarkers) {
+        if (text.includes(marker)) {
+          result.dueDate = date;
+          result.updatedText = result.updatedText.replace(marker, '').trim();
+          break;
+        }
+      }
     }
 
     return result;
@@ -68,16 +157,32 @@ const NoteUtils = (() => {
     const tomorrow = new Date(today);
     tomorrow.setDate(tomorrow.getDate() + 1);
 
-    const daysUntilDue = Math.floor((date - today) / (1000 * 60 * 60 * 24));
+    const nextWeekDate = new Date(today);
+    nextWeekDate.setDate(nextWeekDate.getDate() + 7);
 
-    if (daysUntilDue < 0) {
+    // Compare date equality by comparing year, month, day
+    const isSameDate = (d1, d2) => {
+      return d1.getFullYear() === d2.getFullYear() && 
+             d1.getMonth() === d2.getMonth() && 
+             d1.getDate() === d2.getDate();
+    };
+
+    if (date < today) {
       return `Overdue: ${date.toLocaleDateString()}`;
-    } else if (date.getTime() === today.getTime()) {
+    } else if (isSameDate(date, today)) {
       return "Due Today";
-    } else if (date.getTime() === tomorrow.getTime()) {
+    } else if (isSameDate(date, tomorrow)) {
       return "Due Tomorrow";
     } else {
-      return `Due: ${date.toLocaleDateString()}`;
+      const daysUntilDue = Math.floor((date - today) / (1000 * 60 * 60 * 24));
+      if (daysUntilDue <= 7) {
+        if (isSameDate(date, nextWeekDate)) {
+          return "Due Next Week";
+        }
+        return `Due in ${daysUntilDue} days`;
+      } else {
+        return `Due: ${date.toLocaleDateString()}`;
+      }
     }
   }
 
@@ -96,13 +201,18 @@ const NoteUtils = (() => {
     const tomorrow = new Date(today);
     tomorrow.setDate(tomorrow.getDate() + 1);
 
-    const daysUntilDue = Math.floor((date - today) / (1000 * 60 * 60 * 24));
+    // Compare date equality by comparing year, month, day
+    const isSameDate = (d1, d2) => {
+      return d1.getFullYear() === d2.getFullYear() && 
+             d1.getMonth() === d2.getMonth() && 
+             d1.getDate() === d2.getDate();
+    };
 
-    if (daysUntilDue < 0) {
+    if (date < today) {
       return "Overdue!";
-    } else if (date.getTime() === today.getTime()) {
+    } else if (isSameDate(date, today)) {
       return "Today";
-    } else if (date.getTime() === tomorrow.getTime()) {
+    } else if (isSameDate(date, tomorrow)) {
       return "Tomorrow";
     } else {
       // Return short format like "Oct 15"
@@ -127,16 +237,21 @@ const NoteUtils = (() => {
 
     const tomorrow = new Date(today);
     tomorrow.setDate(tomorrow.getDate() + 1);
+    
+    // Compare date equality by comparing year, month, day
+    const isSameDate = (d1, d2) => {
+      return d1.getFullYear() === d2.getFullYear() && 
+             d1.getMonth() === d2.getMonth() && 
+             d1.getDate() === d2.getDate();
+    };
 
-    const daysUntilDue = Math.floor((date - today) / (1000 * 60 * 60 * 24));
-
-    if (daysUntilDue < 0) {
+    if (date < today) {
       return "due-today"; // Use the same urgent styling
-    } else if (date.getTime() === today.getTime()) {
+    } else if (isSameDate(date, today)) {
       return "due-today";
-    } else if (date.getTime() === tomorrow.getTime()) {
+    } else if (isSameDate(date, tomorrow)) {
       return "due-tomorrow";
-    } else if (daysUntilDue <= 7) {
+    } else if (Math.floor((date - today) / (1000 * 60 * 60 * 24)) <= 7) {
       return "due-week";
     } else {
       return "due-later";
@@ -358,6 +473,57 @@ const NoteUtils = (() => {
     return [value.substring(start, end), value.substring(start, position)];
   }
 
+  /**
+   * Checks if cursor is at a position where date picker should appear
+   * @param {string} value - Text content
+   * @param {number} position - Cursor position
+   * @returns {boolean} True if cursor is after "due:"
+   */
+  function isCursorAfterDueMarker(value, position) {
+    if (!value || position < 4) return false;
+    
+    // Look for both "due:" and "!due:" formats at or before the cursor position
+    const textBeforeCursor = value.substring(0, position);
+    
+    // Check for standard due: format
+    let dueMarkerPos = textBeforeCursor.lastIndexOf('due:');
+    let markerLength = 4; // Length of "due:"
+    
+    // If not found, check for !due: format
+    if (dueMarkerPos < 0) {
+      dueMarkerPos = textBeforeCursor.lastIndexOf('!due:');
+      markerLength = 5; // Length of "!due:"
+    }
+    
+    // If neither format found, return false
+    if (dueMarkerPos < 0) return false;
+    
+    // Check if the marker is at the cursor position or very close to it
+    // This prevents showing the calendar when cursor is far away from the marker
+    const cursorDistanceFromMarker = position - (dueMarkerPos + markerLength);
+    
+    // Only show calendar if cursor is right after the marker or within a few characters
+    // This helps with the issue where calendar shows when cursor is far away
+    if (cursorDistanceFromMarker > 3) return false;
+    
+    // Make sure the marker is not part of a longer word
+    // Check if there's a space or beginning of text before the marker
+    if (dueMarkerPos > 0 && !/\s/.test(value[dueMarkerPos - 1])) {
+      // If the character before is not a space and not '!', it's part of another word
+      if (value[dueMarkerPos] !== '!' && value[dueMarkerPos - 1] !== '!') {
+        return false;
+      }
+    }
+    
+    // Check if there's a number right after the marker (already being typed)
+    const textAfterMarker = textBeforeCursor.substring(dueMarkerPos + markerLength);
+    if (/\d/.test(textAfterMarker)) {
+      return false; // Don't show calendar if user is already typing a date
+    }
+    
+    return true;
+  }
+
   // Public API
   return {
     extractHashtags,
@@ -368,5 +534,6 @@ const NoteUtils = (() => {
     getDueDateTextColor,
     getCaretCoordinates,
     getCurrentWord,
+    isCursorAfterDueMarker
   };
 })();

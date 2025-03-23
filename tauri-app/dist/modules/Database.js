@@ -8,6 +8,28 @@ const Database = (() => {
   let probabilities = {}; // For recommendation mode - only used in memory, not saved
 
   /**
+   * Generate a unique ID for a note
+   * @returns {string} A unique ID
+   */
+  function generateId() {
+    // Create a timestamp component
+    const timestamp = new Date().getTime();
+    
+    // Create a random component (8 hex characters)
+    const randomPart = Math.floor(Math.random() * 0xFFFFFFFF).toString(16).padStart(8, '0');
+    
+    // Combine them for a unique ID
+    return `n-${timestamp}-${randomPart}`;
+  }
+
+  /**
+   * Alias for save function - used in various places in the codebase
+   */
+  function saveChanges() {
+    save();
+  }
+
+  /**
    * Initialize the database from localStorage
    * @returns {Object} The Database API
    */
@@ -59,64 +81,65 @@ const Database = (() => {
   }
 
   /**
-   * Add a new note to the database
+   * Add a new note
    * @param {string} content - Note content
-   * @returns {Object} The newly created note
+   * @param {string} progress - Progress state (from Constants.PROGRESS_STATES)
+   * @param {string|null} dueDate - ISO date string or null for due date
+   * @param {boolean} important - Whether the note is important
+   * @returns {Object} New note object
    */
-  function addNote(content) {
-    const hashtags = NoteUtils.extractHashtags(content);
-    const timeData = NoteUtils.extractTimeMarkers(content);
-    const id = Date.now().toString();
+  function addNote(content, progress, dueDate = null, important = false) {
+    const now = new Date().toISOString();
     const newNote = {
-      id,
-      content,
-      hashtags,
-      progress: Constants.PROGRESS_STATES.NOT_STARTED,
-      dueDate: timeData.dueDate,
-      important: timeData.important,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
+      id: generateId(),
+      content: content,
+      progress: progress || Constants.PROGRESS_STATES.NOT_STARTED,
+      createdAt: now,
+      updatedAt: now,
+      dueDate: dueDate,
+      important: important
     };
 
     notes.push(newNote);
-    probabilities[id] = 1.0;
-    save();
+    saveChanges();
+    
     return newNote;
   }
 
   /**
    * Update an existing note
-   * @param {string} id - Note ID
-   * @param {string} content - Updated note content
-   * @param {string} progress - Progress state (optional)
-   * @param {string} dueDate - Due date (optional)
-   * @param {boolean} important - Importance flag (optional)
-   * @returns {Object|null} The updated note or null if not found
+   * @param {string} id - ID of the note to update
+   * @param {string} content - New content (or undefined to keep current)
+   * @param {string} progress - New progress state (or undefined to keep current)
+   * @param {string|null} dueDate - ISO date string or null/undefined to keep current
+   * @param {boolean} important - Important flag or undefined to keep current
+   * @returns {Object|null} Updated note or null if not found
    */
   function updateNote(id, content, progress, dueDate, important) {
-    const noteIndex = notes.findIndex((note) => note.id === id);
-    if (noteIndex >= 0) {
-      const hashtags = NoteUtils.extractHashtags(content);
-      const timeData = NoteUtils.extractTimeMarkers(content);
+    const noteIndex = notes.findIndex(n => n.id === id);
+    if (noteIndex === -1) return null;
 
-      // Use provided values or extract from content
-      const newDueDate = dueDate !== undefined ? dueDate : timeData.dueDate;
-      const isImportant =
-        important !== undefined ? important : timeData.important;
+    const now = new Date().toISOString();
+    const updatedNote = { ...notes[noteIndex], updatedAt: now };
 
-      notes[noteIndex] = {
-        ...notes[noteIndex],
-        content,
-        hashtags,
-        progress: progress !== undefined ? progress : notes[noteIndex].progress,
-        dueDate: newDueDate,
-        important: isImportant,
-        updatedAt: new Date().toISOString(),
-      };
-      save();
-      return notes[noteIndex];
+    // Only update properties that are explicitly provided
+    if (content !== undefined) updatedNote.content = content;
+    if (progress !== undefined) updatedNote.progress = progress;
+    
+    // Special case for dueDate - null means remove it, undefined means don't change
+    if (dueDate !== undefined) {
+      updatedNote.dueDate = dueDate;
     }
-    return null;
+    
+    // Special case for important - must be a boolean, except undefined means don't change
+    if (important !== undefined) {
+      updatedNote.important = Boolean(important);
+    }
+
+    notes[noteIndex] = updatedNote;
+    saveChanges();
+    
+    return updatedNote;
   }
 
   /**
@@ -151,7 +174,11 @@ const Database = (() => {
   function getAllHashtags() {
     const hashtagSet = new Set();
     notes.forEach((note) => {
-      note.hashtags.forEach((tag) => hashtagSet.add(tag));
+      // Use NoteUtils to extract hashtags from content instead of accessing a non-existent property
+      if (note.content) {
+        const extractedTags = NoteUtils.extractHashtags(note.content);
+        extractedTags.forEach(tag => hashtagSet.add(tag));
+      }
     });
     return Array.from(hashtagSet);
   }

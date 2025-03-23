@@ -16,6 +16,8 @@ window.EditorView = (() => {
   let currentNoteId = null;
   let lastSavedNoteContent = "";
   let lastNoteWasSaved = true;
+  let currentDueDate = null;
+  let currentImportance = false;
 
   /**
    * Initialize the editor view
@@ -243,6 +245,9 @@ window.EditorView = (() => {
 
       // Handle editor keydown events
       // document.addEventListener("keydown", handleKeyDown);
+      
+      // Handle editor keyup events
+      noteEditor.addEventListener("keyup", handleEditorKeyUp);
     }
   }
 
@@ -251,10 +256,13 @@ window.EditorView = (() => {
    * @param {KeyboardEvent} e - Keyboard event
    */
   function handleKeyDown(e) {
-    // Let autocomplete handle its own keys first
-    if (Autocomplete.isAutocompleteVisible()) {
-      const handled = Autocomplete.handleKeyDown(e);
-      if (handled) return;
+    // Check if autocomplete is visible before attempting to handle keys
+    if (typeof Autocomplete !== "undefined" && Autocomplete.isAutocompleteVisible && Autocomplete.isAutocompleteVisible()) {
+      // Only try to call handleKeyDown if it exists
+      if (typeof Autocomplete.handleKeyDown === 'function') {
+        const handled = Autocomplete.handleKeyDown(e);
+        if (handled) return;
+      }
     }
 
     // Ctrl+Enter to save and close
@@ -280,18 +288,67 @@ window.EditorView = (() => {
   }
 
   /**
+   * Handle key events in the editor
+   * @param {Event} e - Key event
+   */
+  function handleEditorKeyUp(e) {
+    // Regular input handling
+    updateHashtagsDisplay();
+    markNoteAsUnsaved();
+    
+    // Check for "due:" marker to show calendar
+    if (NoteUtils.isCursorAfterDueMarker(noteEditor.value, noteEditor.selectionStart)) {
+      DatePicker.showCalendarAtCursor(noteEditor, noteEditor.selectionStart);
+    }
+    
+    // Process time markers in real-time
+    processTimeMarkersInRealTime();
+  }
+  
+  /**
+   * Process time markers in real-time while typing
+   */
+  function processTimeMarkersInRealTime() {
+    if (!noteEditor) return;
+    
+    const content = noteEditor.value;
+    const result = NoteUtils.extractTimeMarkers(content);
+    
+    // Only update if markers were found and text changed
+    if (result.updatedText !== content) {
+      // Save cursor position
+      const cursorPos = noteEditor.selectionStart;
+      const textDiff = content.length - result.updatedText.length;
+      
+      // Update editor content - removes markers
+      noteEditor.value = result.updatedText;
+      
+      // Restore cursor position, adjusted for removed text
+      noteEditor.selectionStart = noteEditor.selectionEnd = Math.max(0, cursorPos - textDiff);
+      
+      // Update due date and importance
+      currentDueDate = result.dueDate;
+      currentImportance = result.important;
+      
+      // Update badges display
+      updateNoteBadges();
+    }
+  }
+
+  /**
    * Show the editor view
    * @param {Object} options - Optional data to pass to the view
    */
-  function show(options = {}) {
+  async function show(options = {}) {
     // If note ID is provided, load that note
     if (options.noteId) {
       const note = Database.getNoteById(options.noteId);
       if (note) {
-        setEditorContent(note.content, note.id);
+        await setEditorContent(note.content, options.noteId);
       }
     } else {
-      setEditorContent("");
+      // Reset current note (no need for confirmation dialog when starting a new note)
+      createNewNote();
     }
 
     // Focus the editor
@@ -311,21 +368,42 @@ window.EditorView = (() => {
    * Set content in the editor
    * @param {string} content - Content to set
    * @param {string} noteId - ID of the note (optional)
+   * @returns {Promise<boolean>} Whether the content was set successfully
    */
-  function setEditorContent(content, noteId = null) {
-    if (!lastNoteWasSaved && noteEditor.value !== content) {
-      return;
+  async function setEditorContent(content, noteId = null) {
+    // Check for unsaved changes
+    if (!lastNoteWasSaved && noteEditor.value.trim() !== "") {
+      // Only prompt if we're actually changing to a different note
+      if (content !== noteEditor.value) {
+        const confirmed = await DialogBox.confirm(
+          "You have unsaved changes. Do you want to save them before proceeding?",
+          "Unsaved Changes"
+        );
+        
+        if (confirmed) {
+          const saved = await saveCurrentNote(false);
+          if (!saved) {
+            // If saving failed, don't continue
+            return false;
+          }
+        }
+      }
     }
 
+    // Update editor content
     noteEditor.value = content || "";
     currentNoteId = noteId;
     lastSavedNoteContent = noteEditor.value;
+    lastNoteWasSaved = true;
 
+    // Update UI
     updateHashtagsDisplay();
     updateProgressIndicator();
     updateNoteStatus();
     updateNoteBadges();
     updateEditorUI();
+    
+    return true;
   }
 
   /**
@@ -388,13 +466,12 @@ window.EditorView = (() => {
    */
   function updateEditorUI() {
     if (!currentNoteId) {
-      DatePicker.hide();
+      DatePicker.hideCalendar();
       ProgressMenu.hide();
       deleteNoteBtn.classList.add("hidden");
       return;
     }
 
-    DatePicker.show();
     ProgressMenu.show();
     deleteNoteBtn.classList.remove("hidden");
   }
@@ -403,19 +480,12 @@ window.EditorView = (() => {
    * Update the note badges
    */
   function updateNoteBadges() {
-    if (!currentNoteId) {
-      NoteBadges.hide();
-      return;
-    }
-
-    const note = Database.getNoteById(currentNoteId);
-    if (note) {
-      NoteBadges.updateBadges(note);
-      DatePicker.setDateValue(note.dueDate);
-      NoteBadges.show();
-    } else {
-      NoteBadges.hide();
-    }
+    const noteData = {
+      dueDate: currentDueDate,
+      important: currentImportance
+    };
+    
+    NoteBadges.updateBadges(noteData);
   }
 
   /**
@@ -429,48 +499,89 @@ window.EditorView = (() => {
   /**
    * Save the current note
    * @param {boolean} closeAfterSave - Whether to clear editor after saving
+   * @returns {Promise<boolean>} Whether the save was successful
    */
-  function saveCurrentNote(closeAfterSave = false) {
+  async function saveCurrentNote(closeAfterSave = false) {
     const content = noteEditor.value;
 
     // Don't save empty notes when closing
     if (content === "" && closeAfterSave && !currentNoteId) {
-      return;
+      return true;
     }
 
-    if (currentNoteId) {
-      Database.updateNote(currentNoteId, content);
-    } else {
-      const newNote = Database.addNote(content);
-      currentNoteId = newNote.id;
-      updateEditorUI();
+    // Process any time markers in the content
+    const timeData = NoteUtils.extractTimeMarkers(content);
+    const processedContent = timeData.updatedText;
+    
+    // Update current metadata
+    if (timeData.dueDate !== undefined) {
+      currentDueDate = timeData.dueDate;
+    }
+    if (timeData.important !== undefined) {
+      currentImportance = timeData.important;
     }
 
-    lastNoteWasSaved = true;
-    lastSavedNoteContent = content;
+    try {
+      if (currentNoteId) {
+        // Update existing note - explicitly pass all properties
+        await Database.updateNote(
+          currentNoteId,
+          processedContent,
+          undefined, // Don't change progress
+          currentDueDate,
+          currentImportance
+        );
+      } else {
+        // Create new note - explicitly pass all properties
+        const newNote = await Database.addNote(
+          processedContent,
+          Constants.PROGRESS_STATES.NOT_STARTED,
+          currentDueDate,
+          currentImportance
+        );
+        currentNoteId = newNote.id;
+        updateEditorUI();
+      }
 
-    updateProgressIndicator();
-    updateNoteStatus();
-    updateNoteBadges();
+      // Update state
+      lastNoteWasSaved = true;
+      lastSavedNoteContent = processedContent;
 
-    StatusMessage.show("Note saved", 2000, true);
+      // Update UI
+      updateProgressIndicator();
+      updateNoteStatus();
+      updateNoteBadges();
 
-    if (closeAfterSave) {
-      setEditorContent("");
-      currentNoteId = null;
+      StatusMessage.show("Note saved", 2000, true);
+
+      if (closeAfterSave) {
+        setEditorContent("");
+        currentNoteId = null;
+        
+        // Reset metadata when creating a new note
+        currentDueDate = null;
+        currentImportance = false;
+        updateNoteBadges();
+      }
+      
+      return true;
+    } catch (error) {
+      console.error('Failed to save note:', error);
+      StatusMessage.show("Failed to save note", 2000, false);
+      return false;
     }
   }
 
   /**
    * Delete the current note
    */
-  function deleteCurrentNote() {
+  async function deleteCurrentNote() {
     if (!currentNoteId) return;
 
     // Check for shift key or confirm
     if (
       App.isShiftPressed() ||
-      confirm("Are you sure you want to delete this note?")
+      await DialogBox.confirm("Are you sure you want to delete this note?", "Confirm Delete")
     ) {
       Database.deleteNote(currentNoteId);
       setEditorContent("");
@@ -496,18 +607,16 @@ window.EditorView = (() => {
    * @param {string} dateString - ISO date string or null
    */
   function handleDueDateChange(dateString) {
-    if (!currentNoteId) return;
-
-    const note = Database.getNoteById(currentNoteId);
-    Database.updateNote(
-      currentNoteId,
-      noteEditor.value,
-      note.progress,
-      dateString,
-      note.important
-    );
-
+    // Update current due date
+    currentDueDate = dateString;
+    
+    // Update badges
     updateNoteBadges();
+    
+    // Mark as unsaved
+    markNoteAsUnsaved();
+    
+    // Show status message
     StatusMessage.show(dateString ? "Due date set" : "Due date cleared");
   }
 
@@ -537,7 +646,7 @@ window.EditorView = (() => {
   /**
    * Add the current note to the Pomodoro
    */
-  function addCurrentNoteToPomodoro() {
+  async function addCurrentNoteToPomodoro() {
     // First save the current note if it's new or has unsaved changes
     if (!currentNoteId || !lastNoteWasSaved) {
       saveCurrentNote(false);
@@ -549,7 +658,10 @@ window.EditorView = (() => {
     }
     
     // Ask if the user wants to switch to pomodoro view
-    const switchToPomodoro = confirm("Add this note to Pomodoro and switch to Pomodoro view?");
+    const switchToPomodoro = await DialogBox.confirm(
+      "Add this note to Pomodoro and switch to Pomodoro view?", 
+      "Add to Pomodoro"
+    );
     
     // Add the note to pomodoro
     const added = PomodoroView.addTaskFromView(currentNoteId, false, switchToPomodoro);
@@ -621,6 +733,70 @@ window.EditorView = (() => {
     noteEditor.focus();
   }
 
+  /**
+   * Load a note into the editor
+   * @param {string} id - Note ID to load
+   */
+  function loadNote(id) {
+    if (!id) return;
+    
+    const note = Database.getNoteById(id);
+    if (!note) {
+      console.error(`Note with ID ${id} not found`);
+      return;
+    }
+    
+    // Set content and note ID
+    noteEditor.value = note.content || "";
+    currentNoteId = note.id;
+    lastSavedNoteContent = noteEditor.value;
+    lastNoteWasSaved = true;
+    
+    // Load metadata
+    currentDueDate = note.dueDate || null;
+    currentImportance = note.important || false;
+    
+    // Update UI
+    updateHashtagsDisplay();
+    updateProgressIndicator();
+    updateNoteStatus();
+    updateNoteBadges();
+    updateEditorUI();
+  }
+
+  /**
+   * Create a new note
+   */
+  function createNewNote() {
+    if (!lastNoteWasSaved) {
+      return;
+    }
+    // Reset content and ID
+    noteEditor.value = "";
+    currentNoteId = null;
+    lastSavedNoteContent = "";
+    lastNoteWasSaved = true;
+    
+    // Reset metadata
+    currentDueDate = null;
+    currentImportance = false;
+    
+    // Update UI
+    updateHashtagsDisplay();
+    updateProgressIndicator();
+    updateNoteStatus();
+    updateNoteBadges();
+    updateEditorUI();
+  }
+
+  // For public access from DatePicker.js
+  window.EditorView = {
+    insertTimeMarker: (marker) => {
+      // This functionality is no longer needed
+      // Time markers are processed in real-time
+    }
+  };
+
   // Public API
   return {
     initialize,
@@ -631,5 +807,7 @@ window.EditorView = (() => {
     deleteCurrentNote,
     insertTimeMarker,
     handleKeyDown,
+    loadNote,
+    createNewNote,
   };
 })();

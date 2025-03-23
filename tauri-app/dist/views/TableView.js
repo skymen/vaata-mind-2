@@ -226,13 +226,13 @@ window.TableView = (() => {
   /**
    * Bulk delete selected notes
    */
-  function bulkDeleteNotes() {
+  async function bulkDeleteNotes() {
     if (selectedNoteIds.size === 0) return;
 
     // Check for shift key or confirm
     if (
       App.isShiftPressed() ||
-      confirm(`Are you sure you want to delete ${selectedNoteIds.size} notes?`)
+      await DialogBox.confirm(`Are you sure you want to delete ${selectedNoteIds.size} notes?`, "Confirm Delete")
     ) {
       selectedNoteIds.forEach((id) => {
         Database.deleteNote(id);
@@ -247,12 +247,13 @@ window.TableView = (() => {
   /**
    * Bulk send selected notes to Pomodoro
    */
-  function bulkSendToPomodoro() {
+  async function bulkSendToPomodoro() {
     if (selectedNoteIds.size === 0) return;
 
     // Ask if the user wants to switch to pomodoro view
-    const switchToPomodoro = confirm(
-      `Add ${selectedNoteIds.size} notes to Pomodoro and switch to Pomodoro view?`
+    const switchToPomodoro = await DialogBox.confirm(
+      `Add ${selectedNoteIds.size} notes to Pomodoro and switch to Pomodoro view?`,
+      "Add to Pomodoro"
     );
 
     let addedCount = 0;
@@ -402,9 +403,11 @@ window.TableView = (() => {
 
     // Filter by tags
     if (tableFilters.tags.size > 0) {
-      notes = notes.filter((note) =>
-        note.hashtags.some((tag) => tableFilters.tags.has(tag))
-      );
+      notes = notes.filter((note) => {
+        // Extract hashtags from note content instead of using non-existent hashtags property
+        const noteHashtags = NoteUtils.extractHashtags(note.content || "");
+        return noteHashtags.some((tag) => tableFilters.tags.has(tag));
+      });
     }
 
     return notes;
@@ -495,12 +498,16 @@ window.TableView = (() => {
       const tagsCell = document.createElement("td");
       const tagsContainer = document.createElement("div");
       tagsContainer.className = "table-tags";
-      note.hashtags.forEach((tag) => {
+      
+      // Extract hashtags from note content
+      const hashtags = NoteUtils.extractHashtags(note.content || "");
+      hashtags.forEach((tag) => {
         const tagSpan = document.createElement("span");
         tagSpan.className = "table-tag";
         tagSpan.textContent = tag;
         tagsContainer.appendChild(tagSpan);
       });
+      
       tagsCell.appendChild(tagsContainer);
       row.appendChild(tagsCell);
 
@@ -554,11 +561,11 @@ window.TableView = (() => {
       deleteBtn.className = "table-action-btn";
       deleteBtn.innerHTML = "🗑️";
       deleteBtn.title = "Delete";
-      deleteBtn.addEventListener("click", (e) => {
+      deleteBtn.addEventListener("click", async (e) => {
         e.stopPropagation();
         if (
           App.isShiftPressed() ||
-          confirm("Are you sure you want to delete this note?")
+          await DialogBox.confirm("Are you sure you want to delete this note?", "Confirm Delete")
         ) {
           Database.deleteNote(note.id);
           renderNotesTable();
