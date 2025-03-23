@@ -16,6 +16,8 @@ const Constants = {
     NEXT_WEEK: "!nextweek",
     NEXT_MONTH: "!nextmonth",
     IMPORTANT: "!important",
+    DUE: "!due:",
+    NO_DUE_DATE: "!noDueDate",
   },
 
   // Time marker options for autocomplete
@@ -29,6 +31,8 @@ const Constants = {
     { value: "!tomorrow", label: "Tomorrow", description: "Due tomorrow" },
     { value: "!nextweek", label: "Next Week", description: "Due next week" },
     { value: "!nextmonth", label: "Next Month", description: "Due next month" },
+    { value: "!due:", label: "Due Date", description: "Set custom due date" },
+    { value: "!noDueDate", label: "No Due Date", description: "Remove due date" },
   ],
 
   // View ids
