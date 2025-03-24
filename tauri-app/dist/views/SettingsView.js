@@ -562,8 +562,8 @@ window.SettingsView = (() => {
           <div class="option-header">Monthly</div>
           <div class="option-price">EUR 1.99</div>
           <div class="option-period">per month</div>
-  <span class="trial-mention">Includes 7-day free trial</span>
           <button class="btn btn-primary option-btn">Select</button>
+          <span class="trial-mention">Includes 7-day free trial</span>
         </div>
         
         <div class="pricing-option featured">
@@ -572,8 +572,8 @@ window.SettingsView = (() => {
           <div class="option-price">EUR 14.99</div>
           <div class="option-period">per year</div>
           <div class="option-savings">Save 17%</div>
-  <span class="trial-mention">Includes 7-day free trial</span>
           <button class="btn btn-primary option-btn">Select</button>
+          <span class="trial-mention">Includes 7-day free trial</span>
         </div>
       </div>
       <p class="secure-payment">🔒 Secure payment with Stripe</p>
@@ -840,6 +840,7 @@ window.SettingsView = (() => {
           <div class="option-price">${currency} ${amount}</div>
           <div class="option-period">per month</div>
           <button class="btn btn-primary option-btn" id="monthly-option-btn">Subscribe Monthly</button>
+          <span class="trial-mention">Includes 7-day free trial</span>
         </div>
       `;
       }
@@ -863,6 +864,7 @@ window.SettingsView = (() => {
             <div class="option-period">per year</div>
             <div class="option-savings">Save ${savingsPercent}%</div>
             <button class="btn btn-primary option-btn" id="yearly-option-btn">Subscribe Yearly</button>
+            <span class="trial-mention">Includes 7-day free trial</span>
           </div>
         `;
         } else {
@@ -872,6 +874,7 @@ window.SettingsView = (() => {
             <div class="option-price">${currency} ${yearAmount}</div>
             <div class="option-period">per year</div>
             <button class="btn btn-primary option-btn" id="yearly-option-btn">Subscribe Yearly</button>
+            <span class="trial-mention">Includes 7-day free trial</span>
           </div>
         `;
         }
