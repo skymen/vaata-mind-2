@@ -8,6 +8,7 @@ window.SettingsView = (() => {
   let backButton = null;
   let requestStorageBtn = null;
   let exportDataBtn = null;
+  let importDataBtn = null;
   let importDataInput = null;
 
   // Account elements
@@ -38,6 +39,7 @@ window.SettingsView = (() => {
     backButton = document.getElementById("settings-back");
     requestStorageBtn = document.getElementById("request-storage-btn");
     exportDataBtn = document.getElementById("export-data-btn");
+    importDataBtn = document.getElementById("export-data-btn");
     importDataInput = document.getElementById("import-data-input");
 
     if (!viewElement) {
@@ -155,13 +157,27 @@ window.SettingsView = (() => {
             <button id="export-data-btn" class="btn btn-secondary">
               Export Data
             </button>
-            <label for="import-data-input" class="btn btn-secondary">Import Data</label>
+            <button id="import-data-btn" class="btn btn-secondary">
+              Import Data
+            </button>
             <input
               type="file"
               id="import-data-input"
               accept=".json"
               class="hidden"
             />
+          </div>
+        </div>
+
+        <div class="settings-section">
+          <h3>About</h3>
+          <div class="settings-actions">
+            <button id="view-source-btn" class="btn btn-secondary">
+              View Source Code
+            </button>
+            <button id="report-issue-btn" class="btn btn-secondary">
+              Report an Issue
+            </button>
           </div>
         </div>
       </div>
@@ -212,6 +228,13 @@ window.SettingsView = (() => {
     // Export data button
     if (exportDataBtn) {
       exportDataBtn.addEventListener("click", exportData);
+    }
+
+    // Import data button
+    if (importDataBtn) {
+      importDataBtn.addEventListener("click", () => {
+        importDataInput.click();
+      });
     }
 
     // Import data input
@@ -273,6 +296,22 @@ window.SettingsView = (() => {
     // Listen for Firebase auth state changes
     window.addEventListener("firebase-user-signed-in", updateFirebaseUI);
     window.addEventListener("firebase-user-signed-out", updateFirebaseUI);
+
+    // Source code button
+    const sourceBtn = document.getElementById("view-source-btn");
+    if (sourceBtn) {
+      sourceBtn.addEventListener("click", () => {
+        window.open("https://github.com/skymen/vaata-mind-2", "_blank");
+      });
+    }
+
+    // Report issue button
+    const reportBtn = document.getElementById("report-issue-btn");
+    if (reportBtn) {
+      reportBtn.addEventListener("click", () => {
+        window.open("https://github.com/skymen/vaata-mind-2/issues", "_blank");
+      });
+    }
   }
 
   /**
@@ -523,6 +562,7 @@ window.SettingsView = (() => {
           <div class="option-header">Monthly</div>
           <div class="option-price">EUR 1.99</div>
           <div class="option-period">per month</div>
+  <span class="trial-mention">Includes 7-day free trial</span>
           <button class="btn btn-primary option-btn">Select</button>
         </div>
         
@@ -532,6 +572,7 @@ window.SettingsView = (() => {
           <div class="option-price">EUR 14.99</div>
           <div class="option-period">per year</div>
           <div class="option-savings">Save 17%</div>
+  <span class="trial-mention">Includes 7-day free trial</span>
           <button class="btn btn-primary option-btn">Select</button>
         </div>
       </div>
@@ -724,7 +765,9 @@ window.SettingsView = (() => {
               manageSubBtn.addEventListener("click", async () => {
                 try {
                   StatusMessage.show("Opening subscription management...", 2000, true);
+                  SubscriptionAnimation.show("Opening customer portal");
                   const result = await Firebase.getCustomerPortalUrl();
+                  SubscriptionAnimation.hide();
 
                   if (result.success && result.url) {
                     window.location.assign(result.url);
@@ -863,8 +906,9 @@ window.SettingsView = (() => {
   async function handleSubscription(priceId) {
     try {
       StatusMessage.show("Starting checkout process...", 2000, true);
+      SubscriptionAnimation.show("Starting checkout process");
       const result = await Firebase.createCheckoutSession(priceId);
-
+      SubscriptionAnimation.hide();
       if (result.success && result.url) {
         window.location.assign(result.url);
       } else {
