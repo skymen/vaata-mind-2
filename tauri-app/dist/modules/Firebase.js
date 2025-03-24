@@ -12,6 +12,12 @@ const Firebase = (() => {
   let isInitialized = false;
   let isOffline = false;
   
+  // Sync management
+  let syncInterval = null;
+  let syncIntervalMinutes = 5;
+  let isSyncing = false;
+  let lastSyncTime = null;
+  
   // Config
   const firebaseConfig = {
     apiKey: "AIzaSyBmvJOjmGWll8ysQ89HZCm5pJsqS_htSh8",
@@ -151,17 +157,173 @@ const Firebase = (() => {
     window.addEventListener('online', () => {
       isOffline = false;
       StatusMessage.show('You are online. Syncing data...', 3000, true);
-      syncData();
+      performSync('online');
     });
     
     window.addEventListener('offline', () => {
       isOffline = true;
       StatusMessage.show('You are offline. Changes will sync when connected.', 3000);
+      stopPeriodicSync(); // Stop sync when offline
+    });
+    
+    // Setup focus/visibility events for smart sync
+    window.addEventListener('focus', () => {
+      if (Database.isFirebaseEnabled() && isSignedIn() && !isOffline) {
+        performSync('focus');
+      }
+    });
+    
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'visible' && 
+          Database.isFirebaseEnabled() && isSignedIn() && !isOffline) {
+        performSync('visibility');
+      }
+    });
+    
+    // Handle user sign-in/out events
+    window.addEventListener('firebase-user-signed-in', () => {
+      if (Database.isFirebaseEnabled() && !isOffline) {
+        startPeriodicSync();
+        performSync('sign-in');
+      }
+    });
+    
+    window.addEventListener('firebase-user-signed-out', () => {
+      stopPeriodicSync();
     });
     
     isOffline = !navigator.onLine;
+    
+    // Start periodic sync if needed
+    if (Database.isFirebaseEnabled() && isSignedIn() && !isOffline) {
+      startPeriodicSync();
+    }
   }
   
+  /**
+   * Start periodic sync at regular intervals
+   */
+  function startPeriodicSync() {
+    if (syncInterval) {
+      stopPeriodicSync();
+    }
+    
+    syncInterval = setInterval(() => {
+      performSync('periodic');
+    }, syncIntervalMinutes * 60 * 1000);
+    
+    console.log(`Periodic sync started: every ${syncIntervalMinutes} minutes`);
+  }
+  
+  /**
+   * Stop periodic sync
+   */
+  function stopPeriodicSync() {
+    if (syncInterval) {
+      clearInterval(syncInterval);
+      syncInterval = null;
+      console.log('Periodic sync stopped');
+    }
+  }
+  
+  /**
+   * Perform sync operation with specified trigger
+   * @param {string} trigger - What triggered the sync
+   * @returns {Promise} Promise that resolves when sync is complete
+   */
+  async function performSync(trigger) {
+    if (isSyncing || isOffline || !isSignedIn() || !Database.isFirebaseEnabled()) {
+      return { success: false };
+    }
+    
+    try {
+      isSyncing = true;
+      
+      if (trigger !== 'silent') {
+        StatusMessage.show(`Syncing data (${trigger})...`, 2000, true);
+      }
+      
+      const result = await syncData();
+      
+      lastSyncTime = new Date();
+      
+      if (trigger !== 'silent' && result.success) {
+        StatusMessage.show('Sync complete', 2000, true);
+      }
+      
+      // Update sync button state if it exists
+      const syncButton = document.getElementById('manual-sync-button');
+      if (syncButton) {
+        syncButton.classList.remove('syncing');
+        syncButton.title = `Sync with cloud (Last: ${getTimeAgo(lastSyncTime)})`;
+      }
+      
+      return result;
+    } catch (error) {
+      console.error('Sync error:', error);
+      StatusMessage.show('Sync failed', 2000, false);
+      return { success: false, error };
+    } finally {
+      isSyncing = false;
+    }
+  }
+  
+  /**
+   * Get a human-readable time ago string
+   * @param {Date} date - The date to format
+   * @returns {string} Human readable time ago
+   */
+  function getTimeAgo(date) {
+    if (!date) return 'Never';
+    
+    const now = new Date();
+    const seconds = Math.floor((now - date) / 1000);
+    
+    if (seconds < 60) return 'Just now';
+    
+    const minutes = Math.floor(seconds / 60);
+    if (minutes < 60) return `${minutes}m ago`;
+    
+    const hours = Math.floor(minutes / 60);
+    if (hours < 24) return `${hours}h ago`;
+    
+    const days = Math.floor(hours / 24);
+    return `${days}d ago`;
+  }
+  
+  /**
+   * Set the sync interval in minutes
+   * @param {number} minutes - Minutes between syncs
+   */
+  function setSyncInterval(minutes) {
+    if (minutes < 1) minutes = 1;
+    syncIntervalMinutes = minutes;
+    
+    // Restart sync if it's running
+    if (syncInterval) {
+      startPeriodicSync();
+    }
+    
+    // Save preference to localStorage
+    localStorage.setItem('syncIntervalMinutes', minutes);
+  }
+  
+  /**
+   * Check if sync is in progress
+   * @returns {boolean} True if syncing
+   */
+  function isSyncInProgress() {
+    return isSyncing;
+  }
+  
+  /**
+   * Get the last sync time
+   * @returns {Date|null} Last sync time or null
+   */
+  function getLastSyncTime() {
+    return lastSyncTime;
+  }
+
   /**
    * Sign in with Google
    * @returns {Promise} Promise that resolves when signed in
@@ -435,6 +597,12 @@ const Firebase = (() => {
     syncData,
     addNote,
     updateNote,
-    deleteNote
+    deleteNote,
+    startPeriodicSync,
+    stopPeriodicSync,
+    performSync,
+    setSyncInterval,
+    isSyncInProgress,
+    getLastSyncTime
   };
 })();
