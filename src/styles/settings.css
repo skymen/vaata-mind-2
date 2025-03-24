@@ -153,6 +153,156 @@ label.btn {
   to { transform: rotate(360deg); }
 }
 
+/* Subscription section styles */
+.subscription-status {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+}
+
+.subscription-info {
+  flex-grow: 1;
+}
+
+.premium-active {
+  color: var(--completed-color);
+  font-weight: 500;
+}
+
+.subscription-features {
+  margin-top: 20px;
+}
+
+.comparison-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 20px;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.comparison-header {
+  display: flex;
+  background-color: #f0f0f0;
+  font-weight: bold;
+}
+
+.comparison-row {
+  display: flex;
+  border-bottom: 1px solid #eee;
+}
+
+.comparison-row:nth-child(even) {
+  background-color: #f9f9f9;
+}
+
+.comparison-row:last-child {
+  border-bottom: none;
+}
+
+.feature-column, .free-column, .premium-column {
+  padding: 12px 15px;
+}
+
+.feature-column {
+  flex: 3;
+}
+
+.free-column, .premium-column {
+  flex: 1;
+  text-align: center;
+}
+
+.premium-column {
+  color: var(--accent-color);
+  font-weight: 500;
+}
+
+/* Pricing cards */
+.pricing-cards {
+  display: flex;
+  gap: 20px;
+  margin-top: 20px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.pricing-card {
+  flex: 1;
+  min-width: 200px;
+  background-color: white;
+  border-radius: 8px;
+  padding: 20px;
+  text-align: center;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  position: relative;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.pricing-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+}
+
+.pricing-card.featured {
+  border: 2px solid var(--accent-color);
+}
+
+.pricing-badge {
+  position: absolute;
+  top: -10px;
+  right: -10px;
+  background-color: var(--accent-color);
+  color: white;
+  padding: 5px 10px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: bold;
+}
+
+.pricing-header {
+  font-size: 18px;
+  font-weight: 500;
+  margin-bottom: 10px;
+}
+
+.pricing-price {
+  font-size: 24px;
+  font-weight: bold;
+  color: var(--accent-color);
+}
+
+.pricing-period {
+  color: #666;
+  font-size: 14px;
+  margin-bottom: 15px;
+}
+
+.pricing-savings {
+  margin: 10px 0;
+}
+
+.monthly-equiv {
+  display: block;
+  font-size: 13px;
+  margin-bottom: 5px;
+}
+
+.save-text {
+  background-color: rgba(108, 99, 255, 0.1);
+  color: var(--accent-color);
+  padding: 3px 8px;
+  border-radius: 10px;
+  font-size: 12px;
+  font-weight: bold;
+}
+
+.btn-block {
+  width: 100%;
+}
+
 /* Premium upgrade dialog styles */
 .dialog-overlay {
   position: fixed;
@@ -172,39 +322,144 @@ label.btn {
   padding: 25px;
   border-radius: 10px;
   box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
-  max-width: 500px;
+  max-width: 700px;
   width: 90%;
+  position: relative;
+}
+
+.dialog-close {
+  position: absolute;
+  top: 15px;
+  right: 20px;
+  font-size: 24px;
+  cursor: pointer;
+  color: #999;
+  transition: color 0.2s;
+}
+
+.dialog-close:hover {
+  color: #333;
 }
 
 .upgrade-dialog h3 {
   margin-top: 0;
   color: var(--accent-color);
-  font-size: 22px;
-  margin-bottom: 15px;
+  font-size: 24px;
+  margin-bottom: 20px;
 }
 
-.pricing-container {
+.upgrade-dialog h4 {
+  margin: 20px 0 15px;
+  color: #333;
+  font-size: 18px;
+}
+
+.premium-features {
+  margin-bottom: 25px;
+}
+
+.features-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.features-list li {
+  padding: 10px 0;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.features-list li:last-child {
+  border-bottom: none;
+}
+
+.feature-icon {
+  display: inline-block;
+  margin-right: 10px;
+  font-size: 18px;
+}
+
+.pricing-options-container {
+  margin-bottom: 25px;
+}
+
+.pricing-options-row {
+  display: flex;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+
+.pricing-option {
+  flex: 1;
+  min-width: 220px;
   background-color: #f9f9f9;
   border-radius: 8px;
-  padding: 15px;
-  margin: 15px 0;
+  padding: 20px;
+  text-align: center;
+  position: relative;
+  transition: transform 0.2s;
 }
 
-.pricing-container h4 {
-  margin-top: 0;
+.pricing-option:hover {
+  transform: translateY(-5px);
+}
+
+.pricing-option.featured {
+  border: 2px solid var(--accent-color);
+}
+
+.best-value {
+  position: absolute;
+  top: -12px;
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: var(--accent-color);
+  color: white;
+  padding: 5px 15px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: bold;
+}
+
+.option-header {
   font-size: 18px;
-  color: #333;
+  font-weight: 500;
+  margin-bottom: 10px;
 }
 
-.price-options {
-  margin-top: 15px;
-  font-weight: 500;
+.option-price {
+  font-size: 28px;
+  font-weight: bold;
   color: var(--accent-color);
 }
 
-.upgrade-buttons {
+.option-period {
+  color: #666;
+  font-size: 14px;
+  margin-bottom: 10px;
+}
+
+.option-savings {
+  margin: 10px 0;
+  font-size: 14px;
+  color: #4CAF50;
+  font-weight: bold;
+}
+
+.option-btn {
+  width: 100%;
+  margin-top: 15px;
+}
+
+.upgrade-footer {
   display: flex;
-  gap: 10px;
+  justify-content: space-between;
+  align-items: center;
   margin-top: 20px;
-  justify-content: flex-end;
+}
+
+.secure-payment {
+  color: #666;
+  font-size: 14px;
+  margin: 0;
 }
