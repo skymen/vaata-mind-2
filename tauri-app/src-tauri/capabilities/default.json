@@ -2,15 +2,15 @@
   "$schema": "../gen/schemas/desktop-schema.json",
   "identifier": "default",
   "description": "Capability for the main window",
-  "windows": [
-    "main"
-  ],
+  "windows": ["main"],
   "permissions": [
     "core:default",
     "opener:default",
     "updater:default",
     "updater:allow-check",
     "updater:allow-download-and-install",
-    "dialog:allow-ask"
+    "dialog:allow-ask",
+    "process:allow-exit",
+    "process:allow-restart"
   ]
 }
