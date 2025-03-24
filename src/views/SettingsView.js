@@ -9,6 +9,10 @@ window.SettingsView = (() => {
   let requestStorageBtn = null;
   let exportDataBtn = null;
   let importDataInput = null;
+  let firebaseSignInBtn = null;
+  let firebaseSignOutBtn = null;
+  let firebaseStatusText = null;
+  let firebaseEnabledToggle = null;
 
   /**
    * Initialize the settings view
@@ -59,6 +63,25 @@ window.SettingsView = (() => {
         </div>
 
         <div class="settings-section">
+          <h3>Cloud Storage (Firebase)</h3>
+          <div class="firebase-status">
+            <p id="firebase-status-text">Not connected to Firebase</p>
+            <div class="firebase-buttons">
+              <button id="firebase-signin-btn" class="btn btn-primary">
+                Sign in with Google
+              </button>
+              <button id="firebase-signout-btn" class="btn btn-secondary" style="display: none;">
+                Sign Out
+              </button>
+              <div class="firebase-toggle" style="margin-top: 10px;">
+                <input type="checkbox" id="firebase-enabled-toggle" />
+                <label for="firebase-enabled-toggle">Use Firebase for data storage</label>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="settings-section">
           <h3>Data Management</h3>
           <div class="settings-actions">
             <button id="export-data-btn" class="btn btn-secondary">
@@ -81,6 +104,10 @@ window.SettingsView = (() => {
     requestStorageBtn = document.getElementById("request-storage-btn");
     exportDataBtn = document.getElementById("export-data-btn");
     importDataInput = document.getElementById("import-data-input");
+    firebaseSignInBtn = document.getElementById("firebase-signin-btn");
+    firebaseSignOutBtn = document.getElementById("firebase-signout-btn");
+    firebaseStatusText = document.getElementById("firebase-status-text");
+    firebaseEnabledToggle = document.getElementById("firebase-enabled-toggle");
   }
 
   /**
@@ -107,6 +134,178 @@ window.SettingsView = (() => {
     // Import data input
     if (importDataInput) {
       importDataInput.addEventListener("change", handleFileImport);
+    }
+    
+    // Firebase sign in button
+    if (firebaseSignInBtn) {
+      firebaseSignInBtn.addEventListener("click", signInWithFirebase);
+    }
+    
+    // Firebase sign out button
+    if (firebaseSignOutBtn) {
+      firebaseSignOutBtn.addEventListener("click", signOutFromFirebase);
+    }
+    
+    // Firebase enabled toggle
+    if (firebaseEnabledToggle) {
+      firebaseEnabledToggle.addEventListener("change", toggleFirebaseEnabled);
+    }
+    
+    // Listen for Firebase auth state changes
+    window.addEventListener('firebase-user-signed-in', updateFirebaseUI);
+    window.addEventListener('firebase-user-signed-out', updateFirebaseUI);
+  }
+  
+  /**
+   * Sign in with Firebase using Google authentication
+   */
+  async function signInWithFirebase() {
+    try {
+      // Check if Firebase module is available
+      if (typeof Firebase === 'undefined') {
+        // Load Firebase dynamically
+        await loadFirebaseModule();
+      }
+      
+      // Show loading status
+      firebaseStatusText.textContent = "Signing in...";
+      
+      // Sign in with Google
+      const result = await Firebase.signInWithGoogle();
+      
+      if (result.success) {
+        StatusMessage.show("Successfully signed in to Firebase!", 2000, true);
+      } else {
+        StatusMessage.show("Failed to sign in: " + result.error);
+      }
+      
+      updateFirebaseUI();
+    } catch (error) {
+      console.error("Error signing in to Firebase:", error);
+      StatusMessage.show("Error connecting to Firebase: " + error.message);
+      firebaseStatusText.textContent = "Error connecting to Firebase";
+    }
+  }
+  
+  /**
+   * Sign out from Firebase
+   */
+  async function signOutFromFirebase() {
+    try {
+      if (typeof Firebase === 'undefined') {
+        return;
+      }
+      
+      firebaseStatusText.textContent = "Signing out...";
+      
+      const result = await Firebase.signOut();
+      
+      if (result.success) {
+        StatusMessage.show("Successfully signed out", 2000, true);
+      } else {
+        StatusMessage.show("Failed to sign out: " + result.error);
+      }
+      
+      updateFirebaseUI();
+    } catch (error) {
+      console.error("Error signing out from Firebase:", error);
+      StatusMessage.show("Error signing out: " + error.message);
+    }
+  }
+  
+  /**
+   * Toggle Firebase enabled state
+   */
+  function toggleFirebaseEnabled(e) {
+    const isEnabled = e.target.checked;
+    
+    if (isEnabled) {
+      // Enable Firebase
+      if (typeof Firebase === 'undefined' || !Firebase.isSignedIn()) {
+        // Can't enable Firebase if not signed in
+        StatusMessage.show("You must sign in to Firebase first");
+        e.target.checked = false;
+        return;
+      }
+      
+      const success = Database.enableFirebase();
+      if (success) {
+        StatusMessage.show("Firebase storage enabled! Your notes will sync to the cloud.", 3000, true);
+      } else {
+        StatusMessage.show("Failed to enable Firebase storage");
+        e.target.checked = false;
+      }
+    } else {
+      // Disable Firebase
+      Database.disableFirebase();
+      StatusMessage.show("Firebase storage disabled. Your notes will only be stored locally.", 3000, true);
+    }
+  }
+  
+  /**
+   * Update the Firebase UI based on authentication state
+   */
+  function updateFirebaseUI() {
+    if (typeof Firebase === 'undefined') {
+      firebaseStatusText.textContent = "Firebase not loaded";
+      firebaseSignInBtn.style.display = "inline-block";
+      firebaseSignOutBtn.style.display = "none";
+      firebaseEnabledToggle.disabled = true;
+      firebaseEnabledToggle.checked = false;
+      return;
+    }
+    
+    if (Firebase.isSignedIn()) {
+      const user = Firebase.getCurrentUser();
+      firebaseStatusText.textContent = `Signed in as: ${user.email || user.displayName || 'Unknown user'}`;
+      firebaseSignInBtn.style.display = "none";
+      firebaseSignOutBtn.style.display = "inline-block";
+      firebaseEnabledToggle.disabled = false;
+      firebaseEnabledToggle.checked = Database.isFirebaseEnabled();
+    } else {
+      firebaseStatusText.textContent = "Not signed in to Firebase";
+      firebaseSignInBtn.style.display = "inline-block";
+      firebaseSignOutBtn.style.display = "none";
+      firebaseEnabledToggle.disabled = true;
+      firebaseEnabledToggle.checked = false;
+    }
+  }
+  
+  /**
+   * Load the Firebase module dynamically
+   */
+  async function loadFirebaseModule() {
+    try {
+      if (typeof Firebase !== 'undefined') {
+        return Promise.resolve();
+      }
+      
+      // Load Firebase script
+      const script = document.createElement('script');
+      script.src = 'modules/Firebase.js';
+      document.head.appendChild(script);
+      
+      // Wait for script to load
+      await new Promise((resolve, reject) => {
+        script.onload = () => {
+          if (typeof Firebase !== 'undefined') {
+            // Initialize Firebase
+            Firebase.init();
+            resolve();
+          } else {
+            reject(new Error('Firebase module not found after loading script'));
+          }
+        };
+        script.onerror = () => reject(new Error('Failed to load Firebase script'));
+      });
+      
+      // Load Firebase SDK
+      await Firebase.loadFirebase();
+      
+      return Promise.resolve();
+    } catch (error) {
+      console.error("Error loading Firebase module:", error);
+      return Promise.reject(error);
     }
   }
 
@@ -233,6 +432,17 @@ window.SettingsView = (() => {
    */
   function show() {
     checkPersistentStorage();
+    
+    // Try to load and initialize Firebase if not already loaded
+    if (typeof Firebase === 'undefined') {
+      loadFirebaseModule().then(() => {
+        updateFirebaseUI();
+      }).catch(error => {
+        console.error("Failed to load Firebase:", error);
+      });
+    } else {
+      updateFirebaseUI();
+    }
   }
 
   /**

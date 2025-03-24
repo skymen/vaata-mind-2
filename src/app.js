@@ -33,6 +33,11 @@ const App = (() => {
       if (typeof Database !== "undefined") {
         Database.init();
       }
+      
+      // Initialize Firebase if available
+      if (typeof Firebase !== "undefined") {
+        Firebase.init();
+      }
 
       // Register keyboard event handlers
       registerGlobalKeyboardHandlers();

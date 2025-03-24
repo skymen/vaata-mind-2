@@ -6,6 +6,7 @@ const Database = (() => {
   // Private variables
   let notes = [];
   let probabilities = {}; // For recommendation mode - only used in memory, not saved
+  let useFirebase = false; // Whether to use Firebase for data storage
 
   /**
    * Generate a unique ID for a note
@@ -62,6 +63,8 @@ const Database = (() => {
     if (savedData) {
       const parsed = JSON.parse(savedData);
       notes = parsed.notes || [];
+      // Load Firebase preference if available
+      useFirebase = parsed.useFirebase || false;
       // Don't load probabilities from storage, initialize fresh
       probabilities = {};
     }
@@ -86,7 +89,18 @@ const Database = (() => {
       }
     });
 
-    initializeNotes(); // Add this line to process all notes
+    initializeNotes(); // Process all notes
+    
+    // Set up Firebase-related listeners for data synchronization
+    if (typeof window !== 'undefined') {
+      // Listen for Firebase sign-in events
+      window.addEventListener('firebase-user-signed-in', async () => {
+        if (useFirebase) {
+          // User signed in and Firebase is enabled, sync data
+          await Firebase.syncData();
+        }
+      });
+    }
 
     return this; // Enable method chaining
   }
@@ -100,9 +114,19 @@ const Database = (() => {
       Constants.STORAGE_KEY,
       JSON.stringify({
         notes: notes,
+        useFirebase: useFirebase
         // Don't save probabilities
       })
     );
+    
+    // If Firebase is enabled, sync with Firestore
+    if (useFirebase && typeof Firebase !== 'undefined' && Firebase.isSignedIn()) {
+      // We don't need to await this, it can happen in the background
+      Firebase.syncData().catch(error => {
+        console.error('Error syncing with Firebase:', error);
+      });
+    }
+    
     return this; // Enable method chaining
   }
 
@@ -129,6 +153,13 @@ const Database = (() => {
     processNoteObject(newNote); // Process before adding
     notes.push(newNote);
     saveChanges();
+    
+    // If Firebase is enabled and user is signed in, also save to Firestore
+    if (useFirebase && typeof Firebase !== 'undefined' && Firebase.isSignedIn()) {
+      Firebase.addNote(newNote).catch(error => {
+        console.error('Error adding note to Firebase:', error);
+      });
+    }
 
     return newNote;
   }
@@ -166,6 +197,13 @@ const Database = (() => {
     processNoteObject(updatedNote); // Process before updating
     notes[noteIndex] = updatedNote;
     saveChanges();
+    
+    // If Firebase is enabled and user is signed in, also update in Firestore
+    if (useFirebase && typeof Firebase !== 'undefined' && Firebase.isSignedIn()) {
+      Firebase.updateNote(updatedNote).catch(error => {
+        console.error('Error updating note in Firebase:', error);
+      });
+    }
 
     return updatedNote;
   }
@@ -181,6 +219,14 @@ const Database = (() => {
       notes.splice(noteIndex, 1);
       delete probabilities[id];
       save();
+      
+      // If Firebase is enabled and user is signed in, also delete from Firestore
+      if (useFirebase && typeof Firebase !== 'undefined' && Firebase.isSignedIn()) {
+        Firebase.deleteNote(id).catch(error => {
+          console.error('Error deleting note from Firebase:', error);
+        });
+      }
+      
       return true;
     }
     return false;
@@ -475,6 +521,112 @@ const Database = (() => {
   function initializeNotes() {
     notes.forEach((note) => processNoteObject(note));
   }
+  
+  /**
+   * Enable Firebase integration
+   * @returns {boolean} Success status
+   */
+  function enableFirebase() {
+    if (typeof Firebase === 'undefined') {
+      console.error('Firebase module not loaded');
+      return false;
+    }
+    
+    useFirebase = true;
+    save(); // Save the preference
+    
+    // If already signed in to Firebase, sync data immediately
+    if (Firebase.isSignedIn()) {
+      Firebase.syncData().catch(error => {
+        console.error('Error syncing with Firebase:', error);
+      });
+    }
+    
+    return true;
+  }
+  
+  /**
+   * Disable Firebase integration
+   */
+  function disableFirebase() {
+    useFirebase = false;
+    save(); // Save the preference
+    return true;
+  }
+  
+  /**
+   * Check if Firebase integration is enabled
+   * @returns {boolean} True if Firebase is enabled
+   */
+  function isFirebaseEnabled() {
+    return useFirebase;
+  }
+  
+  /**
+   * Merge data from Firestore with local data
+   * This handles conflict resolution by using the most recently updated version
+   * @param {Array} firestoreNotes - Array of notes from Firestore
+   * @returns {boolean} Success status
+   */
+  function mergeFirestoreData(firestoreNotes) {
+    try {
+      if (!Array.isArray(firestoreNotes)) {
+        console.error('Invalid Firestore data format');
+        return false;
+      }
+      
+      // Create a map of existing notes by ID for quick lookup
+      const existingNotesMap = {};
+      notes.forEach(note => {
+        existingNotesMap[note.id] = note;
+      });
+      
+      // Process each note from Firestore
+      firestoreNotes.forEach(firestoreNote => {
+        // Make sure the note has all required fields
+        if (!firestoreNote.id || !firestoreNote.updatedAt) {
+          console.warn('Skipping invalid Firestore note:', firestoreNote);
+          return;
+        }
+        
+        const existingNote = existingNotesMap[firestoreNote.id];
+        
+        if (!existingNote) {
+          // New note from Firestore - add it locally
+          processNoteObject(firestoreNote);
+          notes.push(firestoreNote);
+          probabilities[firestoreNote.id] = 1.0;
+        } else {
+          // Note exists locally - compare timestamps to resolve conflict
+          const firestoreDate = new Date(firestoreNote.updatedAt);
+          const localDate = new Date(existingNote.updatedAt);
+          
+          // If Firestore has a newer version, update local
+          if (firestoreDate > localDate) {
+            const noteIndex = notes.findIndex(n => n.id === firestoreNote.id);
+            if (noteIndex !== -1) {
+              processNoteObject(firestoreNote);
+              notes[noteIndex] = firestoreNote;
+            }
+          }
+        }
+      });
+      
+      // Save changes to localStorage without triggering another Firestore sync
+      localStorage.setItem(
+        Constants.STORAGE_KEY,
+        JSON.stringify({
+          notes: notes,
+          useFirebase: useFirebase
+        })
+      );
+      
+      return true;
+    } catch (error) {
+      console.error('Error merging Firestore data:', error);
+      return false;
+    }
+  }
 
   // Public API
   return {
@@ -493,5 +645,9 @@ const Database = (() => {
     importData,
     getAllNotes,
     getNbNotes,
+    enableFirebase,
+    disableFirebase,
+    isFirebaseEnabled,
+    mergeFirestoreData
   };
 })();
