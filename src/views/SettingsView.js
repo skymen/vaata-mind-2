@@ -13,6 +13,9 @@ window.SettingsView = (() => {
   let firebaseSignOutBtn = null;
   let firebaseStatusText = null;
   let firebaseEnabledToggle = null;
+  let manualSyncButton = null;
+  let lastSyncTimeElement = null;
+  let syncIntervalInput = null;
 
   /**
    * Initialize the settings view
@@ -77,6 +80,22 @@ window.SettingsView = (() => {
                 <input type="checkbox" id="firebase-enabled-toggle" />
                 <label for="firebase-enabled-toggle">Use Firebase for data storage</label>
               </div>
+              <div class="sync-controls" style="margin-top: 10px;">
+                <button id="manual-sync-button" class="btn btn-secondary">
+                  <i class="fa fa-sync"></i> Sync Now
+                </button>
+                <span id="last-sync-time" style="margin-left: 10px; font-size: 0.8em; color: #666;">Never synced</span>
+              </div>
+              <div class="sync-interval" style="margin-top: 10px;">
+                <label for="sync-interval-input">Sync every</label>
+                <select id="sync-interval-input" class="form-control">
+                  <option value="1">1 minute</option>
+                  <option value="5" selected>5 minutes</option>
+                  <option value="15">15 minutes</option>
+                  <option value="30">30 minutes</option>
+                  <option value="60">60 minutes</option>
+                </select>
+              </div>
             </div>
           </div>
         </div>
@@ -108,6 +127,9 @@ window.SettingsView = (() => {
     firebaseSignOutBtn = document.getElementById("firebase-signout-btn");
     firebaseStatusText = document.getElementById("firebase-status-text");
     firebaseEnabledToggle = document.getElementById("firebase-enabled-toggle");
+    manualSyncButton = document.getElementById("manual-sync-button");
+    lastSyncTimeElement = document.getElementById("last-sync-time");
+    syncIntervalInput = document.getElementById("sync-interval-input");
   }
 
   /**
@@ -149,6 +171,22 @@ window.SettingsView = (() => {
     // Firebase enabled toggle
     if (firebaseEnabledToggle) {
       firebaseEnabledToggle.addEventListener("change", toggleFirebaseEnabled);
+    }
+    
+    // Manual sync button
+    if (manualSyncButton) {
+      manualSyncButton.addEventListener("click", triggerManualSync);
+    }
+    
+    // Sync interval input
+    if (syncIntervalInput) {
+      syncIntervalInput.addEventListener("change", changeSyncInterval);
+      
+      // Load saved interval from localStorage
+      const savedInterval = localStorage.getItem('syncIntervalMinutes');
+      if (savedInterval) {
+        syncIntervalInput.value = savedInterval;
+      }
     }
     
     // Listen for Firebase auth state changes
@@ -252,6 +290,10 @@ window.SettingsView = (() => {
       firebaseSignOutBtn.style.display = "none";
       firebaseEnabledToggle.disabled = true;
       firebaseEnabledToggle.checked = false;
+      
+      // Disable sync controls
+      if (manualSyncButton) manualSyncButton.disabled = true;
+      if (syncIntervalInput) syncIntervalInput.disabled = true;
       return;
     }
     
@@ -262,12 +304,26 @@ window.SettingsView = (() => {
       firebaseSignOutBtn.style.display = "inline-block";
       firebaseEnabledToggle.disabled = false;
       firebaseEnabledToggle.checked = Database.isFirebaseEnabled();
+      
+      // Update sync controls
+      const isEnabled = Database.isFirebaseEnabled();
+      if (manualSyncButton) manualSyncButton.disabled = !isEnabled;
+      if (syncIntervalInput) syncIntervalInput.disabled = !isEnabled;
+      
+      // Update last sync time
+      if (isEnabled) {
+        updateLastSyncTime();
+      }
     } else {
       firebaseStatusText.textContent = "Not signed in to Firebase";
       firebaseSignInBtn.style.display = "inline-block";
       firebaseSignOutBtn.style.display = "none";
       firebaseEnabledToggle.disabled = true;
       firebaseEnabledToggle.checked = false;
+      
+      // Disable sync controls
+      if (manualSyncButton) manualSyncButton.disabled = true;
+      if (syncIntervalInput) syncIntervalInput.disabled = true;
     }
   }
   
@@ -461,6 +517,94 @@ window.SettingsView = (() => {
       e.preventDefault();
       ViewManager.showView(Constants.VIEWS.MENU);
     }
+  }
+
+  /**
+   * Trigger a manual sync with Firebase
+   */
+  async function triggerManualSync() {
+    try {
+      if (typeof Firebase === 'undefined' || !Firebase.isSignedIn() || !Database.isFirebaseEnabled()) {
+        StatusMessage.show("Cannot sync: Firebase is not enabled or you're not signed in");
+        return;
+      }
+      
+      // Show syncing state
+      manualSyncButton.disabled = true;
+      manualSyncButton.innerHTML = '<i class="fa fa-sync fa-spin"></i> Syncing...';
+      
+      // Trigger sync
+      const result = await Firebase.performSync('manual');
+      
+      if (result.success) {
+        StatusMessage.show("Successfully synced with cloud!", 2000, true);
+      } else {
+        StatusMessage.show("Sync failed: " + (result.error || "Unknown error"));
+      }
+      
+      // Update UI with last sync time
+      updateLastSyncTime();
+      
+    } catch (error) {
+      console.error("Error syncing with Firebase:", error);
+      StatusMessage.show("Sync error: " + error.message);
+    } finally {
+      // Reset button state
+      manualSyncButton.disabled = false;
+      manualSyncButton.innerHTML = '<i class="fa fa-sync"></i> Sync Now';
+    }
+  }
+  
+  /**
+   * Change the sync interval
+   * @param {Event} e - Change event from select input
+   */
+  function changeSyncInterval(e) {
+    const minutes = parseInt(e.target.value, 10);
+    
+    if (typeof Firebase !== 'undefined') {
+      Firebase.setSyncInterval(minutes);
+      StatusMessage.show(`Sync interval set to ${minutes} minute${minutes === 1 ? '' : 's'}`, 2000, true);
+    }
+  }
+  
+  /**
+   * Update the last sync time display
+   */
+  function updateLastSyncTime() {
+    if (!lastSyncTimeElement || typeof Firebase === 'undefined') return;
+    
+    const lastSync = Firebase.getLastSyncTime();
+    
+    if (lastSync) {
+      const timeAgo = getTimeAgo(lastSync);
+      lastSyncTimeElement.textContent = `Last synced: ${timeAgo}`;
+    } else {
+      lastSyncTimeElement.textContent = 'Never synced';
+    }
+  }
+  
+  /**
+   * Get human-readable time ago string
+   * @param {Date} date - Date to format
+   * @returns {string} Human readable string
+   */
+  function getTimeAgo(date) {
+    if (!date) return 'never';
+    
+    const now = new Date();
+    const seconds = Math.floor((now - date) / 1000);
+    
+    if (seconds < 60) return 'just now';
+    
+    const minutes = Math.floor(seconds / 60);
+    if (minutes < 60) return `${minutes}m ago`;
+    
+    const hours = Math.floor(minutes / 60);
+    if (hours < 24) return `${hours}h ago`;
+    
+    const days = Math.floor(hours / 24);
+    return `${days}d ago`;
   }
 
   // Public API

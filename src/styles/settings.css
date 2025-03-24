@@ -110,3 +110,45 @@ label.btn {
   font-size: 15px;
   cursor: pointer;
 }
+
+/* Sync controls styling */
+.sync-controls {
+  display: flex;
+  align-items: center;
+}
+
+#manual-sync-button {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+#manual-sync-button i {
+  font-size: 14px;
+}
+
+#manual-sync-button.syncing i {
+  animation: spin 1s infinite linear;
+}
+
+.sync-interval {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.sync-interval label {
+  font-size: 14px;
+}
+
+.sync-interval select {
+  padding: 4px 8px;
+  border-radius: 4px;
+  border: 1px solid #ddd;
+  background-color: #f9f9f9;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
