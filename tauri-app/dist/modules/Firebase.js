@@ -11,6 +11,7 @@ const Firebase = (() => {
   let currentUser = null;
   let isInitialized = false;
   let isOffline = false;
+  let attemptedAutoLogin = false;
   
   // Sync management
   let syncInterval = null;
@@ -586,6 +587,84 @@ const Firebase = (() => {
     }
   }
   
+  /**
+   * Check if Firebase is initialized
+   * @returns {boolean} True if Firebase is initialized
+   */
+  function getInitializationStatus() {
+    return isInitialized;
+  }
+  
+  /**
+   * Try to automatically restore previous Firebase session
+   * @param {boolean} silent - Whether to show status messages
+   * @returns {Promise} Promise that resolves with login status
+   */
+  async function tryAutoLogin(silent = false) {
+    if (attemptedAutoLogin) {
+      return { success: isSignedIn() };
+    }
+    
+    attemptedAutoLogin = true;
+    
+    if (!isInitialized) {
+      try {
+        await loadFirebase();
+      } catch (error) {
+        console.error('Error loading Firebase during auto-login:', error);
+        return { success: false, error };
+      }
+    }
+    
+    // Wait a short time for Firebase auth to initialize and restore session
+    return new Promise(resolve => {
+      // If already signed in, resolve immediately
+      if (isSignedIn()) {
+        if (!silent) {
+          const user = getCurrentUser();
+          StatusMessage.show(`Welcome back, ${user.displayName || user.email || 'User'}!`, 2000, true);
+        }
+        
+        // If Firebase is enabled in Database, start syncing
+        if (Database.isFirebaseEnabled() && !isOffline) {
+          startPeriodicSync();
+          performSync('auto-login');
+        }
+        
+        resolve({ success: true, user: currentUser });
+        return;
+      }
+      
+      // Otherwise, wait briefly to see if auth state changes
+      const timeout = setTimeout(() => {
+        resolve({ success: isSignedIn(), user: currentUser });
+      }, 2000);
+      
+      // If auth state changes before timeout, resolve early
+      const authStateListener = () => {
+        if (isSignedIn()) {
+          clearTimeout(timeout);
+          
+          if (!silent) {
+            const user = getCurrentUser();
+            StatusMessage.show(`Welcome back, ${user.displayName || user.email || 'User'}!`, 2000, true);
+          }
+          
+          // If Firebase is enabled in Database, start syncing
+          if (Database.isFirebaseEnabled() && !isOffline) {
+            startPeriodicSync();
+            performSync('auto-login');
+          }
+          
+          window.removeEventListener('firebase-user-signed-in', authStateListener);
+          resolve({ success: true, user: currentUser });
+        }
+      };
+      
+      window.addEventListener('firebase-user-signed-in', authStateListener);
+    });
+  }
+  
   // Public API
   return {
     init,
@@ -603,6 +682,8 @@ const Firebase = (() => {
     performSync,
     setSyncInterval,
     isSyncInProgress,
-    getLastSyncTime
+    getLastSyncTime,
+    getInitializationStatus,
+    tryAutoLogin
   };
 })();

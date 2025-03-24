@@ -404,7 +404,7 @@ window.SettingsView = (() => {
         const isPersisted = await navigator.storage.persisted();
 
         if (isPersisted) {
-          StatusMessage.show("Persistent storage is already granted");
+          //StatusMessage.show("Persistent storage is already granted");
           requestStorageBtn.disabled = true;
         } else {
           requestStorageBtn.disabled = false;
@@ -497,6 +497,8 @@ window.SettingsView = (() => {
         console.error("Failed to load Firebase:", error);
       });
     } else {
+      // If Firebase is already loaded, we don't need to attempt login manually
+      // Just update the UI to reflect current state
       updateFirebaseUI();
     }
   }

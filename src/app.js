@@ -34,9 +34,14 @@ const App = (() => {
         Database.init();
       }
       
-      // Initialize Firebase if available
+      // Initialize Firebase if available and try to auto-login
       if (typeof Firebase !== "undefined") {
         Firebase.init();
+        // Auto login immediately after initialization
+        tryAutoLoginFirebase();
+      } else {
+        // Dynamically load Firebase and then try to auto-login
+        loadFirebaseAndLogin();
       }
 
       // Register keyboard event handlers
@@ -295,6 +300,62 @@ const App = (() => {
    */
   function isInitialized() {
     return appInitialized;
+  }
+
+  /**
+   * Try to automatically log in to Firebase using previous credentials
+   */
+  async function tryAutoLoginFirebase() {
+    try {
+      if (typeof Firebase === 'undefined') return;
+      
+      console.log("App: Attempting automatic Firebase login...");
+      
+      // Use the new Firebase.tryAutoLogin method
+      const result = await Firebase.tryAutoLogin(false);
+      
+      if (result.success) {
+        console.log("App: Firebase auto-login successful");
+      } else {
+        console.log("App: Firebase auto-login - no session to restore");
+      }
+    } catch (error) {
+      console.error("App: Error during Firebase auto-login:", error);
+    }
+  }
+  
+  /**
+   * Load Firebase module dynamically and try to login
+   */
+  async function loadFirebaseAndLogin() {
+    try {
+      console.log("App: Loading Firebase module dynamically...");
+      
+      // Load Firebase script
+      const script = document.createElement('script');
+      script.src = 'modules/Firebase.js';
+      document.head.appendChild(script);
+      
+      // Wait for script to load
+      await new Promise((resolve, reject) => {
+        script.onload = () => {
+          if (typeof Firebase !== 'undefined') {
+            // Initialize Firebase
+            Firebase.init();
+            resolve();
+          } else {
+            reject(new Error('Firebase module not found after loading script'));
+          }
+        };
+        script.onerror = () => reject(new Error('Failed to load Firebase script'));
+      });
+      
+      // Try to auto-login after Firebase is loaded
+      tryAutoLoginFirebase();
+      
+    } catch (error) {
+      console.error("App: Error loading Firebase module:", error);
+    }
   }
 
   // Initialize on DOMContentLoaded
