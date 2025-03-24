@@ -9,19 +9,19 @@ window.SettingsView = (() => {
   let requestStorageBtn = null;
   let exportDataBtn = null;
   let importDataInput = null;
-  
+
   // Account elements
   let firebaseSignInBtn = null;
   let firebaseSignOutBtn = null;
   let firebaseStatusText = null;
-  
+
   // Subscription elements
   let subscriptionSection = null;
   let subscriptionText = null;
   let subscriptionBtn = null;
   let subscriptionFeatures = null;
   let pricingOptions = null;
-  
+
   // Cloud storage elements
   let cloudStorageSection = null;
   let firebaseEnabledToggle = null;
@@ -195,19 +195,19 @@ window.SettingsView = (() => {
     requestStorageBtn = document.getElementById("request-storage-btn");
     exportDataBtn = document.getElementById("export-data-btn");
     importDataInput = document.getElementById("import-data-input");
-    
+
     // Account elements
     firebaseSignInBtn = document.getElementById("firebase-signin-btn");
     firebaseSignOutBtn = document.getElementById("firebase-signout-btn");
     firebaseStatusText = document.getElementById("firebase-status-text");
-    
+
     // Subscription elements
     subscriptionSection = document.getElementById("subscription-section");
     subscriptionText = document.getElementById("subscription-text");
     subscriptionBtn = document.getElementById("subscription-btn");
     subscriptionFeatures = document.getElementById("subscription-features");
     pricingOptions = document.getElementById("pricing-options");
-    
+
     // Cloud storage elements
     cloudStorageSection = document.getElementById("cloud-storage-section");
     firebaseEnabledToggle = document.getElementById("firebase-enabled-toggle");
@@ -241,32 +241,40 @@ window.SettingsView = (() => {
     if (importDataInput) {
       importDataInput.addEventListener("change", handleFileImport);
     }
-    
+
     // Firebase sign in button
     if (firebaseSignInBtn) {
       firebaseSignInBtn.addEventListener("click", signInWithFirebase);
     }
-    
+
     // Firebase sign out button
     if (firebaseSignOutBtn) {
       firebaseSignOutBtn.addEventListener("click", signOutFromFirebase);
     }
-    
+
     // Subscription button
     if (subscriptionBtn) {
       subscriptionBtn.addEventListener("click", async () => {
-        if (typeof Firebase !== 'undefined' && Firebase.isSignedIn()) {
+        if (typeof Firebase !== "undefined" && Firebase.isSignedIn()) {
           const isPremium = await Firebase.isPremiumUser();
           if (isPremium) {
             // Open customer portal for premium users
             try {
-              StatusMessage.show("Opening subscription management...", 2000, true);
+              StatusMessage.show(
+                "Opening subscription management...",
+                2000,
+                true
+              );
               const result = await Firebase.getCustomerPortalUrl();
-              
+
               if (result.success && result.url) {
                 window.location.assign(result.url);
               } else {
-                StatusMessage.show("Failed to open subscription management", 3000, false);
+                StatusMessage.show(
+                  "Failed to open subscription management",
+                  3000,
+                  false
+                );
               }
             } catch (error) {
               console.error("Portal error:", error);
@@ -279,56 +287,56 @@ window.SettingsView = (() => {
         }
       });
     }
-    
+
     // Firebase enabled toggle
     if (firebaseEnabledToggle) {
       firebaseEnabledToggle.addEventListener("change", toggleFirebaseEnabled);
     }
-    
+
     // Manual sync button
     if (manualSyncButton) {
       manualSyncButton.addEventListener("click", triggerManualSync);
     }
-    
+
     // Sync interval input
     if (syncIntervalInput) {
       syncIntervalInput.addEventListener("change", changeSyncInterval);
-      
+
       // Load saved interval from localStorage
-      const savedInterval = localStorage.getItem('syncIntervalMinutes');
+      const savedInterval = localStorage.getItem("syncIntervalMinutes");
       if (savedInterval) {
         syncIntervalInput.value = savedInterval;
       }
     }
-    
+
     // Listen for Firebase auth state changes
-    window.addEventListener('firebase-user-signed-in', updateFirebaseUI);
-    window.addEventListener('firebase-user-signed-out', updateFirebaseUI);
+    window.addEventListener("firebase-user-signed-in", updateFirebaseUI);
+    window.addEventListener("firebase-user-signed-out", updateFirebaseUI);
   }
-  
+
   /**
    * Sign in with Firebase using Google authentication
    */
   async function signInWithFirebase() {
     try {
       // Check if Firebase module is available
-      if (typeof Firebase === 'undefined') {
+      if (typeof Firebase === "undefined") {
         // Load Firebase dynamically
         await loadFirebaseModule();
       }
-      
+
       // Show loading status
       firebaseStatusText.textContent = "Signing in...";
-      
+
       // Sign in with Google
       const result = await Firebase.signInWithGoogle();
-      
+
       if (result.success) {
         StatusMessage.show("Successfully signed in to Firebase!", 2000, true);
       } else {
         StatusMessage.show("Failed to sign in: " + result.error);
       }
-      
+
       updateFirebaseUI();
     } catch (error) {
       console.error("Error signing in to Firebase:", error);
@@ -336,62 +344,70 @@ window.SettingsView = (() => {
       firebaseStatusText.textContent = "Error connecting to Firebase";
     }
   }
-  
+
   /**
    * Sign out from Firebase
    */
   async function signOutFromFirebase() {
     try {
-      if (typeof Firebase === 'undefined') {
+      if (typeof Firebase === "undefined") {
         return;
       }
-      
+
       firebaseStatusText.textContent = "Signing out...";
-      
+
       const result = await Firebase.signOut();
-      
+
       if (result.success) {
         StatusMessage.show("Successfully signed out", 2000, true);
       } else {
         StatusMessage.show("Failed to sign out: " + result.error);
       }
-      
+
       updateFirebaseUI();
     } catch (error) {
       console.error("Error signing out from Firebase:", error);
       StatusMessage.show("Error signing out: " + error.message);
     }
   }
-  
+
   /**
    * Toggle Firebase enabled state
    */
   async function toggleFirebaseEnabled(e) {
     const isEnabled = e.target.checked;
-    
+
     if (isEnabled) {
       // Enable Firebase
-      if (typeof Firebase === 'undefined' || !Firebase.isSignedIn()) {
+      if (typeof Firebase === "undefined" || !Firebase.isSignedIn()) {
         // Can't enable Firebase if not signed in
         StatusMessage.show("You must sign in to Firebase first");
         e.target.checked = false;
         return;
       }
-      
+
       // Check if user has premium subscription
       const isPremium = await Firebase.isPremiumUser();
       if (!isPremium) {
-        StatusMessage.show("Premium subscription required for cloud storage", 3000, false);
+        StatusMessage.show(
+          "Premium subscription required for cloud storage",
+          3000,
+          false
+        );
         e.target.checked = false;
-        
+
         // Show upgrade prompt
         showUpgradePrompt();
         return;
       }
-      
+
       const success = await Database.enableFirebase();
       if (success) {
-        StatusMessage.show("Firebase storage enabled! Your notes will sync to the cloud.", 3000, true);
+        StatusMessage.show(
+          "Firebase storage enabled! Your notes will sync to the cloud.",
+          3000,
+          true
+        );
       } else {
         StatusMessage.show("Failed to enable Firebase storage");
         e.target.checked = false;
@@ -399,10 +415,14 @@ window.SettingsView = (() => {
     } else {
       // Disable Firebase
       Database.disableFirebase();
-      StatusMessage.show("Firebase storage disabled. Your notes will only be stored locally.", 3000, true);
+      StatusMessage.show(
+        "Firebase storage disabled. Your notes will only be stored locally.",
+        3000,
+        true
+      );
     }
   }
-  
+
   /**
    * Show upgrade to premium prompt
    */
@@ -410,28 +430,32 @@ window.SettingsView = (() => {
     try {
       // Get product information
       const products = await Firebase.getProducts();
-      
+      debugger;
       if (products.length === 0) {
         StatusMessage.show("No subscription plans available", 3000, false);
         return;
       }
-      
+
       // Get the subscription product (there should only be one)
       const product = products[0];
-      
+
       if (!product || !product.prices || product.prices.length === 0) {
-        StatusMessage.show("Subscription plan information not available", 3000, false);
+        StatusMessage.show(
+          "Subscription plan information not available",
+          3000,
+          false
+        );
         return;
       }
-      
+
       // Find monthly and yearly prices
-      const monthlyPrice = product.prices.find(p => p.interval === 'month');
-      const yearlyPrice = product.prices.find(p => p.interval === 'year');
-      
+      const monthlyPrice = product.prices.find((p) => p.interval === "month");
+      const yearlyPrice = product.prices.find((p) => p.interval === "year");
+
       // Calculate pricing and savings information
-      let monthlyHtml = '';
-      let yearlyHtml = '';
-      
+      let monthlyHtml = "";
+      let yearlyHtml = "";
+
       if (monthlyPrice) {
         const amount = (monthlyPrice.unit_amount / 100).toFixed(2);
         const currency = monthlyPrice.currency.toUpperCase();
@@ -444,18 +468,18 @@ window.SettingsView = (() => {
           </div>
         `;
       }
-      
+
       if (yearlyPrice) {
         const yearAmount = (yearlyPrice.unit_amount / 100).toFixed(2);
         const currency = yearlyPrice.currency.toUpperCase();
-        
+
         if (monthlyPrice) {
           // Calculate savings when compared to monthly
-          const monthlyTotal = monthlyPrice.unit_amount * 12 / 100;
+          const monthlyTotal = (monthlyPrice.unit_amount * 12) / 100;
           const yearlyTotal = yearlyPrice.unit_amount / 100;
           const savings = monthlyTotal - yearlyTotal;
           const savingsPercent = Math.round((savings / monthlyTotal) * 100);
-          
+
           yearlyHtml = `
             <div class="pricing-option featured">
               <div class="best-value">Best Value</div>
@@ -477,7 +501,7 @@ window.SettingsView = (() => {
           `;
         }
       }
-      
+
       // Create enhanced premium dialog
       const dialogContent = `
         <div class="upgrade-dialog">
@@ -508,122 +532,140 @@ window.SettingsView = (() => {
           </div>
         </div>
       `;
-      
+
       // Show the dialog
-      const dialogElement = document.createElement('div');
-      dialogElement.className = 'dialog-overlay';
+      const dialogElement = document.createElement("div");
+      dialogElement.className = "dialog-overlay";
       dialogElement.innerHTML = dialogContent;
       document.body.appendChild(dialogElement);
-      
+
       // Add event listeners for closing the dialog
       const closeDialog = () => {
         document.body.removeChild(dialogElement);
       };
-      
-      const cancelBtn = document.getElementById('cancel-upgrade-btn');
-      const closeBtn = document.getElementById('dialog-close-btn');
-      if (cancelBtn) cancelBtn.addEventListener('click', closeDialog);
-      if (closeBtn) closeBtn.addEventListener('click', closeDialog);
-      
+
+      const cancelBtn = document.getElementById("cancel-upgrade-btn");
+      const closeBtn = document.getElementById("dialog-close-btn");
+      if (cancelBtn) cancelBtn.addEventListener("click", closeDialog);
+      if (closeBtn) closeBtn.addEventListener("click", closeDialog);
+
       // Add event listeners for the subscription options
-      const monthlyBtn = document.getElementById('monthly-option-btn');
-      const yearlyBtn = document.getElementById('yearly-option-btn');
-      
+      const monthlyBtn = document.getElementById("monthly-option-btn");
+      const yearlyBtn = document.getElementById("yearly-option-btn");
+
       if (monthlyBtn && monthlyPrice) {
-        monthlyBtn.addEventListener('click', () => {
+        monthlyBtn.addEventListener("click", () => {
           closeDialog();
           handleSubscription(monthlyPrice.id);
         });
       }
-      
+
       if (yearlyBtn && yearlyPrice) {
-        yearlyBtn.addEventListener('click', () => {
+        yearlyBtn.addEventListener("click", () => {
           closeDialog();
           handleSubscription(yearlyPrice.id);
         });
       }
-      
     } catch (error) {
       console.error("Error showing upgrade prompt:", error);
-      StatusMessage.show("Error preparing subscription information", 3000, false);
+      StatusMessage.show(
+        "Error preparing subscription information",
+        3000,
+        false
+      );
     }
   }
-  
+
   /**
    * Update the Firebase UI based on authentication state
    */
   async function updateFirebaseUI() {
-    if (typeof Firebase === 'undefined') {
+    if (typeof Firebase === "undefined") {
       // Update account section
       firebaseStatusText.textContent = "Firebase not loaded";
       firebaseSignInBtn.style.display = "inline-block";
       firebaseSignOutBtn.style.display = "none";
-      
+
       // Update subscription section
       if (subscriptionText) {
         subscriptionText.textContent = "Sign in to see subscription options";
       }
-      
+
       if (subscriptionBtn) {
         subscriptionBtn.style.display = "none";
       }
-      
+
       if (subscriptionFeatures) {
         subscriptionFeatures.style.display = "none";
       }
-      
+
       // Hide cloud storage section
       if (cloudStorageSection) {
         cloudStorageSection.style.display = "none";
       }
-      
+
       return;
     }
-    
+
     if (Firebase.isSignedIn()) {
       const user = Firebase.getCurrentUser();
-      
+
       // Check premium status
       const isPremium = await Firebase.isPremiumUser();
-      
+
       // Update account section
-      firebaseStatusText.textContent = `Signed in as: ${user.email || user.displayName || 'Unknown user'}`;
+      firebaseStatusText.textContent = `Signed in as: ${
+        user.email || user.displayName || "Unknown user"
+      }`;
       firebaseSignInBtn.style.display = "none";
       firebaseSignOutBtn.style.display = "inline-block";
-      
+
       // Update subscription section
       if (subscriptionText) {
         if (isPremium) {
-          subscriptionText.textContent = "You currently have a Premium subscription";
+          subscriptionText.textContent =
+            "You currently have a Premium subscription";
           subscriptionText.className = "premium-active";
         } else {
           subscriptionText.textContent = "You are currently on the Free plan";
           subscriptionText.className = "";
         }
       }
-      
+
       if (subscriptionBtn) {
         subscriptionBtn.style.display = "inline-block";
-        subscriptionBtn.textContent = isPremium ? "Manage Subscription" : "Upgrade to Premium";
-        subscriptionBtn.className = isPremium ? "btn btn-secondary" : "btn btn-primary";
-        
+        subscriptionBtn.textContent = isPremium
+          ? "Manage Subscription"
+          : "Upgrade to Premium";
+        subscriptionBtn.className = isPremium
+          ? "btn btn-secondary"
+          : "btn btn-primary";
+
         // Remove existing event listeners by cloning the button
         const newBtn = subscriptionBtn.cloneNode(true);
         subscriptionBtn.parentNode.replaceChild(newBtn, subscriptionBtn);
         subscriptionBtn = newBtn;
-        
+
         // Add click event
         subscriptionBtn.addEventListener("click", async () => {
           if (isPremium) {
             // Open customer portal for existing subscribers
             try {
-              StatusMessage.show("Opening subscription management...", 2000, true);
+              StatusMessage.show(
+                "Opening subscription management...",
+                2000,
+                true
+              );
               const result = await Firebase.getCustomerPortalUrl();
-              
+
               if (result.success && result.url) {
                 window.location.assign(result.url);
               } else {
-                StatusMessage.show("Failed to open subscription management", 3000, false);
+                StatusMessage.show(
+                  "Failed to open subscription management",
+                  3000,
+                  false
+                );
               }
             } catch (error) {
               console.error("Portal error:", error);
@@ -635,28 +677,28 @@ window.SettingsView = (() => {
           }
         });
       }
-      
+
       // Show subscription features and populate pricing options
       if (subscriptionFeatures) {
         subscriptionFeatures.style.display = "block";
         updatePricingOptions();
       }
-      
+
       // Update Cloud Storage section
       if (cloudStorageSection) {
         // Only show cloud storage section for premium users
         cloudStorageSection.style.display = isPremium ? "block" : "none";
-        
+
         if (isPremium) {
           // Update toggle and sync controls
           if (firebaseEnabledToggle) {
             firebaseEnabledToggle.checked = Database.isFirebaseEnabled();
           }
-          
+
           const isEnabled = Database.isFirebaseEnabled();
           if (manualSyncButton) manualSyncButton.disabled = !isEnabled;
           if (syncIntervalInput) syncIntervalInput.disabled = !isEnabled;
-          
+
           // Update last sync time if enabled
           if (isEnabled) {
             updateLastSyncTime();
@@ -673,76 +715,77 @@ window.SettingsView = (() => {
       firebaseStatusText.textContent = "Not signed in";
       firebaseSignInBtn.style.display = "inline-block";
       firebaseSignOutBtn.style.display = "none";
-      
+
       // Update subscription section
       if (subscriptionText) {
         subscriptionText.textContent = "Sign in to see subscription options";
         subscriptionText.className = "";
       }
-      
+
       if (subscriptionBtn) {
         subscriptionBtn.style.display = "none";
       }
-      
+
       if (subscriptionFeatures) {
         subscriptionFeatures.style.display = "none";
       }
-      
+
       // Hide cloud storage section
       if (cloudStorageSection) {
         cloudStorageSection.style.display = "none";
       }
     }
   }
-  
+
   /**
    * Update the pricing options display
    */
   async function updatePricingOptions() {
     if (!pricingOptions) return;
-    
+
     try {
       // Clear existing content
-      pricingOptions.innerHTML = '<div class="loading-pricing">Loading pricing options...</div>';
-      
+      pricingOptions.innerHTML =
+        '<div class="loading-pricing">Loading pricing options...</div>';
+
       // Get products from Firebase
       const products = await Firebase.getProducts();
-      
+
       if (products.length === 0) {
-        pricingOptions.innerHTML = '<p>No subscription plans available</p>';
+        pricingOptions.innerHTML = "<p>No subscription plans available</p>";
         return;
       }
-      
+
       // We only have one product, but it might have multiple pricing options
       const product = products[0];
-      
+
       if (!product || !product.prices || product.prices.length === 0) {
-        pricingOptions.innerHTML = '<p>Subscription details not available</p>';
+        pricingOptions.innerHTML = "<p>Subscription details not available</p>";
         return;
       }
-      
+
       // Sort prices by interval (monthly, then yearly)
       const sortedPrices = [...product.prices].sort((a, b) => {
         const intervals = { month: 1, year: 2 };
         return intervals[a.interval] - intervals[b.interval];
       });
-      
+
       // Find monthly and yearly prices
-      const monthlyPrice = sortedPrices.find(p => p.interval === 'month');
-      const yearlyPrice = sortedPrices.find(p => p.interval === 'year');
-      
+      const monthlyPrice = sortedPrices.find((p) => p.interval === "month");
+      const yearlyPrice = sortedPrices.find((p) => p.interval === "year");
+
       if (!monthlyPrice && !yearlyPrice) {
-        pricingOptions.innerHTML = '<p>No pricing options available</p>';
+        pricingOptions.innerHTML = "<p>No pricing options available</p>";
         return;
       }
-      
+
       // Create pricing cards HTML
       let pricingHTML = '<div class="pricing-cards">';
-      
+
       if (monthlyPrice) {
         const monthlyAmount = (monthlyPrice.unit_amount / 100).toFixed(2);
         const monthlyCurrency = monthlyPrice.currency.toUpperCase();
-        
+
         pricingHTML += `
           <div class="pricing-card">
             <div class="pricing-header">Monthly</div>
@@ -752,19 +795,23 @@ window.SettingsView = (() => {
           </div>
         `;
       }
-      
+
       if (yearlyPrice) {
         const yearlyAmount = (yearlyPrice.unit_amount / 100).toFixed(2);
         const yearlyCurrency = yearlyPrice.currency.toUpperCase();
-        
+
         // Calculate monthly equivalent and savings
         if (monthlyPrice) {
-          const effectiveMonthly = (yearlyPrice.unit_amount / 12 / 100).toFixed(2);
+          const effectiveMonthly = (yearlyPrice.unit_amount / 12 / 100).toFixed(
+            2
+          );
           const monthlyCost = monthlyPrice.unit_amount / 100;
           const yearlyCost = yearlyPrice.unit_amount / 100;
-          const annualSavings = ((monthlyCost * 12) - yearlyCost).toFixed(2);
-          const savingsPercent = Math.round(((monthlyCost * 12) - yearlyCost) / (monthlyCost * 12) * 100);
-          
+          const annualSavings = (monthlyCost * 12 - yearlyCost).toFixed(2);
+          const savingsPercent = Math.round(
+            ((monthlyCost * 12 - yearlyCost) / (monthlyCost * 12)) * 100
+          );
+
           pricingHTML += `
             <div class="pricing-card featured">
               <div class="pricing-badge">Best Value</div>
@@ -789,30 +836,33 @@ window.SettingsView = (() => {
           `;
         }
       }
-      
-      pricingHTML += '</div>';
-      
+
+      pricingHTML += "</div>";
+
       // Set the HTML content
       pricingOptions.innerHTML = pricingHTML;
-      
+
       // Add event listeners
-      const monthlyBtn = pricingOptions.querySelector('.monthly-plan-btn');
-      const yearlyBtn = pricingOptions.querySelector('.yearly-plan-btn');
-      
+      const monthlyBtn = pricingOptions.querySelector(".monthly-plan-btn");
+      const yearlyBtn = pricingOptions.querySelector(".yearly-plan-btn");
+
       if (monthlyBtn && monthlyPrice) {
-        monthlyBtn.addEventListener('click', () => handleSubscription(monthlyPrice.id));
+        monthlyBtn.addEventListener("click", () =>
+          handleSubscription(monthlyPrice.id)
+        );
       }
-      
+
       if (yearlyBtn && yearlyPrice) {
-        yearlyBtn.addEventListener('click', () => handleSubscription(yearlyPrice.id));
+        yearlyBtn.addEventListener("click", () =>
+          handleSubscription(yearlyPrice.id)
+        );
       }
-      
     } catch (error) {
-      console.error('Error updating pricing options:', error);
-      pricingOptions.innerHTML = '<p>Error loading pricing options</p>';
+      console.error("Error updating pricing options:", error);
+      pricingOptions.innerHTML = "<p>Error loading pricing options</p>";
     }
   }
-  
+
   /**
    * Handle subscription selection
    * @param {string} priceId - The selected price ID
@@ -821,7 +871,7 @@ window.SettingsView = (() => {
     try {
       StatusMessage.show("Starting checkout process...", 2000, true);
       const result = await Firebase.createCheckoutSession(priceId);
-      
+
       if (result.success && result.url) {
         window.location.assign(result.url);
       } else {
@@ -832,38 +882,39 @@ window.SettingsView = (() => {
       StatusMessage.show("Error: " + error.message, 3000, false);
     }
   }
-  
+
   /**
    * Load the Firebase module dynamically
    */
   async function loadFirebaseModule() {
     try {
-      if (typeof Firebase !== 'undefined') {
+      if (typeof Firebase !== "undefined") {
         return Promise.resolve();
       }
-      
+
       // Load Firebase script
-      const script = document.createElement('script');
-      script.src = 'modules/Firebase.js';
+      const script = document.createElement("script");
+      script.src = "modules/Firebase.js";
       document.head.appendChild(script);
-      
+
       // Wait for script to load
       await new Promise((resolve, reject) => {
         script.onload = () => {
-          if (typeof Firebase !== 'undefined') {
+          if (typeof Firebase !== "undefined") {
             // Initialize Firebase
             Firebase.init();
             resolve();
           } else {
-            reject(new Error('Firebase module not found after loading script'));
+            reject(new Error("Firebase module not found after loading script"));
           }
         };
-        script.onerror = () => reject(new Error('Failed to load Firebase script'));
+        script.onerror = () =>
+          reject(new Error("Failed to load Firebase script"));
       });
-      
+
       // Load Firebase SDK
       await Firebase.loadFirebase();
-      
+
       return Promise.resolve();
     } catch (error) {
       console.error("Error loading Firebase module:", error);
@@ -994,14 +1045,16 @@ window.SettingsView = (() => {
    */
   function show() {
     checkPersistentStorage();
-    
+
     // Try to load and initialize Firebase if not already loaded
-    if (typeof Firebase === 'undefined') {
-      loadFirebaseModule().then(() => {
-        updateFirebaseUI();
-      }).catch(error => {
-        console.error("Failed to load Firebase:", error);
-      });
+    if (typeof Firebase === "undefined") {
+      loadFirebaseModule()
+        .then(() => {
+          updateFirebaseUI();
+        })
+        .catch((error) => {
+          console.error("Failed to load Firebase:", error);
+        });
     } else {
       // If Firebase is already loaded, we don't need to attempt login manually
       // Just update the UI to reflect current state
@@ -1032,27 +1085,33 @@ window.SettingsView = (() => {
    */
   async function triggerManualSync() {
     try {
-      if (typeof Firebase === 'undefined' || !Firebase.isSignedIn() || !Database.isFirebaseEnabled()) {
-        StatusMessage.show("Cannot sync: Firebase is not enabled or you're not signed in");
+      if (
+        typeof Firebase === "undefined" ||
+        !Firebase.isSignedIn() ||
+        !Database.isFirebaseEnabled()
+      ) {
+        StatusMessage.show(
+          "Cannot sync: Firebase is not enabled or you're not signed in"
+        );
         return;
       }
-      
+
       // Show syncing state
       manualSyncButton.disabled = true;
-      manualSyncButton.innerHTML = '<i class="fa fa-sync fa-spin"></i> Syncing...';
-      
+      manualSyncButton.innerHTML =
+        '<i class="fa fa-sync fa-spin"></i> Syncing...';
+
       // Trigger sync
-      const result = await Firebase.performSync('manual');
-      
+      const result = await Firebase.performSync("manual");
+
       if (result.success) {
         StatusMessage.show("Successfully synced with cloud!", 2000, true);
       } else {
         StatusMessage.show("Sync failed: " + (result.error || "Unknown error"));
       }
-      
+
       // Update UI with last sync time
       updateLastSyncTime();
-      
     } catch (error) {
       console.error("Error syncing with Firebase:", error);
       StatusMessage.show("Sync error: " + error.message);
@@ -1062,55 +1121,59 @@ window.SettingsView = (() => {
       manualSyncButton.innerHTML = '<i class="fa fa-sync"></i> Sync Now';
     }
   }
-  
+
   /**
    * Change the sync interval
    * @param {Event} e - Change event from select input
    */
   function changeSyncInterval(e) {
     const minutes = parseInt(e.target.value, 10);
-    
-    if (typeof Firebase !== 'undefined') {
+
+    if (typeof Firebase !== "undefined") {
       Firebase.setSyncInterval(minutes);
-      StatusMessage.show(`Sync interval set to ${minutes} minute${minutes === 1 ? '' : 's'}`, 2000, true);
+      StatusMessage.show(
+        `Sync interval set to ${minutes} minute${minutes === 1 ? "" : "s"}`,
+        2000,
+        true
+      );
     }
   }
-  
+
   /**
    * Update the last sync time display
    */
   function updateLastSyncTime() {
-    if (!lastSyncTimeElement || typeof Firebase === 'undefined') return;
-    
+    if (!lastSyncTimeElement || typeof Firebase === "undefined") return;
+
     const lastSync = Firebase.getLastSyncTime();
-    
+
     if (lastSync) {
       const timeAgo = getTimeAgo(lastSync);
       lastSyncTimeElement.textContent = `Last synced: ${timeAgo}`;
     } else {
-      lastSyncTimeElement.textContent = 'Never synced';
+      lastSyncTimeElement.textContent = "Never synced";
     }
   }
-  
+
   /**
    * Get human-readable time ago string
    * @param {Date} date - Date to format
    * @returns {string} Human readable string
    */
   function getTimeAgo(date) {
-    if (!date) return 'never';
-    
+    if (!date) return "never";
+
     const now = new Date();
     const seconds = Math.floor((now - date) / 1000);
-    
-    if (seconds < 60) return 'just now';
-    
+
+    if (seconds < 60) return "just now";
+
     const minutes = Math.floor(seconds / 60);
     if (minutes < 60) return `${minutes}m ago`;
-    
+
     const hours = Math.floor(minutes / 60);
     if (hours < 24) return `${hours}h ago`;
-    
+
     const days = Math.floor(hours / 24);
     return `${days}d ago`;
   }

@@ -12,13 +12,13 @@ const Firebase = (() => {
   let isInitialized = false;
   let isOffline = false;
   let attemptedAutoLogin = false;
-  
+
   // Sync management
   let syncInterval = null;
   let syncIntervalMinutes = 5;
   let isSyncing = false;
   let lastSyncTime = null;
-  
+
   // Config
   const firebaseConfig = {
     apiKey: "AIzaSyBmvJOjmGWll8ysQ89HZCm5pJsqS_htSh8",
@@ -27,38 +27,42 @@ const Firebase = (() => {
     storageBucket: "vaata-mind.firebasestorage.app",
     messagingSenderId: "557148045075",
     appId: "1:557148045075:web:6c6c5ed5db343b2c5e24e6",
-    measurementId: "G-4PS0QV3J5B"
+    measurementId: "G-4PS0QV3J5B",
   };
-  
+
   /**
    * Dynamically load Firebase scripts and initialize
    * @returns {Promise} Promise that resolves when Firebase is loaded
    */
   async function loadFirebase() {
     if (isInitialized) return Promise.resolve();
-    
+
     return new Promise((resolve, reject) => {
       try {
         // Create script elements
-        const firebaseAppScript = document.createElement('script');
-        firebaseAppScript.src = 'https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js';
-        firebaseAppScript.type = 'module';
-        
-        const firebaseAuthScript = document.createElement('script');
-        firebaseAuthScript.src = 'https://www.gstatic.com/firebasejs/9.22.0/firebase-auth.js';
-        firebaseAuthScript.type = 'module';
-        
-        const firestoreScript = document.createElement('script');
-        firestoreScript.src = 'https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js';
-        firestoreScript.type = 'module';
-        
-        const analyticsScript = document.createElement('script');
-        analyticsScript.src = 'https://www.gstatic.com/firebasejs/9.22.0/firebase-analytics.js';
-        analyticsScript.type = 'module';
-        
+        const firebaseAppScript = document.createElement("script");
+        firebaseAppScript.src =
+          "https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js";
+        firebaseAppScript.type = "module";
+
+        const firebaseAuthScript = document.createElement("script");
+        firebaseAuthScript.src =
+          "https://www.gstatic.com/firebasejs/9.22.0/firebase-auth.js";
+        firebaseAuthScript.type = "module";
+
+        const firestoreScript = document.createElement("script");
+        firestoreScript.src =
+          "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
+        firestoreScript.type = "module";
+
+        const analyticsScript = document.createElement("script");
+        analyticsScript.src =
+          "https://www.gstatic.com/firebasejs/9.22.0/firebase-analytics.js";
+        analyticsScript.type = "module";
+
         // Create a wrapper script that will initialize Firebase once all scripts are loaded
-        const initScript = document.createElement('script');
-        initScript.type = 'module';
+        const initScript = document.createElement("script");
+        initScript.type = "module";
         initScript.textContent = `
           import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js';
           import { getAuth, onAuthStateChanged, signInWithPopup, GoogleAuthProvider, signOut } from 'https://www.gstatic.com/firebasejs/9.22.0/firebase-auth.js';
@@ -112,97 +116,111 @@ const Firebase = (() => {
           // Notify our module that Firebase is initialized
           window.dispatchEvent(new CustomEvent('firebase-initialized'));
         `;
-        
+
         // Add the scripts to the document
         document.head.appendChild(firebaseAppScript);
         document.head.appendChild(firebaseAuthScript);
         document.head.appendChild(firestoreScript);
         document.head.appendChild(analyticsScript);
         document.head.appendChild(initScript);
-        
+
         // Listen for the initialization event
-        window.addEventListener('firebase-initialized', () => {
-          // Get the Firebase objects from the window
-          firebaseApp = window.firebaseApp;
-          auth = window.firebaseAuth;
-          firestore = window.firebaseFirestore;
-          analytics = window.firebaseAnalytics;
-          
-          // Set up auth state change listener
-          window.firebaseAuth.onAuthStateChanged((user) => {
-            if (user) {
-              currentUser = user;
-              // Dispatch event for other modules
-              window.dispatchEvent(new CustomEvent('firebase-user-signed-in', { detail: user }));
-            } else {
-              currentUser = null;
-              // Dispatch event for other modules
-              window.dispatchEvent(new CustomEvent('firebase-user-signed-out'));
-            }
-          });
-          
-          isInitialized = true;
-          resolve();
-        }, { once: true });
-        
+        window.addEventListener(
+          "firebase-initialized",
+          () => {
+            // Get the Firebase objects from the window
+            firebaseApp = window.firebaseApp;
+            auth = window.firebaseAuth;
+            firestore = window.firebaseFirestore;
+            analytics = window.firebaseAnalytics;
+
+            // Set up auth state change listener
+            window.firebaseAuth.onAuthStateChanged((user) => {
+              if (user) {
+                currentUser = user;
+                // Dispatch event for other modules
+                window.dispatchEvent(
+                  new CustomEvent("firebase-user-signed-in", { detail: user })
+                );
+              } else {
+                currentUser = null;
+                // Dispatch event for other modules
+                window.dispatchEvent(
+                  new CustomEvent("firebase-user-signed-out")
+                );
+              }
+            });
+
+            isInitialized = true;
+            resolve();
+          },
+          { once: true }
+        );
       } catch (error) {
-        console.error('Error loading Firebase:', error);
+        console.error("Error loading Firebase:", error);
         reject(error);
       }
     });
   }
-  
+
   /**
    * Initialize Firebase module
    */
   function init() {
     // Check for network connectivity
-    window.addEventListener('online', () => {
+    window.addEventListener("online", () => {
       isOffline = false;
-      StatusMessage.show('You are online. Syncing data...', 3000, true);
-      performSync('online');
+      StatusMessage.show("You are online. Syncing data...", 3000, true);
+      performSync("online");
     });
-    
-    window.addEventListener('offline', () => {
+
+    window.addEventListener("offline", () => {
       isOffline = true;
-      StatusMessage.show('You are offline. Changes will sync when connected.', 3000);
+      StatusMessage.show(
+        "You are offline. Changes will sync when connected.",
+        3000
+      );
       stopPeriodicSync(); // Stop sync when offline
     });
-    
+
     // Setup focus/visibility events for smart sync
-    window.addEventListener('focus', () => {
+    window.addEventListener("focus", () => {
       if (Database.isFirebaseEnabled() && isSignedIn() && !isOffline) {
-        performSync('focus');
+        performSync("focus");
       }
     });
-    
-    document.addEventListener('visibilitychange', () => {
-      if (document.visibilityState === 'visible' && 
-          Database.isFirebaseEnabled() && isSignedIn() && !isOffline) {
-        performSync('visibility');
+
+    document.addEventListener("visibilitychange", () => {
+      if (
+        document.visibilityState === "visible" &&
+        Database.isFirebaseEnabled() &&
+        isSignedIn() &&
+        !isOffline
+      ) {
+        performSync("visibility");
       }
     });
-    
+
     // Handle user sign-in/out events
-    window.addEventListener('firebase-user-signed-in', () => {
+    window.addEventListener("firebase-user-signed-in", () => {
       if (Database.isFirebaseEnabled() && !isOffline) {
         startPeriodicSync();
-        performSync('sign-in');
+        performSync("sign-in");
       }
     });
-    
-    window.addEventListener('firebase-user-signed-out', () => {
+
+    window.addEventListener("firebase-user-signed-out", () => {
       stopPeriodicSync();
     });
-    
+
     isOffline = !navigator.onLine;
-    
+
     // Start periodic sync if needed
     if (Database.isFirebaseEnabled() && isSignedIn() && !isOffline) {
       startPeriodicSync();
     }
   }
-  
+
   /**
    * Start periodic sync at regular intervals
    */
@@ -210,14 +228,14 @@ const Firebase = (() => {
     if (syncInterval) {
       stopPeriodicSync();
     }
-    
+
     syncInterval = setInterval(() => {
-      performSync('periodic');
+      performSync("periodic");
     }, syncIntervalMinutes * 60 * 1000);
-    
+
     console.log(`Periodic sync started: every ${syncIntervalMinutes} minutes`);
   }
-  
+
   /**
    * Stop periodic sync
    */
@@ -225,75 +243,82 @@ const Firebase = (() => {
     if (syncInterval) {
       clearInterval(syncInterval);
       syncInterval = null;
-      console.log('Periodic sync stopped');
+      console.log("Periodic sync stopped");
     }
   }
-  
+
   /**
    * Perform sync operation with specified trigger
    * @param {string} trigger - What triggered the sync
    * @returns {Promise} Promise that resolves when sync is complete
    */
   async function performSync(trigger) {
-    if (isSyncing || isOffline || !isSignedIn() || !Database.isFirebaseEnabled()) {
+    if (
+      isSyncing ||
+      isOffline ||
+      !isSignedIn() ||
+      !Database.isFirebaseEnabled()
+    ) {
       return { success: false };
     }
-    
+
     try {
       isSyncing = true;
-      
-      if (trigger !== 'silent') {
+
+      if (trigger !== "silent") {
         StatusMessage.show(`Syncing data (${trigger})...`, 2000, true);
       }
-      
+
       const result = await syncData();
-      
+
       lastSyncTime = new Date();
-      
-      if (trigger !== 'silent' && result.success) {
-        StatusMessage.show('Sync complete', 2000, true);
+
+      if (trigger !== "silent" && result.success) {
+        StatusMessage.show("Sync complete", 2000, true);
       }
-      
+
       // Update sync button state if it exists
-      const syncButton = document.getElementById('manual-sync-button');
+      const syncButton = document.getElementById("manual-sync-button");
       if (syncButton) {
-        syncButton.classList.remove('syncing');
-        syncButton.title = `Sync with cloud (Last: ${getTimeAgo(lastSyncTime)})`;
+        syncButton.classList.remove("syncing");
+        syncButton.title = `Sync with cloud (Last: ${getTimeAgo(
+          lastSyncTime
+        )})`;
       }
-      
+
       return result;
     } catch (error) {
-      console.error('Sync error:', error);
-      StatusMessage.show('Sync failed', 2000, false);
+      console.error("Sync error:", error);
+      StatusMessage.show("Sync failed", 2000, false);
       return { success: false, error };
     } finally {
       isSyncing = false;
     }
   }
-  
+
   /**
    * Get a human-readable time ago string
    * @param {Date} date - The date to format
    * @returns {string} Human readable time ago
    */
   function getTimeAgo(date) {
-    if (!date) return 'Never';
-    
+    if (!date) return "Never";
+
     const now = new Date();
     const seconds = Math.floor((now - date) / 1000);
-    
-    if (seconds < 60) return 'Just now';
-    
+
+    if (seconds < 60) return "Just now";
+
     const minutes = Math.floor(seconds / 60);
     if (minutes < 60) return `${minutes}m ago`;
-    
+
     const hours = Math.floor(minutes / 60);
     if (hours < 24) return `${hours}h ago`;
-    
+
     const days = Math.floor(hours / 24);
     return `${days}d ago`;
   }
-  
+
   /**
    * Set the sync interval in minutes
    * @param {number} minutes - Minutes between syncs
@@ -301,16 +326,16 @@ const Firebase = (() => {
   function setSyncInterval(minutes) {
     if (minutes < 1) minutes = 1;
     syncIntervalMinutes = minutes;
-    
+
     // Restart sync if it's running
     if (syncInterval) {
       startPeriodicSync();
     }
-    
+
     // Save preference to localStorage
-    localStorage.setItem('syncIntervalMinutes', minutes);
+    localStorage.setItem("syncIntervalMinutes", minutes);
   }
-  
+
   /**
    * Check if sync is in progress
    * @returns {boolean} True if syncing
@@ -318,7 +343,7 @@ const Firebase = (() => {
   function isSyncInProgress() {
     return isSyncing;
   }
-  
+
   /**
    * Get the last sync time
    * @returns {Date|null} Last sync time or null
@@ -335,24 +360,27 @@ const Firebase = (() => {
     if (!isInitialized) {
       await loadFirebase();
     }
-    
+
     try {
       const provider = new window.GoogleAuthProvider();
-      const result = await window.firebaseAuthFunctions.signInWithPopup(auth, provider);
+      const result = await window.firebaseAuthFunctions.signInWithPopup(
+        auth,
+        provider
+      );
       currentUser = result.user;
       return {
         success: true,
-        user: currentUser
+        user: currentUser,
       };
     } catch (error) {
-      console.error('Google sign-in error:', error);
+      console.error("Google sign-in error:", error);
       return {
         success: false,
-        error: error.message
+        error: error.message,
       };
     }
   }
-  
+
   /**
    * Sign out
    * @returns {Promise} Promise that resolves when signed out
@@ -361,20 +389,20 @@ const Firebase = (() => {
     if (!isInitialized || !currentUser) {
       return { success: true }; // Already signed out
     }
-    
+
     try {
       await window.firebaseAuthFunctions.signOut(auth);
       currentUser = null;
       return { success: true };
     } catch (error) {
-      console.error('Sign out error:', error);
+      console.error("Sign out error:", error);
       return {
         success: false,
-        error: error.message
+        error: error.message,
       };
     }
   }
-  
+
   /**
    * Check if user is signed in
    * @returns {boolean} True if signed in
@@ -382,7 +410,7 @@ const Firebase = (() => {
   function isSignedIn() {
     return !!currentUser;
   }
-  
+
   /**
    * Get current user
    * @returns {Object|null} User object or null if not signed in
@@ -390,7 +418,7 @@ const Firebase = (() => {
   function getCurrentUser() {
     return currentUser;
   }
-  
+
   /**
    * Sync data with Firestore
    * @returns {Promise} Promise that resolves when data is synced
@@ -399,27 +427,27 @@ const Firebase = (() => {
     if (!isInitialized || !currentUser || isOffline) {
       return {
         success: false,
-        error: isOffline ? 'Offline mode' : 'Not signed in'
+        error: isOffline ? "Offline mode" : "Not signed in",
       };
     }
-    
+
     try {
       // Pull data from Firestore
       await pullFromFirestore();
-      
+
       // Push local data to Firestore
       await pushToFirestore();
-      
+
       return { success: true };
     } catch (error) {
-      console.error('Sync error:', error);
+      console.error("Sync error:", error);
       return {
         success: false,
-        error: error.message
+        error: error.message,
       };
     }
   }
-  
+
   /**
    * Pull data from Firestore to local storage
    * @returns {Promise} Promise that resolves when data is pulled
@@ -428,43 +456,49 @@ const Firebase = (() => {
     if (!isInitialized || !currentUser) {
       return {
         success: false,
-        error: 'Not signed in'
+        error: "Not signed in",
       };
     }
-    
+
     try {
       const notesCollection = window.firebaseFirestoreFunctions.collection(
-        firestore, 
+        firestore,
         `users/${currentUser.uid}/notes`
       );
-      
-      const snapshot = await window.firebaseFirestoreFunctions.getDocs(notesCollection);
+
+      const snapshot = await window.firebaseFirestoreFunctions.getDocs(
+        notesCollection
+      );
       const firestoreNotes = [];
-      
-      snapshot.forEach(doc => {
+
+      snapshot.forEach((doc) => {
         firestoreNotes.push(doc.data());
       });
-      
+
       if (firestoreNotes.length > 0) {
         // Import notes from Firestore to local storage
         const success = Database.mergeFirestoreData(firestoreNotes);
-        
+
         if (success) {
-          StatusMessage.show('Successfully synced notes from cloud!', 3000, true);
+          StatusMessage.show(
+            "Successfully synced notes from cloud!",
+            3000,
+            true
+          );
         }
       }
-      
+
       return { success: true };
     } catch (error) {
-      console.error('Error pulling from Firestore:', error);
-      StatusMessage.show('Error syncing from cloud: ' + error.message);
+      console.error("Error pulling from Firestore:", error);
+      StatusMessage.show("Error syncing from cloud: " + error.message);
       return {
         success: false,
-        error: error.message
+        error: error.message,
       };
     }
   }
-  
+
   /**
    * Push local data to Firestore
    * @returns {Promise} Promise that resolves when data is pushed
@@ -473,41 +507,43 @@ const Firebase = (() => {
     if (!isInitialized || !currentUser) {
       return {
         success: false,
-        error: 'Not signed in'
+        error: "Not signed in",
       };
     }
-    
+
     try {
       const notes = Database.getAllNotes();
       const batch = [];
-      
+
       // Create a batch of promises to update Firestore
       for (const note of notes) {
         const docRef = window.firebaseFirestoreFunctions.doc(
-          firestore, 
+          firestore,
           `users/${currentUser.uid}/notes/${note.id}`
         );
-        
+
         batch.push(
-          window.firebaseFirestoreFunctions.setDoc(docRef, note, { merge: true })
+          window.firebaseFirestoreFunctions.setDoc(docRef, note, {
+            merge: true,
+          })
         );
       }
-      
+
       // Execute all promises
       await Promise.all(batch);
-      
-      StatusMessage.show('Successfully saved notes to cloud!', 3000, true);
+
+      StatusMessage.show("Successfully saved notes to cloud!", 3000, true);
       return { success: true };
     } catch (error) {
-      console.error('Error pushing to Firestore:', error);
-      StatusMessage.show('Error saving to cloud: ' + error.message);
+      console.error("Error pushing to Firestore:", error);
+      StatusMessage.show("Error saving to cloud: " + error.message);
       return {
         success: false,
-        error: error.message
+        error: error.message,
       };
     }
   }
-  
+
   /**
    * Add a new note to Firestore
    * @param {Object} note - The note to add
@@ -517,24 +553,24 @@ const Firebase = (() => {
     if (!isInitialized || !currentUser || isOffline) {
       return { success: false };
     }
-    
+
     try {
       const docRef = window.firebaseFirestoreFunctions.doc(
-        firestore, 
+        firestore,
         `users/${currentUser.uid}/notes/${note.id}`
       );
-      
+
       await window.firebaseFirestoreFunctions.setDoc(docRef, note);
       return { success: true };
     } catch (error) {
-      console.error('Error adding note to Firestore:', error);
+      console.error("Error adding note to Firestore:", error);
       return {
         success: false,
-        error: error.message
+        error: error.message,
       };
     }
   }
-  
+
   /**
    * Update a note in Firestore
    * @param {Object} note - The note to update
@@ -544,24 +580,24 @@ const Firebase = (() => {
     if (!isInitialized || !currentUser || isOffline) {
       return { success: false };
     }
-    
+
     try {
       const docRef = window.firebaseFirestoreFunctions.doc(
-        firestore, 
+        firestore,
         `users/${currentUser.uid}/notes/${note.id}`
       );
-      
+
       await window.firebaseFirestoreFunctions.updateDoc(docRef, note);
       return { success: true };
     } catch (error) {
-      console.error('Error updating note in Firestore:', error);
+      console.error("Error updating note in Firestore:", error);
       return {
         success: false,
-        error: error.message
+        error: error.message,
       };
     }
   }
-  
+
   /**
    * Delete a note from Firestore
    * @param {string} noteId - The ID of the note to delete
@@ -571,24 +607,24 @@ const Firebase = (() => {
     if (!isInitialized || !currentUser || isOffline) {
       return { success: false };
     }
-    
+
     try {
       const docRef = window.firebaseFirestoreFunctions.doc(
-        firestore, 
+        firestore,
         `users/${currentUser.uid}/notes/${noteId}`
       );
-      
+
       await window.firebaseFirestoreFunctions.deleteDoc(docRef);
       return { success: true };
     } catch (error) {
-      console.error('Error deleting note from Firestore:', error);
+      console.error("Error deleting note from Firestore:", error);
       return {
         success: false,
-        error: error.message
+        error: error.message,
       };
     }
   }
-  
+
   /**
    * Check if Firebase is initialized
    * @returns {boolean} True if Firebase is initialized
@@ -596,7 +632,7 @@ const Firebase = (() => {
   function getInitializationStatus() {
     return isInitialized;
   }
-  
+
   /**
    * Try to automatically restore previous Firebase session
    * @param {boolean} silent - Whether to show status messages
@@ -606,67 +642,78 @@ const Firebase = (() => {
     if (attemptedAutoLogin) {
       return { success: isSignedIn() };
     }
-    
+
     attemptedAutoLogin = true;
-    
+
     if (!isInitialized) {
       try {
         await loadFirebase();
       } catch (error) {
-        console.error('Error loading Firebase during auto-login:', error);
+        console.error("Error loading Firebase during auto-login:", error);
         return { success: false, error };
       }
     }
-    
+
     // Wait a short time for Firebase auth to initialize and restore session
-    return new Promise(resolve => {
+    return new Promise((resolve) => {
       // If already signed in, resolve immediately
       if (isSignedIn()) {
         if (!silent) {
           const user = getCurrentUser();
-          StatusMessage.show(`Welcome back, ${user.displayName || user.email || 'User'}!`, 2000, true);
+          StatusMessage.show(
+            `Welcome back, ${user.displayName || user.email || "User"}!`,
+            2000,
+            true
+          );
         }
-        
+
         // If Firebase is enabled in Database, start syncing
         if (Database.isFirebaseEnabled() && !isOffline) {
           startPeriodicSync();
-          performSync('auto-login');
+          performSync("auto-login");
         }
-        
+
         resolve({ success: true, user: currentUser });
         return;
       }
-      
+
       // Otherwise, wait briefly to see if auth state changes
       const timeout = setTimeout(() => {
         resolve({ success: isSignedIn(), user: currentUser });
       }, 2000);
-      
+
       // If auth state changes before timeout, resolve early
       const authStateListener = () => {
         if (isSignedIn()) {
           clearTimeout(timeout);
-          
+
           if (!silent) {
             const user = getCurrentUser();
-            StatusMessage.show(`Welcome back, ${user.displayName || user.email || 'User'}!`, 2000, true);
+            StatusMessage.show(
+              `Welcome back, ${user.displayName || user.email || "User"}!`,
+              2000,
+              true
+            );
           }
-          
+
           // If Firebase is enabled in Database, start syncing
           if (Database.isFirebaseEnabled() && !isOffline) {
             startPeriodicSync();
-            performSync('auto-login');
+            performSync("auto-login");
           }
-          
-          window.removeEventListener('firebase-user-signed-in', authStateListener);
+
+          window.removeEventListener(
+            "firebase-user-signed-in",
+            authStateListener
+          );
           resolve({ success: true, user: currentUser });
         }
       };
-      
-      window.addEventListener('firebase-user-signed-in', authStateListener);
+
+      window.addEventListener("firebase-user-signed-in", authStateListener);
     });
   }
-  
+
   /**
    * Check if the current user has premium access
    * @returns {Promise<boolean>} Promise that resolves with premium status
@@ -675,18 +722,18 @@ const Firebase = (() => {
     if (!isInitialized || !currentUser) {
       return false;
     }
-    
+
     try {
       // Get custom claims to check for premium role
       await auth.currentUser.getIdToken(true);
       const decodedToken = await auth.currentUser.getIdTokenResult();
-      return decodedToken.claims.stripeRole === 'premium';
+      return decodedToken.claims.stripeRole === "premium";
     } catch (error) {
-      console.error('Error checking premium status:', error);
+      console.error("Error checking premium status:", error);
       return false;
     }
   }
-  
+
   /**
    * Get available products and prices from Firestore
    * @returns {Promise<Array>} Promise that resolves with products array
@@ -695,44 +742,60 @@ const Firebase = (() => {
     if (!isInitialized || !firestore) {
       return [];
     }
-    
+
     try {
       const products = [];
       const productsQuery = window.firebaseFirestoreFunctions.query(
         window.firebaseFirestoreFunctions.collection(firestore, "products"),
         window.firebaseFirestoreFunctions.where("active", "==", true)
       );
-      
-      const querySnapshot = await window.firebaseFirestoreFunctions.getDocs(productsQuery);
-      
+
+      const querySnapshot = await window.firebaseFirestoreFunctions.getDocs(
+        productsQuery
+      );
+
       for (const doc of querySnapshot.docs) {
         const product = doc.data();
         product.id = doc.id;
-        product.prices = [];
-        
+        product.prices = [
+          // Default price
+          {
+            id: "monthly",
+            currency: "eur",
+            unit_amount: 199,
+            interval: "month",
+          },
+          {
+            id: "yearly",
+            currency: "eur",
+            unit_amount: 1499,
+            interval: "year",
+          },
+        ];
+
         // Get prices for this product
         const pricesSnap = await window.firebaseFirestoreFunctions.getDocs(
           window.firebaseFirestoreFunctions.collection(doc.ref, "prices")
         );
-        
+
         pricesSnap.docs.forEach((priceDoc) => {
           const priceData = priceDoc.data();
           product.prices.push({
             id: priceDoc.id,
-            ...priceData
+            ...priceData,
           });
         });
-        
+
         products.push(product);
       }
-      
+
       return products;
     } catch (error) {
-      console.error('Error fetching products:', error);
+      console.error("Error fetching products:", error);
       return [];
     }
   }
-  
+
   /**
    * Create a checkout session for subscription
    * @param {string} priceId - The price ID to subscribe to
@@ -740,9 +803,9 @@ const Firebase = (() => {
    */
   async function createCheckoutSession(priceId) {
     if (!isInitialized || !currentUser) {
-      return { success: false, error: 'Not signed in' };
+      return { success: false, error: "Not signed in" };
     }
-    
+
     try {
       // Create a new checkout session
       const sessionDocRef = await window.firebaseFirestoreFunctions.setDoc(
@@ -762,44 +825,44 @@ const Firebase = (() => {
           cancel_url: window.location.origin,
         }
       );
-      
+
       // Return a promise that resolves when the URL is available
       return new Promise((resolve, reject) => {
         const unsubscribe = sessionDocRef.onSnapshot((snap) => {
           const { error, url } = snap.data();
-          
+
           if (error) {
             unsubscribe();
             reject(new Error(`An error occurred: ${error.message}`));
           }
-          
+
           if (url) {
             unsubscribe();
             resolve({ success: true, url });
           }
         });
-        
+
         // Timeout after 10 seconds
         setTimeout(() => {
           unsubscribe();
-          reject(new Error('Checkout session creation timed out'));
+          reject(new Error("Checkout session creation timed out"));
         }, 10000);
       });
     } catch (error) {
-      console.error('Error creating checkout session:', error);
+      console.error("Error creating checkout session:", error);
       return { success: false, error: error.message };
     }
   }
-  
+
   /**
    * Get customer portal URL for managing subscription
    * @returns {Promise<string>} Promise with the portal URL
    */
   async function getCustomerPortalUrl() {
     if (!isInitialized || !currentUser) {
-      return { success: false, error: 'Not signed in' };
+      return { success: false, error: "Not signed in" };
     }
-    
+
     try {
       const portalDocRef = await window.firebaseFirestoreFunctions.setDoc(
         window.firebaseFirestoreFunctions.doc(
@@ -813,34 +876,34 @@ const Firebase = (() => {
           "portal_sessions"
         ),
         {
-          return_url: window.location.origin
+          return_url: window.location.origin,
         }
       );
-      
+
       // Return a promise that resolves when the URL is available
       return new Promise((resolve, reject) => {
         const unsubscribe = portalDocRef.onSnapshot((snap) => {
           const { error, url } = snap.data();
-          
+
           if (error) {
             unsubscribe();
             reject(new Error(`An error occurred: ${error.message}`));
           }
-          
+
           if (url) {
             unsubscribe();
             resolve({ success: true, url });
           }
         });
-        
+
         // Timeout after 10 seconds
         setTimeout(() => {
           unsubscribe();
-          reject(new Error('Portal session creation timed out'));
+          reject(new Error("Portal session creation timed out"));
         }, 10000);
       });
     } catch (error) {
-      console.error('Error getting customer portal URL:', error);
+      console.error("Error getting customer portal URL:", error);
       return { success: false, error: error.message };
     }
   }
@@ -868,6 +931,6 @@ const Firebase = (() => {
     isPremiumUser,
     getProducts,
     createCheckoutSession,
-    getCustomerPortalUrl
+    getCustomerPortalUrl,
   };
 })();
