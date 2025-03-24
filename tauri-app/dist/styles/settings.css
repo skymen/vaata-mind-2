@@ -77,3 +77,36 @@ label.btn {
   font-size: 14px;
   border-radius: 0 4px 4px 0;
 }
+
+/* Firebase related styles */
+.firebase-status {
+  margin-top: 10px;
+}
+
+.firebase-status p {
+  margin-bottom: 15px;
+  font-size: 15px;
+}
+
+.firebase-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.firebase-toggle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 15px;
+}
+
+.firebase-toggle input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+}
+
+.firebase-toggle label {
+  font-size: 15px;
+  cursor: pointer;
+}
