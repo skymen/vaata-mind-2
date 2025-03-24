@@ -62,7 +62,7 @@ const Firebase = (() => {
         initScript.textContent = `
           import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js';
           import { getAuth, onAuthStateChanged, signInWithPopup, GoogleAuthProvider, signOut } from 'https://www.gstatic.com/firebasejs/9.22.0/firebase-auth.js';
-          import { getFirestore, collection, doc, setDoc, getDoc, getDocs, updateDoc, deleteDoc, enableIndexedDbPersistence } from 'https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js';
+          import { getFirestore, collection, doc, setDoc, getDoc, getDocs, updateDoc, deleteDoc, enableIndexedDbPersistence, query, where } from 'https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js';
           import { getAnalytics } from 'https://www.gstatic.com/firebasejs/9.22.0/firebase-analytics.js';
           
           const firebaseConfig = {
@@ -104,7 +104,9 @@ const Firebase = (() => {
             getDoc,
             getDocs,
             updateDoc,
-            deleteDoc
+            deleteDoc,
+            query,
+            where
           };
           
           // Notify our module that Firebase is initialized
@@ -665,6 +667,184 @@ const Firebase = (() => {
     });
   }
   
+  /**
+   * Check if the current user has premium access
+   * @returns {Promise<boolean>} Promise that resolves with premium status
+   */
+  async function isPremiumUser() {
+    if (!isInitialized || !currentUser) {
+      return false;
+    }
+    
+    try {
+      // Get custom claims to check for premium role
+      await auth.currentUser.getIdToken(true);
+      const decodedToken = await auth.currentUser.getIdTokenResult();
+      return decodedToken.claims.stripeRole === 'premium';
+    } catch (error) {
+      console.error('Error checking premium status:', error);
+      return false;
+    }
+  }
+  
+  /**
+   * Get available products and prices from Firestore
+   * @returns {Promise<Array>} Promise that resolves with products array
+   */
+  async function getProducts() {
+    if (!isInitialized || !firestore) {
+      return [];
+    }
+    
+    try {
+      const products = [];
+      const productsQuery = window.firebaseFirestoreFunctions.query(
+        window.firebaseFirestoreFunctions.collection(firestore, "products"),
+        window.firebaseFirestoreFunctions.where("active", "==", true)
+      );
+      
+      const querySnapshot = await window.firebaseFirestoreFunctions.getDocs(productsQuery);
+      
+      for (const doc of querySnapshot.docs) {
+        const product = doc.data();
+        product.id = doc.id;
+        product.prices = [];
+        
+        // Get prices for this product
+        const pricesSnap = await window.firebaseFirestoreFunctions.getDocs(
+          window.firebaseFirestoreFunctions.collection(doc.ref, "prices")
+        );
+        
+        pricesSnap.docs.forEach((priceDoc) => {
+          const priceData = priceDoc.data();
+          product.prices.push({
+            id: priceDoc.id,
+            ...priceData
+          });
+        });
+        
+        products.push(product);
+      }
+      
+      return products;
+    } catch (error) {
+      console.error('Error fetching products:', error);
+      return [];
+    }
+  }
+  
+  /**
+   * Create a checkout session for subscription
+   * @param {string} priceId - The price ID to subscribe to
+   * @returns {Promise<Object>} Promise with the checkout session
+   */
+  async function createCheckoutSession(priceId) {
+    if (!isInitialized || !currentUser) {
+      return { success: false, error: 'Not signed in' };
+    }
+    
+    try {
+      // Create a new checkout session
+      const sessionDocRef = await window.firebaseFirestoreFunctions.setDoc(
+        window.firebaseFirestoreFunctions.doc(
+          window.firebaseFirestoreFunctions.collection(
+            window.firebaseFirestoreFunctions.collection(
+              firestore,
+              "customers"
+            ),
+            currentUser.uid
+          ),
+          "checkout_sessions"
+        ),
+        {
+          price: priceId,
+          success_url: window.location.origin,
+          cancel_url: window.location.origin,
+        }
+      );
+      
+      // Return a promise that resolves when the URL is available
+      return new Promise((resolve, reject) => {
+        const unsubscribe = sessionDocRef.onSnapshot((snap) => {
+          const { error, url } = snap.data();
+          
+          if (error) {
+            unsubscribe();
+            reject(new Error(`An error occurred: ${error.message}`));
+          }
+          
+          if (url) {
+            unsubscribe();
+            resolve({ success: true, url });
+          }
+        });
+        
+        // Timeout after 10 seconds
+        setTimeout(() => {
+          unsubscribe();
+          reject(new Error('Checkout session creation timed out'));
+        }, 10000);
+      });
+    } catch (error) {
+      console.error('Error creating checkout session:', error);
+      return { success: false, error: error.message };
+    }
+  }
+  
+  /**
+   * Get customer portal URL for managing subscription
+   * @returns {Promise<string>} Promise with the portal URL
+   */
+  async function getCustomerPortalUrl() {
+    if (!isInitialized || !currentUser) {
+      return { success: false, error: 'Not signed in' };
+    }
+    
+    try {
+      const portalDocRef = await window.firebaseFirestoreFunctions.setDoc(
+        window.firebaseFirestoreFunctions.doc(
+          window.firebaseFirestoreFunctions.collection(
+            window.firebaseFirestoreFunctions.collection(
+              firestore,
+              "customers"
+            ),
+            currentUser.uid
+          ),
+          "portal_sessions"
+        ),
+        {
+          return_url: window.location.origin
+        }
+      );
+      
+      // Return a promise that resolves when the URL is available
+      return new Promise((resolve, reject) => {
+        const unsubscribe = portalDocRef.onSnapshot((snap) => {
+          const { error, url } = snap.data();
+          
+          if (error) {
+            unsubscribe();
+            reject(new Error(`An error occurred: ${error.message}`));
+          }
+          
+          if (url) {
+            unsubscribe();
+            resolve({ success: true, url });
+          }
+        });
+        
+        // Timeout after 10 seconds
+        setTimeout(() => {
+          unsubscribe();
+          reject(new Error('Portal session creation timed out'));
+        }, 10000);
+      });
+    } catch (error) {
+      console.error('Error getting customer portal URL:', error);
+      return { success: false, error: error.message };
+    }
+  }
+
   // Public API
   return {
     init,
@@ -684,6 +864,10 @@ const Firebase = (() => {
     isSyncInProgress,
     getLastSyncTime,
     getInitializationStatus,
-    tryAutoLogin
+    tryAutoLogin,
+    isPremiumUser,
+    getProducts,
+    createCheckoutSession,
+    getCustomerPortalUrl
   };
 })();

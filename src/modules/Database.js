@@ -523,24 +523,35 @@ const Database = (() => {
   }
   
   /**
-   * Enable Firebase integration
-   * @returns {boolean} Success status
+   * Enable Firebase integration (requires premium subscription)
+   * @returns {Promise<boolean>} Success status
    */
-  function enableFirebase() {
+  async function enableFirebase() {
     if (typeof Firebase === 'undefined') {
       console.error('Firebase module not loaded');
+      return false;
+    }
+    
+    // Check if user is signed in
+    if (!Firebase.isSignedIn()) {
+      StatusMessage.show("You must sign in first to enable cloud storage", 3000, false);
+      return false;
+    }
+    
+    // Check if user has premium subscription
+    const isPremium = await Firebase.isPremiumUser();
+    if (!isPremium) {
+      StatusMessage.show("Premium subscription required for cloud storage", 3000, false);
       return false;
     }
     
     useFirebase = true;
     save(); // Save the preference
     
-    // If already signed in to Firebase, sync data immediately
-    if (Firebase.isSignedIn()) {
-      Firebase.syncData().catch(error => {
-        console.error('Error syncing with Firebase:', error);
-      });
-    }
+    // Sync data immediately
+    Firebase.syncData().catch(error => {
+      console.error('Error syncing with Firebase:', error);
+    });
     
     return true;
   }

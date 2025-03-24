@@ -254,7 +254,7 @@ window.SettingsView = (() => {
   /**
    * Toggle Firebase enabled state
    */
-  function toggleFirebaseEnabled(e) {
+  async function toggleFirebaseEnabled(e) {
     const isEnabled = e.target.checked;
     
     if (isEnabled) {
@@ -266,7 +266,18 @@ window.SettingsView = (() => {
         return;
       }
       
-      const success = Database.enableFirebase();
+      // Check if user has premium subscription
+      const isPremium = await Firebase.isPremiumUser();
+      if (!isPremium) {
+        StatusMessage.show("Premium subscription required for cloud storage", 3000, false);
+        e.target.checked = false;
+        
+        // Show upgrade prompt
+        showUpgradePrompt();
+        return;
+      }
+      
+      const success = await Database.enableFirebase();
       if (success) {
         StatusMessage.show("Firebase storage enabled! Your notes will sync to the cloud.", 3000, true);
       } else {
@@ -281,9 +292,124 @@ window.SettingsView = (() => {
   }
   
   /**
+   * Show upgrade to premium prompt
+   */
+  async function showUpgradePrompt() {
+    try {
+      // Get product information
+      const products = await Firebase.getProducts();
+      
+      if (products.length === 0) {
+        StatusMessage.show("No subscription plans available", 3000, false);
+        return;
+      }
+      
+      // Find the premium plan
+      const premiumProduct = products.find(p => p.name.toLowerCase().includes('premium'));
+      
+      if (!premiumProduct || !premiumProduct.prices || premiumProduct.prices.length === 0) {
+        StatusMessage.show("Subscription plan information not available", 3000, false);
+        return;
+      }
+      
+      // Find monthly and yearly prices
+      const monthlyPrice = premiumProduct.prices.find(p => p.interval === 'month');
+      const yearlyPrice = premiumProduct.prices.find(p => p.interval === 'year');
+      
+      // Format the prices
+      let priceText = "";
+      if (monthlyPrice) {
+        const amount = (monthlyPrice.unit_amount / 100).toFixed(2);
+        const currency = monthlyPrice.currency.toUpperCase();
+        priceText += `Monthly: ${currency} ${amount}/month`;
+      }
+      
+      if (yearlyPrice) {
+        const amount = (yearlyPrice.unit_amount / 100).toFixed(2);
+        const currency = yearlyPrice.currency.toUpperCase();
+        priceText += priceText ? ` or ${currency} ${amount}/year` : `Yearly: ${currency} ${amount}/year`;
+      }
+      
+      // Create modal dialog for subscription
+      const dialogContent = `
+        <div class="upgrade-dialog">
+          <h3>Upgrade to Premium</h3>
+          <p>Cloud storage requires a premium subscription.</p>
+          <div class="pricing-container">
+            <h4>${premiumProduct.name}</h4>
+            <p>${premiumProduct.description || 'Sync your notes across all devices and keep them safe in the cloud'}</p>
+            <div class="price-options">
+              ${priceText}
+            </div>
+          </div>
+          <div class="upgrade-buttons">
+            ${monthlyPrice ? `<button id="monthly-plan-btn" class="btn btn-primary">Subscribe Monthly</button>` : ''}
+            ${yearlyPrice ? `<button id="yearly-plan-btn" class="btn btn-primary">Subscribe Yearly</button>` : ''}
+            <button id="cancel-upgrade-btn" class="btn btn-secondary">Cancel</button>
+          </div>
+        </div>
+      `;
+      
+      // Show the dialog
+      const dialogElement = document.createElement('div');
+      dialogElement.className = 'dialog-overlay';
+      dialogElement.innerHTML = dialogContent;
+      document.body.appendChild(dialogElement);
+      
+      // Add event listeners
+      const cancelBtn = document.getElementById('cancel-upgrade-btn');
+      const monthlyBtn = document.getElementById('monthly-plan-btn');
+      const yearlyBtn = document.getElementById('yearly-plan-btn');
+      
+      cancelBtn.addEventListener('click', () => {
+        document.body.removeChild(dialogElement);
+      });
+      
+      if (monthlyBtn) {
+        monthlyBtn.addEventListener('click', async () => {
+          try {
+            StatusMessage.show("Starting checkout process...", 2000, true);
+            const result = await Firebase.createCheckoutSession(monthlyPrice.id);
+            
+            if (result.success && result.url) {
+              window.location.assign(result.url);
+            } else {
+              StatusMessage.show("Failed to create checkout session", 3000, false);
+            }
+          } catch (error) {
+            console.error("Checkout error:", error);
+            StatusMessage.show("Error: " + error.message, 3000, false);
+          }
+        });
+      }
+      
+      if (yearlyBtn) {
+        yearlyBtn.addEventListener('click', async () => {
+          try {
+            StatusMessage.show("Starting checkout process...", 2000, true);
+            const result = await Firebase.createCheckoutSession(yearlyPrice.id);
+            
+            if (result.success && result.url) {
+              window.location.assign(result.url);
+            } else {
+              StatusMessage.show("Failed to create checkout session", 3000, false);
+            }
+          } catch (error) {
+            console.error("Checkout error:", error);
+            StatusMessage.show("Error: " + error.message, 3000, false);
+          }
+        });
+      }
+    } catch (error) {
+      console.error("Error showing upgrade prompt:", error);
+      StatusMessage.show("Error preparing subscription information", 3000, false);
+    }
+  }
+  
+  /**
    * Update the Firebase UI based on authentication state
    */
-  function updateFirebaseUI() {
+  async function updateFirebaseUI() {
     if (typeof Firebase === 'undefined') {
       firebaseStatusText.textContent = "Firebase not loaded";
       firebaseSignInBtn.style.display = "inline-block";
@@ -294,19 +420,86 @@ window.SettingsView = (() => {
       // Disable sync controls
       if (manualSyncButton) manualSyncButton.disabled = true;
       if (syncIntervalInput) syncIntervalInput.disabled = true;
+      
+      // Hide subscription button if it exists
+      const subscriptionBtn = document.getElementById('manage-subscription-btn');
+      if (subscriptionBtn) {
+        subscriptionBtn.style.display = "none";
+      }
+      
       return;
     }
     
     if (Firebase.isSignedIn()) {
       const user = Firebase.getCurrentUser();
-      firebaseStatusText.textContent = `Signed in as: ${user.email || user.displayName || 'Unknown user'}`;
+      
+      // Check premium status
+      const isPremium = await Firebase.isPremiumUser();
+      
+      // Update status text with premium status
+      if (isPremium) {
+        firebaseStatusText.textContent = `Signed in as: ${user.email || user.displayName || 'Unknown user'} (Premium)`;
+      } else {
+        firebaseStatusText.textContent = `Signed in as: ${user.email || user.displayName || 'Unknown user'} (Free)`;
+      }
+      
+      // Show sign out button
       firebaseSignInBtn.style.display = "none";
       firebaseSignOutBtn.style.display = "inline-block";
-      firebaseEnabledToggle.disabled = false;
-      firebaseEnabledToggle.checked = Database.isFirebaseEnabled();
+      
+      // Add subscription management button if not already present
+      let subscriptionBtn = document.getElementById('manage-subscription-btn');
+      
+      if (!subscriptionBtn) {
+        // Create subscription button
+        subscriptionBtn = document.createElement('button');
+        subscriptionBtn.id = 'manage-subscription-btn';
+        subscriptionBtn.className = isPremium ? 'btn btn-secondary' : 'btn btn-primary';
+        subscriptionBtn.textContent = isPremium ? 'Manage Subscription' : 'Upgrade to Premium';
+        
+        // Insert after sign out button
+        firebaseSignOutBtn.parentNode.insertBefore(subscriptionBtn, firebaseSignOutBtn.nextSibling);
+        
+        // Add click event
+        subscriptionBtn.addEventListener('click', async () => {
+          if (isPremium) {
+            // Open customer portal for existing subscribers
+            try {
+              StatusMessage.show("Opening subscription management...", 2000, true);
+              const result = await Firebase.getCustomerPortalUrl();
+              
+              if (result.success && result.url) {
+                window.location.assign(result.url);
+              } else {
+                StatusMessage.show("Failed to open subscription management", 3000, false);
+              }
+            } catch (error) {
+              console.error("Portal error:", error);
+              StatusMessage.show("Error: " + error.message, 3000, false);
+            }
+          } else {
+            // Show upgrade prompt for free users
+            showUpgradePrompt();
+          }
+        });
+      } else {
+        // Update existing button
+        subscriptionBtn.className = isPremium ? 'btn btn-secondary' : 'btn btn-primary';
+        subscriptionBtn.textContent = isPremium ? 'Manage Subscription' : 'Upgrade to Premium';
+        subscriptionBtn.style.display = "inline-block";
+      }
+      
+      // Update toggle based on premium status
+      firebaseEnabledToggle.disabled = !isPremium;
+      firebaseEnabledToggle.checked = isPremium && Database.isFirebaseEnabled();
+      
+      // If user downgraded from premium to free, disable Firebase
+      if (!isPremium && Database.isFirebaseEnabled()) {
+        Database.disableFirebase();
+      }
       
       // Update sync controls
-      const isEnabled = Database.isFirebaseEnabled();
+      const isEnabled = isPremium && Database.isFirebaseEnabled();
       if (manualSyncButton) manualSyncButton.disabled = !isEnabled;
       if (syncIntervalInput) syncIntervalInput.disabled = !isEnabled;
       
@@ -320,6 +513,12 @@ window.SettingsView = (() => {
       firebaseSignOutBtn.style.display = "none";
       firebaseEnabledToggle.disabled = true;
       firebaseEnabledToggle.checked = false;
+      
+      // Hide subscription button if it exists
+      const subscriptionBtn = document.getElementById('manage-subscription-btn');
+      if (subscriptionBtn) {
+        subscriptionBtn.style.display = "none";
+      }
       
       // Disable sync controls
       if (manualSyncButton) manualSyncButton.disabled = true;
@@ -615,5 +814,6 @@ window.SettingsView = (() => {
     show,
     hide,
     handleKeyDown,
+    showUpgradePrompt, // Expose this method so MenuView can call it
   };
 })();

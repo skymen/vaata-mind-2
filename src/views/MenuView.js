@@ -8,6 +8,8 @@ window.MenuView = (() => {
   let modeButtons = [];
   let settingsButton = null;
   let versionElement = null;
+  let premiumBanner = null;
+  let premiumUpgradeBtn = null;
 
   /**
    * Initialize the menu view
@@ -77,6 +79,13 @@ window.MenuView = (() => {
           <span class="mode-btn-tip">[T]</span>
         </button>
       </div>
+      <div id="premium-banner" class="premium-banner" style="display: none;">
+        <div class="premium-content">
+          <span class="premium-icon">⭐</span>
+          <span class="premium-text">Upgrade to Premium for cloud sync</span>
+          <button id="premium-upgrade-btn" class="btn btn-primary btn-sm">Upgrade</button>
+        </div>
+      </div>
       <div id="version-number"></div>
     `;
 
@@ -84,6 +93,8 @@ window.MenuView = (() => {
     settingsButton = document.getElementById("settings-button");
     versionElement = document.getElementById("version-number");
     modeButtons = document.querySelectorAll(".mode-btn");
+    premiumBanner = document.getElementById("premium-banner");
+    premiumUpgradeBtn = document.getElementById("premium-upgrade-btn");
   }
 
   /**
@@ -102,6 +113,21 @@ window.MenuView = (() => {
     if (settingsButton) {
       settingsButton.addEventListener("click", () => {
         ViewManager.showView(Constants.VIEWS.SETTINGS);
+      });
+    }
+    
+    // Premium upgrade button
+    if (premiumUpgradeBtn) {
+      premiumUpgradeBtn.addEventListener("click", () => {
+        // Go to settings view to handle the upgrade
+        ViewManager.showView(Constants.VIEWS.SETTINGS);
+        
+        // Open the upgrade dialog if possible
+        if (typeof SettingsView !== 'undefined' && typeof SettingsView.showUpgradePrompt === 'function') {
+          setTimeout(() => {
+            SettingsView.showUpgradePrompt();
+          }, 300); // Small delay to allow settings view to load
+        }
       });
     }
   }
@@ -134,7 +160,36 @@ window.MenuView = (() => {
    * Show the menu view
    */
   function show() {
-    // Optional initialization when showing
+    // Check if premium banner should be shown
+    updatePremiumBanner();
+  }
+  
+  /**
+   * Update the premium banner based on Firebase auth status
+   */
+  async function updatePremiumBanner() {
+    if (!premiumBanner) return;
+    
+    try {
+      // If Firebase is not available or user is not signed in, don't show banner
+      if (typeof Firebase === 'undefined' || !Firebase.isSignedIn()) {
+        premiumBanner.style.display = 'none';
+        return;
+      }
+      
+      // Check if user already has premium status
+      const isPremium = await Firebase.isPremiumUser();
+      
+      // Show banner only for non-premium users
+      if (!isPremium) {
+        premiumBanner.style.display = 'block';
+      } else {
+        premiumBanner.style.display = 'none';
+      }
+    } catch (error) {
+      console.error("Error checking premium status:", error);
+      premiumBanner.style.display = 'none';
+    }
   }
 
   /**
