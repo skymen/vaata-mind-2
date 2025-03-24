@@ -1,9 +1,76 @@
 /* Settings View Styles */
+/* Add placeholder for updated loading animation in loading-pricing */
+.loading-pricing .price-loader-placeholder {
+  display: none; /* Will be replaced with actual loader HTML via JS */
+}
+
+/* Add to settings.css for collapsible premium section */
+#subscription-section.collapsed {
+  box-shadow: 0 0 5px rgba(108, 99, 255, 0.3);
+  overflow: hidden;
+  padding: 10px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+#subscription-section.collapsed:hover {
+  box-shadow: 0 0 10px rgba(108, 99, 255, 0.5);
+}
+
+#subscription-section.collapsed .premium-features,
+#subscription-section.collapsed .pricing-options,
+#subscription-section.collapsed .subscription-status {
+  display: none;
+}
+
+#subscription-section.collapsed h3 {
+  margin: 0;
+  font-size: 16px;
+  color: var(--accent-color);
+  padding: 0;
+}
+
+#subscription-section.collapsed h3::before {
+  display: none;
+}
+
+.subscription-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.subscription-toggle {
+  background: none;
+  border: none;
+  color: #777;
+  cursor: pointer;
+  font-size: 14px;
+  padding: 5px;
+  transition: color 0.2s;
+  display: flex;
+  align-items: center;
+}
+
+.subscription-toggle:hover {
+  color: var(--accent-color);
+}
+
+.subscription-toggle-icon {
+  transition: transform 0.3s;
+}
+
+#subscription-section.collapsed .subscription-toggle-icon {
+  transform: rotate(180deg);
+}
+
 
 .settings-container {
   max-width: 600px;
   margin: 0 auto;
   padding: 20px;
+  max-height: 100vh;
+  overflow-y: auto;
 }
 
 .settings-section {
@@ -19,6 +86,108 @@
   color: var(--accent-color);
   font-weight: 500;
   margin-bottom: 15px;
+}
+
+#subscription-section {
+  box-shadow: 0 0px 15px 2px rgba(108, 99, 255, 1);
+  overflow: hidden;
+  position: relative;
+}
+
+#subscription-section.collapsed .subscription-content {
+  display: none;
+}
+
+#subscription-section .subscription-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.5rem;
+}
+
+#subscription-section.collapsed .subscription-header {
+  display: none;
+}
+
+#subscription-section .subscription-toggle {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  font-size: 1.2em;
+  color: var(--accent-color);
+  transition: color 0.2s;
+  width: 30px;
+  height: 30px;
+  border-radius: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: absolute;
+  top: 0;
+  right: 0;
+  z-index: 10;
+}
+
+/* Premium section heading */
+#subscription-section .upgrade-to-premium {
+  color: var(--bg-color);
+  font-size: 1.4em;
+  font-weight: 600;
+  margin-bottom: 20px;
+  position: relative;
+  padding-bottom: 10px;
+  z-index: 1;
+  width: 100%;
+}
+
+#subscription-section.premium {
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+}
+
+#subscription-section .upgrade-to-premium::before {
+  content: "";
+  position: absolute;
+  top: -20px;
+  left: -20px;
+  width: 100%;
+  height: 75px;
+  border-radius: 3px;
+  background: linear-gradient(to right, var(--accent-color), transparent);
+  z-index: -1;
+}
+
+#subscription-section .subscription-toggle:hover {
+  color: #333;
+}
+
+#subscription-section .upgrade-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  padding: 12px;
+  background: var(--accent-color);
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-size: 1.1em;
+  cursor: pointer;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+#subscription-section .upgrade-button:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+#subscription-section .upgrade-button .upgrade-icon {
+  font-size: 1.2em;
+}
+
+.hidden {
+  display: none !important;
 }
 
 .settings-actions {
@@ -151,4 +320,258 @@ label.btn {
 @keyframes spin {
   from { transform: rotate(0deg); }
   to { transform: rotate(360deg); }
+}
+
+/* Subscription section styles */
+.subscription-status {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+}
+
+.subscription-info {
+  flex-grow: 1;
+}
+
+.premium-active {
+  color: var(--completed-color);
+  font-weight: 600;
+  font-size: 1.1em;
+  margin-bottom: 15px;
+  display: block;
+}
+
+.premium-active-section {
+  text-align: center;
+  padding: 20px;
+  background-color: white;
+  border-radius: 8px;
+  margin-top: 20px;
+  box-shadow: 0 2px 10px rgba(108, 99, 255, 0.1);
+  border: 1px solid rgba(108, 99, 255, 0.2);
+}
+
+/* Premium features */
+.premium-features {
+  background-color: white;
+  border-radius: 6px;
+}
+
+.premium-features h4 {
+  margin: 0 0 10px 0;
+}
+
+.features-list {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 20px 0;
+}
+
+.features-list li {
+  padding: 10px 0;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.features-list li:last-child {
+  border-bottom: none;
+}
+
+.feature-icon {
+  display: inline-block;
+  margin-right: 10px;
+  font-size: 18px;
+  flex-shrink: 0;
+}
+
+/* Pricing options */
+.pricing-options {
+  margin-top: 20px;
+}
+
+.pricing-options-row {
+  display: flex;
+  gap: 20px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.pricing-option {
+  flex: 1;
+  min-width: 200px;
+  background-color: white;
+  border-radius: 8px;
+  padding: 20px;
+  text-align: center;
+  position: relative;
+  transition: transform 0.2s, box-shadow 0.2s;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.pricing-option:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 20px rgba(108, 99, 255, 0.15);
+}
+
+.pricing-option.featured {
+  border: 2px solid var(--accent-color);
+  box-shadow: 0 4px 12px rgba(108, 99, 255, 0.2);
+}
+
+.best-value {
+  position: absolute;
+  top: -12px;
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: var(--accent-color);
+  color: white;
+  padding: 5px 15px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: bold;
+}
+
+.option-header {
+  font-size: 18px;
+  font-weight: 500;
+  margin-bottom: 10px;
+}
+
+.option-price {
+  font-size: 28px;
+  font-weight: bold;
+  color: var(--accent-color);
+}
+
+.option-period {
+  color: #666;
+  font-size: 14px;
+  margin-bottom: 10px;
+}
+
+.option-savings {
+  margin: 10px 0;
+  font-size: 14px;
+  color: #4CAF50;
+  font-weight: bold;
+}
+
+.option-btn {
+  width: 100%;
+  margin-top: auto; /* Pushes button to bottom */
+  padding: 10px;
+}
+
+/* Secure payment note */
+.secure-payment {
+  text-align: center;
+  color: #666;
+  font-size: 14px;
+  margin: 20px 0 0 0;
+  padding: 10px;
+  background-color: rgba(255, 255, 255, 0.7);
+  border-radius: 20px;
+  display: inline-block;
+}
+
+/* Sign-in prompt in pricing section */
+.pricing-signin-prompt {
+  text-align: center;
+  padding: 20px;
+  background-color: #f9f9f9;
+  border-radius: 8px;
+}
+
+.pricing-signin-prompt p {
+  margin-bottom: 15px;
+  font-size: 15px;
+}
+
+/* Loading indicator for pricing options */
+.loading-pricing {
+  text-align: center;
+  padding: 40px 20px;
+  position: relative;
+}
+
+.price-loader {
+  display: inline-flex;
+  position: relative;
+  width: 80px;
+  height: 40px;
+}
+
+.price-loader div {
+  position: absolute;
+  top: 10px;
+  width: 13px;
+  height: 13px;
+  border-radius: 50%;
+  background: var(--accent-color);
+  animation-timing-function: cubic-bezier(0, 1, 1, 0);
+}
+
+.price-loader div:nth-child(1) {
+  left: 8px;
+  animation: price-loader1 0.6s infinite;
+}
+
+.price-loader div:nth-child(2) {
+  left: 8px;
+  animation: price-loader2 0.6s infinite;
+}
+
+.price-loader div:nth-child(3) {
+  left: 32px;
+  animation: price-loader2 0.6s infinite;
+}
+
+.price-loader div:nth-child(4) {
+  left: 56px;
+  animation: price-loader3 0.6s infinite;
+}
+
+@keyframes price-loader1 {
+  0% {
+    transform: scale(0);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+@keyframes price-loader2 {
+  0% {
+    transform: translate(0, 0);
+  }
+  100% {
+    transform: translate(24px, 0);
+  }
+}
+
+@keyframes price-loader3 {
+  0% {
+    transform: scale(1);
+  }
+  100% {
+    transform: scale(0);
+  }
+}
+
+.loading-pricing p {
+  margin-top: 15px;
+  color: #666;
+  font-size: 15px;
+  animation: fade-in-out 1.5s infinite alternate;
+}
+
+@keyframes fade-in-out {
+  0% {
+    opacity: 0.5;
+  }
+  100% {
+    opacity: 1;
+  }
 }
