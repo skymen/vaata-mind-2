@@ -69,15 +69,35 @@ window.SettingsView = (() => {
       <button class="back-btn" id="settings-back">←</button>
       <div class="settings-container">
         <h2>Settings</h2>
-
-        <div class="settings-section">
-          <h3>Local Storage</h3>
-          <button id="request-storage-btn" class="btn btn-primary">
-            Request Persistent Storage
+        
+        <div class="settings-section" id="subscription-section">
+          <div class="subscription-header">
+            <h3 class="upgrade-to-premium">Upgrade to Premium</h3>
+            <button class="subscription-toggle" id="subscription-toggle">
+              <span class="subscription-toggle-icon">✕</span>
+            </button>
+          </div>
+          <div class="subscription-content">
+            <div class="premium-features">
+              <h4>Premium Features</h4>
+              <ul class="features-list">
+                <li><span class="feature-icon">🔄</span> <strong>Cloud Synchronization</strong> <br> Keep your notes in sync across all your devices</li>
+                <li><span class="feature-icon">💾</span> <strong>Automatic Backup</strong> <br> Never lose your important notes again</li>
+              </ul>
+            </div>
+            <div id="pricing-options" class="pricing-options">
+              <div class="loading-pricing">
+                <div class="price-loader">
+                  <div></div><div></div><div></div><div></div>
+                </div>
+                <p>Loading pricing options...</p>
+              </div>
+            </div>
+            <p class="secure-payment">🔒 Secure payment with Stripe</p>
+          </div>
+          <button class="upgrade-button hidden" id="upgrade-premium-btn">
+            Upgrade to Premium
           </button>
-          <p class="settings-description">
-            Enable persistent storage to ensure your notes aren't lost if your browser clears data.
-          </p>
         </div>
 
         <div class="settings-section">
@@ -91,59 +111,6 @@ window.SettingsView = (() => {
               <button id="firebase-signout-btn" class="btn btn-secondary" style="display: none;">
                 Sign Out
               </button>
-            </div>
-          </div>
-        </div>
-        
-        <div class="settings-section" id="subscription-section">
-          <h3>Subscription</h3>
-          <div id="subscription-status" class="subscription-status">
-            <div class="subscription-info">
-              <p id="subscription-text">Sign in to see subscription options</p>
-            </div>
-            <div class="subscription-actions">
-              <button id="subscription-btn" class="btn btn-primary" style="display: none;">
-                Upgrade to Premium
-              </button>
-            </div>
-          </div>
-          
-          <div id="subscription-features" class="subscription-features" style="display: none;">
-            <div class="comparison-table">
-              <div class="comparison-header">
-                <div class="feature-column">Features</div>
-                <div class="free-column">Free</div>
-                <div class="premium-column">Premium</div>
-              </div>
-              <div class="comparison-row">
-                <div class="feature-column">Local Storage</div>
-                <div class="free-column">✓</div>
-                <div class="premium-column">✓</div>
-              </div>
-              <div class="comparison-row">
-                <div class="feature-column">Cloud Backup</div>
-                <div class="free-column">✗</div>
-                <div class="premium-column">✓</div>
-              </div>
-              <div class="comparison-row">
-                <div class="feature-column">Multi-device Sync</div>
-                <div class="free-column">✗</div>
-                <div class="premium-column">✓</div>
-              </div>
-              <div class="comparison-row">
-                <div class="feature-column">Offline Mode</div>
-                <div class="free-column">✓</div>
-                <div class="premium-column">✓</div>
-              </div>
-              <div class="comparison-row">
-                <div class="feature-column">Automatic Syncing</div>
-                <div class="free-column">✗</div>
-                <div class="premium-column">✓</div>
-              </div>
-            </div>
-            
-            <div id="pricing-options" class="pricing-options">
-              <!-- Pricing will be filled in dynamically -->
             </div>
           </div>
         </div>
@@ -170,6 +137,16 @@ window.SettingsView = (() => {
               <option value="60">60 minutes</option>
             </select>
           </div>
+        </div>
+
+        <div class="settings-section">
+          <h3>Local Storage</h3>
+          <button id="request-storage-btn" class="btn btn-primary">
+            Request Persistent Storage
+          </button>
+          <p class="settings-description">
+            Enable persistent storage to ensure your notes aren't lost if your browser clears data.
+          </p>
         </div>
 
         <div class="settings-section">
@@ -203,9 +180,6 @@ window.SettingsView = (() => {
 
     // Subscription elements
     subscriptionSection = document.getElementById("subscription-section");
-    subscriptionText = document.getElementById("subscription-text");
-    subscriptionBtn = document.getElementById("subscription-btn");
-    subscriptionFeatures = document.getElementById("subscription-features");
     pricingOptions = document.getElementById("pricing-options");
 
     // Cloud storage elements
@@ -214,6 +188,9 @@ window.SettingsView = (() => {
     manualSyncButton = document.getElementById("manual-sync-button");
     lastSyncTimeElement = document.getElementById("last-sync-time");
     syncIntervalInput = document.getElementById("sync-interval-input");
+
+    // New element: subscription toggle button
+    const subscriptionToggle = document.getElementById("subscription-toggle");
   }
 
   /**
@@ -252,42 +229,6 @@ window.SettingsView = (() => {
       firebaseSignOutBtn.addEventListener("click", signOutFromFirebase);
     }
 
-    // Subscription button
-    if (subscriptionBtn) {
-      subscriptionBtn.addEventListener("click", async () => {
-        if (typeof Firebase !== "undefined" && Firebase.isSignedIn()) {
-          const isPremium = await Firebase.isPremiumUser();
-          if (isPremium) {
-            // Open customer portal for premium users
-            try {
-              StatusMessage.show(
-                "Opening subscription management...",
-                2000,
-                true
-              );
-              const result = await Firebase.getCustomerPortalUrl();
-
-              if (result.success && result.url) {
-                window.location.assign(result.url);
-              } else {
-                StatusMessage.show(
-                  "Failed to open subscription management",
-                  3000,
-                  false
-                );
-              }
-            } catch (error) {
-              console.error("Portal error:", error);
-              StatusMessage.show("Error: " + error.message, 3000, false);
-            }
-          } else {
-            // Show upgrade prompt for free users
-            showUpgradePrompt();
-          }
-        }
-      });
-    }
-
     // Firebase enabled toggle
     if (firebaseEnabledToggle) {
       firebaseEnabledToggle.addEventListener("change", toggleFirebaseEnabled);
@@ -307,6 +248,26 @@ window.SettingsView = (() => {
       if (savedInterval) {
         syncIntervalInput.value = savedInterval;
       }
+    }
+
+
+    // Check if section should be collapsed by default
+    const isCollapsed = localStorage.getItem("subscription_section_collapsed") === "true";
+    // Subscription toggle button
+    const subscriptionToggle = document.getElementById("subscription-toggle");
+    if (subscriptionSection && subscriptionToggle) {
+      subscriptionToggle.addEventListener("click", toggleSubscriptionSection);
+      if (!isCollapsed) {
+        toggleSubscriptionSection();
+      }
+    }
+
+    // Upgrade button
+    const upgradeButton = document.getElementById("upgrade-premium-btn");
+    if (upgradeButton) {
+      upgradeButton.addEventListener("click", () => {
+        toggleSubscriptionSection();
+      });
     }
 
     // Listen for Firebase auth state changes
@@ -397,7 +358,8 @@ window.SettingsView = (() => {
         e.target.checked = false;
 
         // Show upgrade prompt
-        showUpgradePrompt();
+        updatePricingOptions();
+        subscriptionSection.scrollIntoView({ behavior: 'smooth' });
         return;
       }
 
@@ -424,155 +386,172 @@ window.SettingsView = (() => {
   }
 
   /**
-   * Show upgrade to premium prompt
-   */
-  async function showUpgradePrompt() {
-    try {
-      // Get product information
-      const products = await Firebase.getProducts();
-      debugger;
-      if (products.length === 0) {
-        StatusMessage.show("No subscription plans available", 3000, false);
-        return;
-      }
+ * Update the subscription section HTML structure
+ * This function should be called from createViewStructure or a similar initialization function
+ */
+  function createSubscriptionSection() {
+    const subscriptionSection = document.getElementById('subscription-section');
 
-      // Get the subscription product (there should only be one)
-      const product = products[0];
+    if (!subscriptionSection) return;
 
-      if (!product || !product.prices || product.prices.length === 0) {
-        StatusMessage.show(
-          "Subscription plan information not available",
-          3000,
-          false
-        );
-        return;
-      }
+    // Get current content (if any)
+    const currentContent = subscriptionSection.innerHTML;
 
-      // Find monthly and yearly prices
-      const monthlyPrice = product.prices.find((p) => p.interval === "month");
-      const yearlyPrice = product.prices.find((p) => p.interval === "year");
+    // Add the header with toggle button
+    const headerHTML = `
+    <div class="subscription-header">
+      <h3>Premium Subscription</h3>
+      <button class="subscription-toggle" id="subscription-toggle">
+        <span>Hide</span>
+        <span class="subscription-toggle-icon">▲</span>
+      </button>
+    </div>
+  `;
 
-      // Calculate pricing and savings information
-      let monthlyHtml = "";
-      let yearlyHtml = "";
-
-      if (monthlyPrice) {
-        const amount = (monthlyPrice.unit_amount / 100).toFixed(2);
-        const currency = monthlyPrice.currency.toUpperCase();
-        monthlyHtml = `
-          <div class="pricing-option">
-            <div class="option-header">Monthly</div>
-            <div class="option-price">${currency} ${amount}</div>
-            <div class="option-period">per month</div>
-            <button class="btn btn-primary option-btn" id="monthly-option-btn">Subscribe Monthly</button>
-          </div>
-        `;
-      }
-
-      if (yearlyPrice) {
-        const yearAmount = (yearlyPrice.unit_amount / 100).toFixed(2);
-        const currency = yearlyPrice.currency.toUpperCase();
-
-        if (monthlyPrice) {
-          // Calculate savings when compared to monthly
-          const monthlyTotal = (monthlyPrice.unit_amount * 12) / 100;
-          const yearlyTotal = yearlyPrice.unit_amount / 100;
-          const savings = monthlyTotal - yearlyTotal;
-          const savingsPercent = Math.round((savings / monthlyTotal) * 100);
-
-          yearlyHtml = `
-            <div class="pricing-option featured">
-              <div class="best-value">Best Value</div>
-              <div class="option-header">Yearly</div>
-              <div class="option-price">${currency} ${yearAmount}</div>
-              <div class="option-period">per year</div>
-              <div class="option-savings">Save ${savingsPercent}%</div>
-              <button class="btn btn-primary option-btn" id="yearly-option-btn">Subscribe Yearly</button>
+    // Replace just the header portion if it exists
+    if (currentContent.includes('<h3>')) {
+      subscriptionSection.innerHTML = currentContent.replace(/<h3>.*?<\/h3>/, headerHTML);
+    } else {
+      // If no content yet, add a basic structure
+      subscriptionSection.innerHTML = `
+      ${headerHTML}
+      <div class="subscription-content">
+        <div class="premium-features">
+          <h4>Premium Features</h4>
+          <ul class="features-list">
+            <li>
+              <span class="feature-icon">☁️</span>
+              <span>Cloud sync across all your devices</span>
+            </li>
+            <li>
+              <span class="feature-icon">🔒</span>
+              <span>Secure encrypted storage</span>
+            </li>
+            <li>
+              <span class="feature-icon">🏆</span>
+              <span>Priority support</span>
+            </li>
+          </ul>
+        </div>
+        <div class="pricing-options">
+          <div class="loading-pricing">
+            <div class="price-loader">
+              <div></div><div></div><div></div><div></div>
             </div>
-          `;
-        } else {
-          yearlyHtml = `
-            <div class="pricing-option">
-              <div class="option-header">Yearly</div>
-              <div class="option-price">${currency} ${yearAmount}</div>
-              <div class="option-period">per year</div>
-              <button class="btn btn-primary option-btn" id="yearly-option-btn">Subscribe Yearly</button>
-            </div>
-          `;
-        }
-      }
-
-      // Create enhanced premium dialog
-      const dialogContent = `
-        <div class="upgrade-dialog">
-          <h3>Upgrade to Premium</h3>
-          <div class="dialog-close" id="dialog-close-btn">×</div>
-          
-          <div class="premium-features">
-            <h4>Premium Features</h4>
-            <ul class="features-list">
-              <li><span class="feature-icon">🔄</span> <strong>Cloud Synchronization</strong> - Keep your notes in sync across all your devices</li>
-              <li><span class="feature-icon">💾</span> <strong>Automatic Backup</strong> - Never lose your important notes again</li>
-              <li><span class="feature-icon">📱</span> <strong>Multi-device Support</strong> - Access from anywhere</li>
-              <li><span class="feature-icon">⚡</span> <strong>Offline Mode</strong> - Work without internet connection</li>
-            </ul>
-          </div>
-          
-          <div class="pricing-options-container">
-            <h4>Choose Your Plan</h4>
-            <div class="pricing-options-row">
-              ${monthlyHtml}
-              ${yearlyHtml}
-            </div>
-          </div>
-          
-          <div class="upgrade-footer">
-            <p class="secure-payment">🔒 Secure payment with Stripe</p>
-            <button id="cancel-upgrade-btn" class="btn btn-secondary">No Thanks</button>
+            <p>Loading pricing options...</p>
           </div>
         </div>
-      `;
+      </div>
+    `;
+    }
 
-      // Show the dialog
-      const dialogElement = document.createElement("div");
-      dialogElement.className = "dialog-overlay";
-      dialogElement.innerHTML = dialogContent;
-      document.body.appendChild(dialogElement);
+    // Add event listener to toggle button
+    const toggleButton = document.getElementById('subscription-toggle');
+    if (toggleButton) {
+      toggleButton.addEventListener('click', toggleSubscriptionSection);
+    }
 
-      // Add event listeners for closing the dialog
-      const closeDialog = () => {
-        document.body.removeChild(dialogElement);
-      };
-
-      const cancelBtn = document.getElementById("cancel-upgrade-btn");
-      const closeBtn = document.getElementById("dialog-close-btn");
-      if (cancelBtn) cancelBtn.addEventListener("click", closeDialog);
-      if (closeBtn) closeBtn.addEventListener("click", closeDialog);
-
-      // Add event listeners for the subscription options
-      const monthlyBtn = document.getElementById("monthly-option-btn");
-      const yearlyBtn = document.getElementById("yearly-option-btn");
-
-      if (monthlyBtn && monthlyPrice) {
-        monthlyBtn.addEventListener("click", () => {
-          closeDialog();
-          handleSubscription(monthlyPrice.id);
-        });
+    // Check if section should be collapsed by default (stored preference)
+    const isCollapsed = localStorage.getItem('subscription_section_collapsed') === 'true';
+    if (isCollapsed) {
+      subscriptionSection.classList.add('collapsed');
+      if (toggleButton) {
+        toggleButton.querySelector('span:not(.subscription-toggle-icon)').textContent = 'Show';
       }
+    }
+  }
 
-      if (yearlyBtn && yearlyPrice) {
-        yearlyBtn.addEventListener("click", () => {
-          closeDialog();
-          handleSubscription(yearlyPrice.id);
-        });
-      }
-    } catch (error) {
-      console.error("Error showing upgrade prompt:", error);
-      StatusMessage.show(
-        "Error preparing subscription information",
-        3000,
-        false
-      );
+  /**
+   * Toggle the subscription section between expanded and collapsed states
+   */
+  function toggleSubscriptionSection() {
+    if (!subscriptionSection) return;
+
+    const toggleButton = document.getElementById("subscription-toggle");
+    const upgradeButton = document.getElementById("upgrade-premium-btn");
+    const content = subscriptionSection.querySelector(".subscription-content");
+
+    if (!toggleButton || !upgradeButton || !content) return;
+
+    const isCollapsed = subscriptionSection.classList.contains("collapsed");
+
+    if (isCollapsed) {
+      subscriptionSection.classList.remove("collapsed");
+      content.classList.remove("hidden");
+      upgradeButton.classList.add("hidden");
+      toggleButton.querySelector(".subscription-toggle-icon").textContent = "✕";
+    } else {
+      subscriptionSection.classList.add("collapsed");
+      content.classList.add("hidden");
+      upgradeButton.classList.remove("hidden");
+      toggleButton.querySelector(".subscription-toggle-icon").textContent = "✕";
+    }
+
+    localStorage.setItem("subscription_section_collapsed", isCollapsed);
+
+    if (!isCollapsed && typeof updatePricingOptions === 'function') {
+      updatePricingOptions();
+    }
+  }
+
+  /**
+   * Add this to an existing loadPricingOptions function or create it if it doesn't exist
+   */
+  function loadPricingOptions() {
+    const pricingContainer = document.querySelector('.pricing-options');
+
+    if (!pricingContainer) return;
+
+    // Show loading animation
+    pricingContainer.innerHTML = `
+    <div class="loading-pricing">
+      <div class="price-loader">
+        <div></div><div></div><div></div><div></div>
+      </div>
+      <p>Loading pricing options...</p>
+    </div>
+  `;
+
+    // Your existing code to fetch pricing from an API would go here...
+    // This is a placeholder that simulates loading
+    setTimeout(() => {
+      // This is dummy content - replace with your actual pricing data
+      pricingContainer.innerHTML = `
+      <h4>Pricing Options</h4>
+      <div class="pricing-options-row">
+        <div class="pricing-option">
+          <div class="option-header">Monthly</div>
+          <div class="option-price">EUR 1.99</div>
+          <div class="option-period">per month</div>
+          <button class="btn btn-primary option-btn">Select</button>
+        </div>
+        
+        <div class="pricing-option featured">
+          <div class="best-value">Best Value</div>
+          <div class="option-header">Yearly</div>
+          <div class="option-price">EUR 14.99</div>
+          <div class="option-period">per year</div>
+          <div class="option-savings">Save 17%</div>
+          <button class="btn btn-primary option-btn">Select</button>
+        </div>
+      </div>
+      <p class="secure-payment">🔒 Secure payment with Stripe</p>
+    `;
+    }, 1500); // Simulate loading delay for demonstration
+  }
+
+  /**
+   * Show the expanded upgrade prompt
+   * This function can be called from other parts of the app
+   */
+  function showUpgradePrompt() {
+    const subscriptionSection = document.getElementById('subscription-section');
+
+    if (!subscriptionSection) return;
+
+    // Make sure section is expanded
+    if (subscriptionSection.classList.contains('collapsed')) {
+      toggleSubscriptionSection();
     }
   }
 
@@ -587,17 +566,7 @@ window.SettingsView = (() => {
       firebaseSignOutBtn.style.display = "none";
 
       // Update subscription section
-      if (subscriptionText) {
-        subscriptionText.textContent = "Sign in to see subscription options";
-      }
-
-      if (subscriptionBtn) {
-        subscriptionBtn.style.display = "none";
-      }
-
-      if (subscriptionFeatures) {
-        subscriptionFeatures.style.display = "none";
-      }
+      updatePricingOptions();
 
       // Hide cloud storage section
       if (cloudStorageSection) {
@@ -614,75 +583,13 @@ window.SettingsView = (() => {
       const isPremium = await Firebase.isPremiumUser();
 
       // Update account section
-      firebaseStatusText.textContent = `Signed in as: ${
-        user.email || user.displayName || "Unknown user"
-      }`;
+      firebaseStatusText.textContent = `Signed in as: ${user.email || user.displayName || "Unknown user"
+        }`;
       firebaseSignInBtn.style.display = "none";
       firebaseSignOutBtn.style.display = "inline-block";
 
       // Update subscription section
-      if (subscriptionText) {
-        if (isPremium) {
-          subscriptionText.textContent =
-            "You currently have a Premium subscription";
-          subscriptionText.className = "premium-active";
-        } else {
-          subscriptionText.textContent = "You are currently on the Free plan";
-          subscriptionText.className = "";
-        }
-      }
-
-      if (subscriptionBtn) {
-        subscriptionBtn.style.display = "inline-block";
-        subscriptionBtn.textContent = isPremium
-          ? "Manage Subscription"
-          : "Upgrade to Premium";
-        subscriptionBtn.className = isPremium
-          ? "btn btn-secondary"
-          : "btn btn-primary";
-
-        // Remove existing event listeners by cloning the button
-        const newBtn = subscriptionBtn.cloneNode(true);
-        subscriptionBtn.parentNode.replaceChild(newBtn, subscriptionBtn);
-        subscriptionBtn = newBtn;
-
-        // Add click event
-        subscriptionBtn.addEventListener("click", async () => {
-          if (isPremium) {
-            // Open customer portal for existing subscribers
-            try {
-              StatusMessage.show(
-                "Opening subscription management...",
-                2000,
-                true
-              );
-              const result = await Firebase.getCustomerPortalUrl();
-
-              if (result.success && result.url) {
-                window.location.assign(result.url);
-              } else {
-                StatusMessage.show(
-                  "Failed to open subscription management",
-                  3000,
-                  false
-                );
-              }
-            } catch (error) {
-              console.error("Portal error:", error);
-              StatusMessage.show("Error: " + error.message, 3000, false);
-            }
-          } else {
-            // Show upgrade prompt for free users
-            showUpgradePrompt();
-          }
-        });
-      }
-
-      // Show subscription features and populate pricing options
-      if (subscriptionFeatures) {
-        subscriptionFeatures.style.display = "block";
-        updatePricingOptions();
-      }
+      updatePricingOptions();
 
       // Update Cloud Storage section
       if (cloudStorageSection) {
@@ -717,18 +624,7 @@ window.SettingsView = (() => {
       firebaseSignOutBtn.style.display = "none";
 
       // Update subscription section
-      if (subscriptionText) {
-        subscriptionText.textContent = "Sign in to see subscription options";
-        subscriptionText.className = "";
-      }
-
-      if (subscriptionBtn) {
-        subscriptionBtn.style.display = "none";
-      }
-
-      if (subscriptionFeatures) {
-        subscriptionFeatures.style.display = "none";
-      }
+      updatePricingOptions();
 
       // Hide cloud storage section
       if (cloudStorageSection) {
@@ -738,27 +634,137 @@ window.SettingsView = (() => {
   }
 
   /**
-   * Update the pricing options display
-   */
+  * Update the pricing options display
+  */
   async function updatePricingOptions() {
     if (!pricingOptions) return;
 
     try {
-      // Clear existing content
-      pricingOptions.innerHTML =
-        '<div class="loading-pricing">Loading pricing options...</div>';
+      // Check if Firebase is loaded and user is signed in
+      const isSignedIn = typeof Firebase !== "undefined" && Firebase.isSignedIn();
+      let isPremium = false;
 
-      // Get products from Firebase
-      const products = await Firebase.getProducts();
+      // Reset subscription section when user is not signed in or not premium
+      // This is the key fix - we need to restore the original structure when signing out
+      if (!isSignedIn || (isSignedIn && !(await Firebase.isPremiumUser()))) {
+        // Restore the original subscription section structure if it's currently in premium mode
+        if (subscriptionSection && subscriptionSection.classList.contains("premium")) {
+          subscriptionSection.classList.remove("premium");
+          // Re-create the original subscription structure
+          subscriptionSection.innerHTML = `
+          <div class="subscription-header">
+            <h3 class="upgrade-to-premium">Upgrade to Premium</h3>
+            <button class="subscription-toggle" id="subscription-toggle">
+              <span class="subscription-toggle-icon">✕</span>
+            </button>
+          </div>
+          <div class="subscription-content">
+            <div class="premium-features">
+              <h4>Premium Features</h4>
+              <ul class="features-list">
+                <li><span class="feature-icon">🔄</span> <strong>Cloud Synchronization</strong> <br> Keep your notes in sync across all your devices</li>
+                <li><span class="feature-icon">💾</span> <strong>Automatic Backup</strong> <br> Never lose your important notes again</li>
+              </ul>
+            </div>
+            <div id="pricing-options" class="pricing-options">
+              <div class="loading-pricing">
+                <div class="price-loader">
+                  <div></div><div></div><div></div><div></div>
+                </div>
+                <p>Loading pricing options...</p>
+              </div>
+            </div>
+            <p class="secure-payment">🔒 Secure payment with Stripe</p>
+          </div>
+          <button class="upgrade-button hidden" id="upgrade-premium-btn">
+            Upgrade to Premium
+          </button>
+        `;
 
-      if (products.length === 0) {
-        pricingOptions.innerHTML = "<p>No subscription plans available</p>";
+          // Re-cache the pricing options element
+          pricingOptions = document.getElementById("pricing-options");
+
+          // Re-attach event listeners
+          const subscriptionToggle = document.getElementById("subscription-toggle");
+          if (subscriptionToggle) {
+            subscriptionToggle.addEventListener("click", toggleSubscriptionSection);
+          }
+
+          const upgradeButton = document.getElementById("upgrade-premium-btn");
+          if (upgradeButton) {
+            upgradeButton.addEventListener("click", () => {
+              toggleSubscriptionSection();
+            });
+          }
+        }
+      }
+
+      if (isSignedIn) {
+        isPremium = await Firebase.isPremiumUser();
+
+        // If user is premium, show simplified content
+        if (isPremium) {
+          // Update the entire subscription section with a simpler version
+          if (subscriptionSection) {
+            // Replace the whole section content
+            subscriptionSection.innerHTML = `
+            <h3>Subscription</h3>
+            <div class="settings-content">
+              <p>You currently have an active premium subscription.</p>
+              <button id="manage-subscription-btn" class="btn btn-secondary">Manage Subscription</button>
+            </div>
+          `;
+
+            subscriptionSection.classList.remove("collapsed");
+            subscriptionSection.classList.add("premium");
+
+            // Add event listener for manage subscription button
+            const manageSubBtn = document.getElementById("manage-subscription-btn");
+            if (manageSubBtn) {
+              manageSubBtn.addEventListener("click", async () => {
+                try {
+                  StatusMessage.show("Opening subscription management...", 2000, true);
+                  const result = await Firebase.getCustomerPortalUrl();
+
+                  if (result.success && result.url) {
+                    window.location.assign(result.url);
+                  } else {
+                    StatusMessage.show("Failed to open subscription management", 3000, false);
+                  }
+                } catch (error) {
+                  console.error("Portal error:", error);
+                  StatusMessage.show("Error: " + error.message, 3000, false);
+                }
+              });
+            }
+          }
+          return;
+        }
+      }
+
+      // Show sign-in message if not signed in
+      if (!isSignedIn) {
+        pricingOptions.innerHTML = `
+        <div class="pricing-signin-prompt">
+          <p>Sign in to access premium features</p>
+          <button id="pricing-signin-btn" class="btn btn-primary">Sign in with Google</button>
+        </div>
+      `;
+
+        // Add event listener for sign-in button
+        const pricingSignInBtn = document.getElementById("pricing-signin-btn");
+        if (pricingSignInBtn) {
+          pricingSignInBtn.addEventListener("click", signInWithFirebase);
+        }
+
         return;
       }
 
-      // We only have one product, but it might have multiple pricing options
-      const product = products[0];
+      // Rest of the function remains the same...
+      // Continue with loading subscription options for non-premium signed-in users
+      const product = await Firebase.getProduct();
 
+      // [... Rest of the existing function code ...]
       if (!product || !product.prices || product.prices.length === 0) {
         pricingOptions.innerHTML = "<p>Subscription details not available</p>";
         return;
@@ -779,83 +785,70 @@ window.SettingsView = (() => {
         return;
       }
 
-      // Create pricing cards HTML
-      let pricingHTML = '<div class="pricing-cards">';
+      // Create pricing options HTML
+      let pricingHTML = '<div class="pricing-options-row">';
 
       if (monthlyPrice) {
-        const monthlyAmount = (monthlyPrice.unit_amount / 100).toFixed(2);
-        const monthlyCurrency = monthlyPrice.currency.toUpperCase();
-
+        const amount = (monthlyPrice.unit_amount / 100).toFixed(2);
+        const currency = monthlyPrice.currency.toUpperCase();
         pricingHTML += `
-          <div class="pricing-card">
-            <div class="pricing-header">Monthly</div>
-            <div class="pricing-price">${monthlyCurrency} ${monthlyAmount}</div>
-            <div class="pricing-period">per month</div>
-            <button class="btn btn-primary btn-block monthly-plan-btn">Select Monthly</button>
-          </div>
-        `;
+        <div class="pricing-option">
+          <div class="option-header">Monthly</div>
+          <div class="option-price">${currency} ${amount}</div>
+          <div class="option-period">per month</div>
+          <button class="btn btn-primary option-btn" id="monthly-option-btn">Subscribe Monthly</button>
+        </div>
+      `;
       }
 
       if (yearlyPrice) {
-        const yearlyAmount = (yearlyPrice.unit_amount / 100).toFixed(2);
-        const yearlyCurrency = yearlyPrice.currency.toUpperCase();
+        const yearAmount = (yearlyPrice.unit_amount / 100).toFixed(2);
+        const currency = yearlyPrice.currency.toUpperCase();
 
-        // Calculate monthly equivalent and savings
         if (monthlyPrice) {
-          const effectiveMonthly = (yearlyPrice.unit_amount / 12 / 100).toFixed(
-            2
-          );
-          const monthlyCost = monthlyPrice.unit_amount / 100;
-          const yearlyCost = yearlyPrice.unit_amount / 100;
-          const annualSavings = (monthlyCost * 12 - yearlyCost).toFixed(2);
-          const savingsPercent = Math.round(
-            ((monthlyCost * 12 - yearlyCost) / (monthlyCost * 12)) * 100
-          );
+          // Calculate savings when compared to monthly
+          const monthlyTotal = (monthlyPrice.unit_amount * 12) / 100;
+          const yearlyTotal = yearlyPrice.unit_amount / 100;
+          const savings = monthlyTotal - yearlyTotal;
+          const savingsPercent = Math.round((savings / monthlyTotal) * 100);
 
           pricingHTML += `
-            <div class="pricing-card featured">
-              <div class="pricing-badge">Best Value</div>
-              <div class="pricing-header">Yearly</div>
-              <div class="pricing-price">${yearlyCurrency} ${yearlyAmount}</div>
-              <div class="pricing-period">per year</div>
-              <div class="pricing-savings">
-                <span class="monthly-equiv">Just ${yearlyCurrency} ${effectiveMonthly}/mo</span>
-                <span class="save-text">Save ${savingsPercent}%</span>
-              </div>
-              <button class="btn btn-primary btn-block yearly-plan-btn">Select Yearly</button>
-            </div>
-          `;
+          <div class="pricing-option featured">
+            <div class="best-value">Best Value</div>
+            <div class="option-header">Yearly</div>
+            <div class="option-price">${currency} ${yearAmount}</div>
+            <div class="option-period">per year</div>
+            <div class="option-savings">Save ${savingsPercent}%</div>
+            <button class="btn btn-primary option-btn" id="yearly-option-btn">Subscribe Yearly</button>
+          </div>
+        `;
         } else {
           pricingHTML += `
-            <div class="pricing-card">
-              <div class="pricing-header">Yearly</div>
-              <div class="pricing-price">${yearlyCurrency} ${yearlyAmount}</div>
-              <div class="pricing-period">per year</div>
-              <button class="btn btn-primary btn-block yearly-plan-btn">Select Yearly</button>
-            </div>
-          `;
+          <div class="pricing-option">
+            <div class="option-header">Yearly</div>
+            <div class="option-price">${currency} ${yearAmount}</div>
+            <div class="option-period">per year</div>
+            <button class="btn btn-primary option-btn" id="yearly-option-btn">Subscribe Yearly</button>
+          </div>
+        `;
         }
       }
 
-      pricingHTML += "</div>";
+      pricingHTML += '</div>';
 
       // Set the HTML content
       pricingOptions.innerHTML = pricingHTML;
 
       // Add event listeners
-      const monthlyBtn = pricingOptions.querySelector(".monthly-plan-btn");
-      const yearlyBtn = pricingOptions.querySelector(".yearly-plan-btn");
+      const monthlyBtn = document.getElementById("monthly-option-btn");
+      const yearlyBtn = document.getElementById("yearly-option-btn");
 
       if (monthlyBtn && monthlyPrice) {
-        monthlyBtn.addEventListener("click", () =>
-          handleSubscription(monthlyPrice.id)
-        );
+        monthlyBtn.addEventListener("click", () => handleSubscription(monthlyPrice.id));
       }
 
       if (yearlyBtn && yearlyPrice) {
-        yearlyBtn.addEventListener("click", () =>
-          handleSubscription(yearlyPrice.id)
-        );
+        yearlyBtn.addEventListener("click", () => handleSubscription(yearlyPrice.id));
       }
     } catch (error) {
       console.error("Error updating pricing options:", error);
@@ -1184,6 +1177,9 @@ window.SettingsView = (() => {
     show,
     hide,
     handleKeyDown,
-    showUpgradePrompt, // Expose this method so MenuView can call it
+    createSubscriptionSection,
+    toggleSubscriptionSection,
+    loadPricingOptions,
+    showUpgradePrompt
   };
 })();

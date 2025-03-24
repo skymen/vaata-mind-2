@@ -10,6 +10,11 @@ window.MenuView = (() => {
   let versionElement = null;
   let premiumBanner = null;
   let premiumUpgradeBtn = null;
+  let premiumCloseBtn = null; // Added for close button
+
+  // Constants for premium banner dismissal
+  const PREMIUM_BANNER_HIDDEN_KEY = 'premium_banner_hidden_until';
+  const TWO_WEEKS_MS = 14 * 24 * 60 * 60 * 1000; // 14 days in milliseconds
 
   /**
    * Initialize the menu view
@@ -80,6 +85,7 @@ window.MenuView = (() => {
         </button>
       </div>
       <div id="premium-banner" class="premium-banner" style="display: none;">
+        <button id="premium-close-btn" class="premium-close-btn" title="Hide for 2 weeks">✕</button>
         <div class="premium-content">
           <span class="premium-icon">⭐</span>
           <span class="premium-text">Upgrade to Premium for cloud sync</span>
@@ -95,6 +101,7 @@ window.MenuView = (() => {
     modeButtons = document.querySelectorAll(".mode-btn");
     premiumBanner = document.getElementById("premium-banner");
     premiumUpgradeBtn = document.getElementById("premium-upgrade-btn");
+    premiumCloseBtn = document.getElementById("premium-close-btn");
   }
 
   /**
@@ -130,6 +137,34 @@ window.MenuView = (() => {
         }
       });
     }
+    
+    // Premium close button
+    if (premiumCloseBtn) {
+      premiumCloseBtn.addEventListener("click", (e) => {
+        e.stopPropagation(); // Prevent triggering parent container clicks
+        dismissPremiumBanner();
+      });
+    }
+  }
+  
+  /**
+   * Dismiss premium banner for two weeks
+   */
+  function dismissPremiumBanner() {
+    if (!premiumBanner) return;
+    
+    // Add animation class
+    premiumBanner.classList.add('hidden');
+    
+    // Store the timestamp until when the banner should stay hidden
+    const hiddenUntil = Date.now() + TWO_WEEKS_MS;
+    localStorage.setItem(PREMIUM_BANNER_HIDDEN_KEY, hiddenUntil.toString());
+    
+    // Hide the banner after animation completes
+    setTimeout(() => {
+      premiumBanner.style.display = 'none';
+      premiumBanner.classList.remove('hidden');
+    }, 300);
   }
 
   /**
@@ -165,15 +200,29 @@ window.MenuView = (() => {
   }
   
   /**
-   * Update the premium banner based on Firebase auth status
+   * Update the premium banner based on Firebase auth status and dismissal preference
    */
   async function updatePremiumBanner() {
     if (!premiumBanner) return;
     
     try {
-      // If Firebase is not available or user is not signed in, don't show banner
+      // Check if the banner is currently dismissed
+      const hiddenUntilStr = localStorage.getItem(PREMIUM_BANNER_HIDDEN_KEY);
+      if (hiddenUntilStr) {
+        const hiddenUntil = parseInt(hiddenUntilStr, 10);
+        // If the dismissal period hasn't expired, keep the banner hidden
+        if (Date.now() < hiddenUntil) {
+          premiumBanner.style.display = 'none';
+          return;
+        } else {
+          // Clear the expired preference
+          localStorage.removeItem(PREMIUM_BANNER_HIDDEN_KEY);
+        }
+      }
+      
+      // If Firebase is not available or user is not signed in, show banner
       if (typeof Firebase === 'undefined' || !Firebase.isSignedIn()) {
-        premiumBanner.style.display = 'none';
+        premiumBanner.style.display = 'block';
         return;
       }
       

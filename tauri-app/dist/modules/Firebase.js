@@ -41,29 +41,29 @@ const Firebase = (() => {
       try {
         // Create script elements
         const firebaseAppScript = document.createElement('script');
-        firebaseAppScript.src = 'https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js';
+        firebaseAppScript.src = 'https://www.gstatic.com/firebasejs/11.5.0/firebase-app.js';
         firebaseAppScript.type = 'module';
         
         const firebaseAuthScript = document.createElement('script');
-        firebaseAuthScript.src = 'https://www.gstatic.com/firebasejs/9.22.0/firebase-auth.js';
+        firebaseAuthScript.src = 'https://www.gstatic.com/firebasejs/11.5.0/firebase-auth.js';
         firebaseAuthScript.type = 'module';
         
         const firestoreScript = document.createElement('script');
-        firestoreScript.src = 'https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js';
+        firestoreScript.src = 'https://www.gstatic.com/firebasejs/11.5.0/firebase-firestore.js';
         firestoreScript.type = 'module';
         
         const analyticsScript = document.createElement('script');
-        analyticsScript.src = 'https://www.gstatic.com/firebasejs/9.22.0/firebase-analytics.js';
+        analyticsScript.src = 'https://www.gstatic.com/firebasejs/11.5.0/firebase-analytics.js';
         analyticsScript.type = 'module';
         
         // Create a wrapper script that will initialize Firebase once all scripts are loaded
         const initScript = document.createElement('script');
         initScript.type = 'module';
         initScript.textContent = `
-          import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js';
-          import { getAuth, onAuthStateChanged, signInWithPopup, GoogleAuthProvider, signOut } from 'https://www.gstatic.com/firebasejs/9.22.0/firebase-auth.js';
-          import { getFirestore, collection, doc, setDoc, getDoc, getDocs, updateDoc, deleteDoc, enableIndexedDbPersistence } from 'https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js';
-          import { getAnalytics } from 'https://www.gstatic.com/firebasejs/9.22.0/firebase-analytics.js';
+          import { initializeApp } from 'https://www.gstatic.com/firebasejs/11.5.0/firebase-app.js';
+          import { getAuth, onAuthStateChanged, signInWithPopup, GoogleAuthProvider, signOut } from 'https://www.gstatic.com/firebasejs/11.5.0/firebase-auth.js';
+          import { getFirestore, collection, doc, setDoc, getDoc, getDocs, updateDoc, deleteDoc, enableIndexedDbPersistence } from 'https://www.gstatic.com/firebasejs/11.5.0/firebase-firestore.js';
+          import { getAnalytics } from 'https://www.gstatic.com/firebasejs/11.5.0/firebase-analytics.js';
           
           const firebaseConfig = {
             apiKey: "AIzaSyBmvJOjmGWll8ysQ89HZCm5pJsqS_htSh8",

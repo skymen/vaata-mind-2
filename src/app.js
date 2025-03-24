@@ -333,7 +333,7 @@ const App = (() => {
       
       // Load Firebase script
       const script = document.createElement('script');
-      script.src = 'modules/Firebase.js';
+      script.src = './modules/Firebase.js';
       document.head.appendChild(script);
       
       // Wait for script to load

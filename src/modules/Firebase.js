@@ -42,33 +42,33 @@ const Firebase = (() => {
         // Create script elements
         const firebaseAppScript = document.createElement("script");
         firebaseAppScript.src =
-          "https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js";
+          "https://www.gstatic.com/firebasejs/11.5.0/firebase-app.js";
         firebaseAppScript.type = "module";
 
         const firebaseAuthScript = document.createElement("script");
         firebaseAuthScript.src =
-          "https://www.gstatic.com/firebasejs/9.22.0/firebase-auth.js";
+          "https://www.gstatic.com/firebasejs/11.5.0/firebase-auth.js";
         firebaseAuthScript.type = "module";
 
         const firestoreScript = document.createElement("script");
         firestoreScript.src =
-          "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
+          "https://www.gstatic.com/firebasejs/11.5.0/firebase-firestore.js";
         firestoreScript.type = "module";
 
         const analyticsScript = document.createElement("script");
         analyticsScript.src =
-          "https://www.gstatic.com/firebasejs/9.22.0/firebase-analytics.js";
+          "https://www.gstatic.com/firebasejs/11.5.0/firebase-analytics.js";
         analyticsScript.type = "module";
 
         // Create a wrapper script that will initialize Firebase once all scripts are loaded
         const initScript = document.createElement("script");
         initScript.type = "module";
         initScript.textContent = `
-          import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js';
-          import { getAuth, onAuthStateChanged, signInWithPopup, GoogleAuthProvider, signOut } from 'https://www.gstatic.com/firebasejs/9.22.0/firebase-auth.js';
-          import { getFirestore, collection, doc, setDoc, getDoc, getDocs, updateDoc, deleteDoc, enableIndexedDbPersistence, query, where } from 'https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js';
-          import { getAnalytics } from 'https://www.gstatic.com/firebasejs/9.22.0/firebase-analytics.js';
-          
+          import { initializeApp } from 'https://www.gstatic.com/firebasejs/11.5.0/firebase-app.js';
+          import { getAuth, onAuthStateChanged, signInWithPopup, GoogleAuthProvider, signOut } from 'https://www.gstatic.com/firebasejs/11.5.0/firebase-auth.js';
+          import { getFirestore, collection, doc, setDoc, getDoc, getDocs, updateDoc, deleteDoc, enableIndexedDbPersistence, query, where } from 'https://www.gstatic.com/firebasejs/11.5.0/firebase-firestore.js';
+          import { getAnalytics } from 'https://www.gstatic.com/firebasejs/11.5.0/firebase-analytics.js';
+
           const firebaseConfig = {
             apiKey: "AIzaSyBmvJOjmGWll8ysQ89HZCm5pJsqS_htSh8",
             authDomain: "vaata-mind.firebaseapp.com",
@@ -735,178 +735,164 @@ const Firebase = (() => {
   }
 
   /**
-   * Get available products and prices from Firestore
-   * @returns {Promise<Array>} Promise that resolves with products array
+   * Get product details
+   * @returns {Object} Product details
    */
-  async function getProducts() {
-    if (!isInitialized || !firestore) {
-      return [];
-    }
-
-    try {
-      const products = [];
-      const productsQuery = window.firebaseFirestoreFunctions.query(
-        window.firebaseFirestoreFunctions.collection(firestore, "products"),
-        window.firebaseFirestoreFunctions.where("active", "==", true)
-      );
-
-      const querySnapshot = await window.firebaseFirestoreFunctions.getDocs(
-        productsQuery
-      );
-
-      for (const doc of querySnapshot.docs) {
-        const product = doc.data();
-        product.id = doc.id;
-        product.prices = [
-          // Default price
+  async function getProduct() {
+    return {
+        prices: [
           {
-            id: "monthly",
+            id: "price_1R6BvfLD93BEPYh7wzyNgYsk",
             currency: "eur",
             unit_amount: 199,
             interval: "month",
           },
           {
-            id: "yearly",
+            id: "price_1R6BvfLD93BEPYh7pLqt93Nc",
             currency: "eur",
             unit_amount: 1499,
             interval: "year",
           },
-        ];
-
-        // Get prices for this product
-        const pricesSnap = await window.firebaseFirestoreFunctions.getDocs(
-          window.firebaseFirestoreFunctions.collection(doc.ref, "prices")
-        );
-
-        pricesSnap.docs.forEach((priceDoc) => {
-          const priceData = priceDoc.data();
-          product.prices.push({
-            id: priceDoc.id,
-            ...priceData,
-          });
-        });
-
-        products.push(product);
-      }
-
-      return products;
-    } catch (error) {
-      console.error("Error fetching products:", error);
-      return [];
-    }
+        ]
+      };
   }
 
-  /**
-   * Create a checkout session for subscription
-   * @param {string} priceId - The price ID to subscribe to
-   * @returns {Promise<Object>} Promise with the checkout session
-   */
-  async function createCheckoutSession(priceId) {
-    if (!isInitialized || !currentUser) {
-      return { success: false, error: "Not signed in" };
-    }
+/**
+ * Create a checkout session for subscription
+ * @param {string} priceId - The price ID to subscribe to
+ * @returns {Promise<Object>} Promise with the checkout session
+ */
+async function createCheckoutSession(priceId) {
+  if (!isInitialized || !currentUser) {
+    return { success: false, error: "Not signed in" };
+  }
 
-    try {
-      // Create a new checkout session
-      const sessionDocRef = await window.firebaseFirestoreFunctions.setDoc(
-        window.firebaseFirestoreFunctions.doc(
-          window.firebaseFirestoreFunctions.collection(
-            window.firebaseFirestoreFunctions.collection(
-              firestore,
-              "customers"
-            ),
-            currentUser.uid
-          ),
-          "checkout_sessions"
-        ),
-        {
-          price: priceId,
-          success_url: window.location.origin,
-          cancel_url: window.location.origin,
+  try {
+    
+    // Create a document with a random ID (similar to Firestore's auto ID)
+    const sessionId = 'session_' + Math.random().toString(36).substring(2, 15);
+    const docRef = window.firebaseFirestoreFunctions.doc(
+      firestore,
+      `customers/${currentUser.uid}/checkout_sessions/${sessionId}`
+    );
+    
+    // Set the document data
+    await window.firebaseFirestoreFunctions.setDoc(docRef, {
+      price: priceId,
+      success_url: window.location.origin,
+      cancel_url: window.location.origin,
+      trial_period_days: 7,
+    });
+
+    // Since onSnapshot isn't directly available, we'll poll the document
+    return new Promise((resolve, reject) => {
+      let attempts = 0;
+      const maxAttempts = 20; // Try for about 10 seconds (20 * 500ms)
+      
+      const checkDocument = async () => {
+        try {
+          const docSnap = await window.firebaseFirestoreFunctions.getDoc(docRef);
+          
+          if (docSnap.exists) {
+            const data = docSnap.data();
+            
+            if (data.error) {
+              clearInterval(intervalId);
+              reject(new Error(`An error occurred: ${data.error.message}`));
+              return;
+            }
+            
+            if (data.url) {
+              clearInterval(intervalId);
+              // Redirect to the Stripe checkout
+              window.location.assign(data.url);
+              resolve({ success: true, url: data.url });
+              return;
+            }
+          }
+          
+          attempts++;
+          if (attempts >= maxAttempts) {
+            clearInterval(intervalId);
+            reject(new Error("Checkout session creation timed out"));
+          }
+        } catch (error) {
+          clearInterval(intervalId);
+          console.error("Error checking document:", error);
+          reject(error);
         }
-      );
-
-      // Return a promise that resolves when the URL is available
-      return new Promise((resolve, reject) => {
-        const unsubscribe = sessionDocRef.onSnapshot((snap) => {
-          const { error, url } = snap.data();
-
-          if (error) {
-            unsubscribe();
-            reject(new Error(`An error occurred: ${error.message}`));
-          }
-
-          if (url) {
-            unsubscribe();
-            resolve({ success: true, url });
-          }
-        });
-
-        // Timeout after 10 seconds
-        setTimeout(() => {
-          unsubscribe();
-          reject(new Error("Checkout session creation timed out"));
-        }, 10000);
-      });
-    } catch (error) {
-      console.error("Error creating checkout session:", error);
-      return { success: false, error: error.message };
-    }
+      };
+      
+      // Poll the document every 500ms
+      const intervalId = setInterval(checkDocument, 500);
+      
+      // Run the first check immediately
+      checkDocument();
+    });
+  } catch (error) {
+    console.error("Error creating checkout session:", error);
+    return { success: false, error: error.message };
+  }
+}
+/**
+ * Get customer portal URL for managing subscription
+ * @returns {Promise<Object>} Promise with the portal URL
+ */
+async function getCustomerPortalUrl() {
+  if (!isInitialized || !currentUser) {
+    return { success: false, error: "Not signed in" };
   }
 
-  /**
-   * Get customer portal URL for managing subscription
-   * @returns {Promise<string>} Promise with the portal URL
-   */
-  async function getCustomerPortalUrl() {
-    if (!isInitialized || !currentUser) {
-      return { success: false, error: "Not signed in" };
-    }
-
-    try {
-      const portalDocRef = await window.firebaseFirestoreFunctions.setDoc(
-        window.firebaseFirestoreFunctions.doc(
-          window.firebaseFirestoreFunctions.collection(
-            window.firebaseFirestoreFunctions.collection(
-              firestore,
-              "customers"
-            ),
-            currentUser.uid
-          ),
-          "portal_sessions"
-        ),
-        {
-          return_url: window.location.origin,
-        }
-      );
-
-      // Return a promise that resolves when the URL is available
-      return new Promise((resolve, reject) => {
-        const unsubscribe = portalDocRef.onSnapshot((snap) => {
-          const { error, url } = snap.data();
-
-          if (error) {
-            unsubscribe();
-            reject(new Error(`An error occurred: ${error.message}`));
-          }
-
-          if (url) {
-            unsubscribe();
-            resolve({ success: true, url });
-          }
-        });
-
-        // Timeout after 10 seconds
-        setTimeout(() => {
-          unsubscribe();
-          reject(new Error("Portal session creation timed out"));
-        }, 10000);
+  try {
+    // Import the required Firebase functions SDK if not already imported
+    if (typeof window.firebaseFunctions === "undefined") {
+      // We need to import the functions SDK
+      const script = document.createElement("script");
+      script.src = "https://www.gstatic.com/firebasejs/11.5.0/firebase-functions.js";
+      script.type = "module";
+      
+      // Create a loader script
+      const loaderScript = document.createElement("script");
+      loaderScript.type = "module";
+      loaderScript.textContent = `
+        import { getFunctions, httpsCallable } from 'https://www.gstatic.com/firebasejs/11.5.0/firebase-functions.js';
+        
+        // Make functions available globally
+        window.firebaseFunctions = getFunctions(window.firebaseApp, "europe-west1");
+        window.httpsCallable = httpsCallable;
+        
+        // Notify that functions are loaded
+        window.dispatchEvent(new CustomEvent('firebase-functions-loaded'));
+      `;
+      
+      document.head.appendChild(script);
+      document.head.appendChild(loaderScript);
+      
+      // Wait for functions to load
+      await new Promise((resolve) => {
+        window.addEventListener('firebase-functions-loaded', resolve, { once: true });
       });
-    } catch (error) {
-      console.error("Error getting customer portal URL:", error);
-      return { success: false, error: error.message };
     }
+    
+    // Create the callable function reference
+    const functionRef = window.httpsCallable(
+      window.firebaseFunctions, 
+      "ext-firestore-stripe-payments-createPortalLink"
+    );
+    
+    // Call the function
+    const { data } = await functionRef({
+      returnUrl: window.location.origin,
+      locale: "auto",
+    });
+    
+    // Return success with URL
+    return { success: true, url: data.url };
+  } catch (error) {
+    console.error("Error getting customer portal URL:", error);
+    return { success: false, error: error.message };
   }
+}
 
   // Public API
   return {
@@ -929,7 +915,7 @@ const Firebase = (() => {
     getInitializationStatus,
     tryAutoLogin,
     isPremiumUser,
-    getProducts,
+    getProduct,
     createCheckoutSession,
     getCustomerPortalUrl,
   };
