@@ -14,10 +14,12 @@ const Database = (() => {
   function generateId() {
     // Create a timestamp component
     const timestamp = new Date().getTime();
-    
+
     // Create a random component (8 hex characters)
-    const randomPart = Math.floor(Math.random() * 0xFFFFFFFF).toString(16).padStart(8, '0');
-    
+    const randomPart = Math.floor(Math.random() * 0xffffffff)
+      .toString(16)
+      .padStart(8, "0");
+
     // Combine them for a unique ID
     return `n-${timestamp}-${randomPart}`;
   }
@@ -27,6 +29,28 @@ const Database = (() => {
    */
   function saveChanges() {
     save();
+  }
+
+  /**
+   * Process a note to ensure it has the hashtags getter
+   * @param {Object} note - The note to process
+   * @returns {Object} - The processed note
+   */
+  function processNoteObject(note) {
+    if (!note) return note;
+
+    // Only define the getter if it doesn't exist yet
+    if (!Object.getOwnPropertyDescriptor(note, "hashtags")) {
+      Object.defineProperty(note, "hashtags", {
+        get: function () {
+          return NoteUtils.extractHashtags(this.content || "");
+        },
+        enumerable: false, // Don't include in JSON.stringify
+        configurable: true, // Allow redefining if needed
+      });
+    }
+
+    return note;
   }
 
   /**
@@ -61,6 +85,8 @@ const Database = (() => {
         note.important = false;
       }
     });
+
+    initializeNotes(); // Add this line to process all notes
 
     return this; // Enable method chaining
   }
@@ -97,12 +123,13 @@ const Database = (() => {
       createdAt: now,
       updatedAt: now,
       dueDate: dueDate,
-      important: important
+      important: important,
     };
 
+    processNoteObject(newNote); // Process before adding
     notes.push(newNote);
     saveChanges();
-    
+
     return newNote;
   }
 
@@ -116,7 +143,7 @@ const Database = (() => {
    * @returns {Object|null} Updated note or null if not found
    */
   function updateNote(id, content, progress, dueDate, important) {
-    const noteIndex = notes.findIndex(n => n.id === id);
+    const noteIndex = notes.findIndex((n) => n.id === id);
     if (noteIndex === -1) return null;
 
     const now = new Date().toISOString();
@@ -125,20 +152,21 @@ const Database = (() => {
     // Only update properties that are explicitly provided
     if (content !== undefined) updatedNote.content = content;
     if (progress !== undefined) updatedNote.progress = progress;
-    
+
     // Special case for dueDate - null means remove it, undefined means don't change
     if (dueDate !== undefined) {
       updatedNote.dueDate = dueDate;
     }
-    
+
     // Special case for important - must be a boolean, except undefined means don't change
     if (important !== undefined) {
       updatedNote.important = Boolean(important);
     }
 
+    processNoteObject(updatedNote); // Process before updating
     notes[noteIndex] = updatedNote;
     saveChanges();
-    
+
     return updatedNote;
   }
 
@@ -164,7 +192,8 @@ const Database = (() => {
    * @returns {Object|undefined} The note or undefined if not found
    */
   function getNoteById(id) {
-    return notes.find((note) => note.id === id);
+    const note = notes.find((note) => note.id === id);
+    return processNoteObject(note); // Process before returning
   }
 
   /**
@@ -177,7 +206,7 @@ const Database = (() => {
       // Use NoteUtils to extract hashtags from content instead of accessing a non-existent property
       if (note.content) {
         const extractedTags = NoteUtils.extractHashtags(note.content);
-        extractedTags.forEach(tag => hashtagSet.add(tag));
+        extractedTags.forEach((tag) => hashtagSet.add(tag));
       }
     });
     return Array.from(hashtagSet);
@@ -438,6 +467,13 @@ const Database = (() => {
    */
   function getNbNotes() {
     return notes.length;
+  }
+
+  /**
+   * Apply hashtag getter to all notes (call during initialization)
+   */
+  function initializeNotes() {
+    notes.forEach((note) => processNoteObject(note));
   }
 
   // Public API
