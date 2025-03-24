@@ -275,7 +275,8 @@ window.SettingsView = (() => {
 
 
     // Check if section should be collapsed by default
-    const isCollapsed = localStorage.getItem("subscription_section_collapsed") === "true";
+    let item = localStorage.getItem('subscription_section_collapsed');
+    const isCollapsed = !item || item === 'true'
     // Subscription toggle button
     const subscriptionToggle = document.getElementById("subscription-toggle");
     if (subscriptionSection && subscriptionToggle) {
@@ -491,7 +492,8 @@ window.SettingsView = (() => {
     }
 
     // Check if section should be collapsed by default (stored preference)
-    const isCollapsed = localStorage.getItem('subscription_section_collapsed') === 'true';
+    let item = localStorage.getItem('subscription_section_collapsed');
+    const isCollapsed = !item || item === 'true'
     if (isCollapsed) {
       subscriptionSection.classList.add('collapsed');
       if (toggleButton) {

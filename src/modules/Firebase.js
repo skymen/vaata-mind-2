@@ -65,7 +65,7 @@ const Firebase = (() => {
         initScript.type = "module";
         initScript.textContent = `
           import { initializeApp } from 'https://www.gstatic.com/firebasejs/11.5.0/firebase-app.js';
-          import { getAuth, onAuthStateChanged, signInWithPopup, GoogleAuthProvider, signOut } from 'https://www.gstatic.com/firebasejs/11.5.0/firebase-auth.js';
+          import { getAuth, onAuthStateChanged, signInWithPopup, signInWithRedirect, getRedirectResult, GoogleAuthProvider, signOut } from 'https://www.gstatic.com/firebasejs/11.5.0/firebase-auth.js';
           import { getFirestore, collection, doc, setDoc, getDoc, getDocs, updateDoc, deleteDoc, enableIndexedDbPersistence, query, where } from 'https://www.gstatic.com/firebasejs/11.5.0/firebase-firestore.js';
           import { getAnalytics } from 'https://www.gstatic.com/firebasejs/11.5.0/firebase-analytics.js';
 
@@ -99,6 +99,8 @@ const Firebase = (() => {
           window.GoogleAuthProvider = GoogleAuthProvider;
           window.firebaseAuthFunctions = {
             signInWithPopup,
+            signInWithRedirect,
+            getRedirectResult,
             signOut
           };
           window.firebaseFirestoreFunctions = {
@@ -367,6 +369,10 @@ const Firebase = (() => {
         auth,
         provider
       );
+      // const result = await window.firebaseAuthFunctions.signInWithRedirect(
+      //   auth,
+      //   provider
+      // );
       currentUser = result.user;
       return {
         success: true,

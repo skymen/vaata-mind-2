@@ -4,7 +4,7 @@
 
 A powerful, cross-platform application built with Tauri.
 
-### Latest Version: 2.6.2
+### Latest Version: 2.6.3
 
 ## Use Online PWA
 
@@ -20,19 +20,19 @@ A powerful, cross-platform application built with Tauri.
 
 ### Windows
 
-[<img src="images/Windows Installer.svg" alt="Windows Installer" width="240"/>](https://github.com/skymen/vaata-mind-2/releases/download/vaata-mind-v2.6.2/Vaata.Mind_2.6.2_x64-setup.exe)
-[<img src="images/Windows MSI.svg" alt="Windows MSI" width="240"/>](https://github.com/skymen/vaata-mind-2/releases/download/vaata-mind-v2.6.2/Vaata.Mind_2.6.2_x64_en-US.msi)
+[<img src="images/Windows Installer.svg" alt="Windows Installer" width="240"/>](https://github.com/skymen/vaata-mind-2/releases/download/vaata-mind-v2.6.3/Vaata.Mind_2.6.3_x64-setup.exe)
+[<img src="images/Windows MSI.svg" alt="Windows MSI" width="240"/>](https://github.com/skymen/vaata-mind-2/releases/download/vaata-mind-v2.6.3/Vaata.Mind_2.6.3_x64_en-US.msi)
 
 ### macOS
 
-[<img src="images/macOS Apple Silicon.svg" alt="macOS Apple Silicon" width="240"/>](https://github.com/skymen/vaata-mind-2/releases/download/vaata-mind-v2.6.2/Vaata.Mind_2.6.2_aarch64.dmg)
-[<img src="images/macOS Intel.svg" alt="macOS Intel" width="240"/>](https://github.com/skymen/vaata-mind-2/releases/download/vaata-mind-v2.6.2/Vaata.Mind_aarch64.app.tar.gz)
+[<img src="images/macOS Apple Silicon.svg" alt="macOS Apple Silicon" width="240"/>](https://github.com/skymen/vaata-mind-2/releases/download/vaata-mind-v2.6.3/Vaata.Mind_2.6.3_aarch64.dmg)
+[<img src="images/macOS Intel.svg" alt="macOS Intel" width="240"/>](https://github.com/skymen/vaata-mind-2/releases/download/vaata-mind-v2.6.3/Vaata.Mind_aarch64.app.tar.gz)
 
 ### Linux
 
-[<img src="images/Linux AppImage.svg" alt="Linux AppImage" width="240"/>](https://github.com/skymen/vaata-mind-2/releases/download/vaata-mind-v2.6.2/Vaata.Mind_2.6.2_amd64.AppImage)
-[<img src="images/Linux DEB.svg" alt="Linux DEB" width="240"/>](https://github.com/skymen/vaata-mind-2/releases/download/vaata-mind-v2.6.2/Vaata.Mind_2.6.2_amd64.deb)
-[<img src="images/Linux RPM.svg" alt="Linux RPM" width="240"/>](https://github.com/skymen/vaata-mind-2/releases/download/vaata-mind-v2.6.2/Vaata.Mind-2.6.2-1.x86_64.rpm)
+[<img src="images/Linux AppImage.svg" alt="Linux AppImage" width="240"/>](https://github.com/skymen/vaata-mind-2/releases/download/vaata-mind-v2.6.3/Vaata.Mind_2.6.3_amd64.AppImage)
+[<img src="images/Linux DEB.svg" alt="Linux DEB" width="240"/>](https://github.com/skymen/vaata-mind-2/releases/download/vaata-mind-v2.6.3/Vaata.Mind_2.6.3_amd64.deb)
+[<img src="images/Linux RPM.svg" alt="Linux RPM" width="240"/>](https://github.com/skymen/vaata-mind-2/releases/download/vaata-mind-v2.6.3/Vaata.Mind-2.6.3-1.x86_64.rpm)
 
 </div>
 
