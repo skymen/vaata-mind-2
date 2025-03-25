@@ -44,5 +44,12 @@
         "installMode": "passive"
       }
     }
+  },
+  "tauri": {
+    "allowlist": {
+      "os": {
+        "all": true
+      }
+    }
   }
 }
