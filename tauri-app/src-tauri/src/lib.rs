@@ -2,7 +2,7 @@
 use tauri_plugin_oauth::start;
 use tauri_plugin_oauth::Window;
 
-#[command]
+#[tauri::command]
 async fn start_server(window: Window) -> Result<u16, String> {
     start(move |url| {
         // Because of the unprotected localhost port, you must verify the URL here.
