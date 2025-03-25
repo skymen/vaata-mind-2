@@ -166,8 +166,8 @@ export default `<!DOCTYPE html>
         }
         
         .checkmark-circle {
-            width: 60px;
-            height: 60px;
+            width: 80px;
+            height: 80px;
             border-radius: 50%;
             background-color: var(--success);
             display: flex;
@@ -204,6 +204,7 @@ export default `<!DOCTYPE html>
         }
         
         .app-button {
+            display: inline-block;
             margin-top: 25px;
             padding: 12px 28px;
             background-color: var(--primary);
@@ -213,6 +214,7 @@ export default `<!DOCTYPE html>
             font-size: 16px;
             font-weight: 600;
             cursor: pointer;
+            text-decoration: none;
             transition: all 0.3s ease;
             box-shadow: 0 8px 20px rgba(108, 99, 255, 0.2);
             opacity: 0;
@@ -223,6 +225,7 @@ export default `<!DOCTYPE html>
         .app-button:hover {
             transform: translateY(-3px);
             box-shadow: 0 12px 25px rgba(108, 99, 255, 0.3);
+            color: white;
         }
         
         .app-button:active {
@@ -248,7 +251,7 @@ export default `<!DOCTYPE html>
                 opacity: 0.3;
             }
             50% {
-                transform: scale(1.3);
+                transform: scale(1.2);
                 opacity: 0;
             }
             100% {
@@ -282,7 +285,7 @@ export default `<!DOCTYPE html>
                 </svg>
             </div>
             <p class="welcome-text">Login successful!</p>
-            <button class="app-button">Open App</button>
+            <a href="vaata-mind://focus" class="app-button">Open App</a>
         </div>
     </div>
 </body>

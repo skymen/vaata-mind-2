@@ -1,15 +1,15 @@
-function s(t, e, a, o) {
-  if (typeof e == "function" ? t !== e || !0 : !e.has(t)) throw new TypeError("Cannot read private member from an object whose class did not declare it");
-  return a === "m" ? o : a === "a" ? o.call(t) : o ? o.value : e.get(t);
+function s(e, t, a, o) {
+  if (typeof t == "function" ? e !== t || !0 : !t.has(e)) throw new TypeError("Cannot read private member from an object whose class did not declare it");
+  return a === "m" ? o : a === "a" ? o.call(e) : o ? o.value : t.get(e);
 }
-function p(t, e, a, o, r) {
-  if (typeof e == "function" ? t !== e || !0 : !e.has(t)) throw new TypeError("Cannot write private member to an object whose class did not declare it");
-  return e.set(t, a), a;
+function p(e, t, a, o, r) {
+  if (typeof t == "function" ? e !== t || !0 : !t.has(e)) throw new TypeError("Cannot write private member to an object whose class did not declare it");
+  return t.set(e, a), a;
 }
 var l, n, c, h;
 const g = "__TAURI_TO_IPC_KEY__";
-function m(t, e = !1) {
-  return window.__TAURI_INTERNALS__.transformCallback(t, e);
+function m(e, t = !1) {
+  return window.__TAURI_INTERNALS__.transformCallback(e, t);
 }
 class C {
   constructor() {
@@ -18,18 +18,18 @@ class C {
       () => {
       }
       // the id is used as a mechanism to preserve message order
-    ), n.set(this, 0), c.set(this, []), this.id = m(({ message: e, id: a }) => {
+    ), n.set(this, 0), c.set(this, []), this.id = m(({ message: t, id: a }) => {
       if (a == s(this, n, "f"))
-        for (s(this, l, "f").call(this, e), p(this, n, s(this, n, "f") + 1); s(this, n, "f") in s(this, c, "f"); ) {
+        for (s(this, l, "f").call(this, t), p(this, n, s(this, n, "f") + 1); s(this, n, "f") in s(this, c, "f"); ) {
           const o = s(this, c, "f")[s(this, n, "f")];
           s(this, l, "f").call(this, o), delete s(this, c, "f")[s(this, n, "f")], p(this, n, s(this, n, "f") + 1);
         }
       else
-        s(this, c, "f")[a] = e;
+        s(this, c, "f")[a] = t;
     });
   }
-  set onmessage(e) {
-    p(this, l, e);
+  set onmessage(t) {
+    p(this, l, t);
   }
   get onmessage() {
     return s(this, l, "f");
@@ -41,15 +41,15 @@ class C {
     return this[g]();
   }
 }
-async function i(t, e = {}, a) {
-  return window.__TAURI_INTERNALS__.invoke(t, e, a);
+async function i(e, t = {}, a) {
+  return window.__TAURI_INTERNALS__.invoke(e, t, a);
 }
 class f {
   get rid() {
     return s(this, h, "f");
   }
-  constructor(e) {
-    h.set(this, void 0), p(this, h, e);
+  constructor(t) {
+    h.set(this, void 0), p(this, h, t);
   }
   /**
    * Destroys and cleans up this resource from memory.
@@ -63,13 +63,13 @@ class f {
 }
 h = /* @__PURE__ */ new WeakMap();
 class _ extends f {
-  constructor(e) {
-    super(e.rid), this.available = e.available, this.currentVersion = e.currentVersion, this.version = e.version, this.date = e.date, this.body = e.body, this.rawJson = e.rawJson;
+  constructor(t) {
+    super(t.rid), this.available = t.available, this.currentVersion = t.currentVersion, this.version = t.version, this.date = t.date, this.body = t.body, this.rawJson = t.rawJson;
   }
   /** Download the updater package */
-  async download(e, a) {
+  async download(t, a) {
     const o = new C();
-    e && (o.onmessage = e);
+    t && (o.onmessage = t);
     const r = await i("plugin:updater|download", {
       onEvent: o,
       rid: this.rid,
@@ -87,50 +87,50 @@ class _ extends f {
     }), this.downloadedBytes = void 0;
   }
   /** Downloads the updater package and installs it */
-  async downloadAndInstall(e, a) {
+  async downloadAndInstall(t, a) {
     const o = new C();
-    e && (o.onmessage = e), await i("plugin:updater|download_and_install", {
+    t && (o.onmessage = t), await i("plugin:updater|download_and_install", {
       onEvent: o,
       rid: this.rid,
       ...a
     });
   }
   async close() {
-    var e;
-    await ((e = this.downloadedBytes) == null ? void 0 : e.close()), await super.close();
+    var t;
+    await ((t = this.downloadedBytes) == null ? void 0 : t.close()), await super.close();
   }
 }
-async function k(t) {
+async function k(e) {
   return await i("plugin:updater|check", {
-    ...t
-  }).then((e) => e.available ? new _(e) : null);
+    ...e
+  }).then((t) => t.available ? new _(t) : null);
 }
 async function v() {
   await i("plugin:process|restart");
 }
 var w;
-(function(t) {
-  t.WINDOW_RESIZED = "tauri://resize", t.WINDOW_MOVED = "tauri://move", t.WINDOW_CLOSE_REQUESTED = "tauri://close-requested", t.WINDOW_DESTROYED = "tauri://destroyed", t.WINDOW_FOCUS = "tauri://focus", t.WINDOW_BLUR = "tauri://blur", t.WINDOW_SCALE_FACTOR_CHANGED = "tauri://scale-change", t.WINDOW_THEME_CHANGED = "tauri://theme-changed", t.WINDOW_CREATED = "tauri://window-created", t.WEBVIEW_CREATED = "tauri://webview-created", t.DRAG_ENTER = "tauri://drag-enter", t.DRAG_OVER = "tauri://drag-over", t.DRAG_DROP = "tauri://drag-drop", t.DRAG_LEAVE = "tauri://drag-leave";
+(function(e) {
+  e.WINDOW_RESIZED = "tauri://resize", e.WINDOW_MOVED = "tauri://move", e.WINDOW_CLOSE_REQUESTED = "tauri://close-requested", e.WINDOW_DESTROYED = "tauri://destroyed", e.WINDOW_FOCUS = "tauri://focus", e.WINDOW_BLUR = "tauri://blur", e.WINDOW_SCALE_FACTOR_CHANGED = "tauri://scale-change", e.WINDOW_THEME_CHANGED = "tauri://theme-changed", e.WINDOW_CREATED = "tauri://window-created", e.WEBVIEW_CREATED = "tauri://webview-created", e.DRAG_ENTER = "tauri://drag-enter", e.DRAG_OVER = "tauri://drag-over", e.DRAG_DROP = "tauri://drag-drop", e.DRAG_LEAVE = "tauri://drag-leave";
 })(w || (w = {}));
-async function E(t, e) {
+async function E(e, t) {
   await i("plugin:event|unlisten", {
-    event: t,
-    eventId: e
+    event: e,
+    eventId: t
   });
 }
-async function y(t, e, a) {
+async function y(e, t, a) {
   var o;
   const r = (o = void 0) !== null && o !== void 0 ? o : { kind: "Any" };
   return i("plugin:event|listen", {
-    event: t,
+    event: e,
     target: r,
-    handler: m(e)
-  }).then((d) => async () => E(t, d));
+    handler: m(t)
+  }).then((d) => async () => E(e, d));
 }
-async function R(t, e) {
+async function R(e, t) {
   await i("plugin:opener|open_url", {
-    url: t,
-    with: e
+    url: e,
+    with: t
   });
 }
 const I = `<!DOCTYPE html>
@@ -301,8 +301,8 @@ const I = `<!DOCTYPE html>
         }
         
         .checkmark-circle {
-            width: 60px;
-            height: 60px;
+            width: 80px;
+            height: 80px;
             border-radius: 50%;
             background-color: var(--success);
             display: flex;
@@ -339,6 +339,7 @@ const I = `<!DOCTYPE html>
         }
         
         .app-button {
+            display: inline-block;
             margin-top: 25px;
             padding: 12px 28px;
             background-color: var(--primary);
@@ -348,6 +349,7 @@ const I = `<!DOCTYPE html>
             font-size: 16px;
             font-weight: 600;
             cursor: pointer;
+            text-decoration: none;
             transition: all 0.3s ease;
             box-shadow: 0 8px 20px rgba(108, 99, 255, 0.2);
             opacity: 0;
@@ -358,6 +360,7 @@ const I = `<!DOCTYPE html>
         .app-button:hover {
             transform: translateY(-3px);
             box-shadow: 0 12px 25px rgba(108, 99, 255, 0.3);
+            color: white;
         }
         
         .app-button:active {
@@ -383,7 +386,7 @@ const I = `<!DOCTYPE html>
                 opacity: 0.3;
             }
             50% {
-                transform: scale(1.3);
+                transform: scale(1.2);
                 opacity: 0;
             }
             100% {
@@ -417,43 +420,43 @@ const I = `<!DOCTYPE html>
                 </svg>
             </div>
             <p class="welcome-text">Login successful!</p>
-            <button class="app-button">Open App</button>
+            <a href="vaata-mind://focus" class="app-button">Open App</a>
         </div>
     </div>
 </body>
 </html>`;
-async function A(t) {
-  return await y("deep-link://new-url", (e) => {
-    t(e.payload);
+async function A(e) {
+  return await y("deep-link://new-url", (t) => {
+    e(t.payload);
   });
 }
 (async () => {
-  const t = await k();
-  t && (StatusMessage && StatusMessage.show && StatusMessage.show("Update Available"), await DialogBox.confirm(
-    `Update ${t.version} is available! Would you like to update now?`,
+  const e = await k();
+  e && (StatusMessage && StatusMessage.show && StatusMessage.show("Update Available"), await DialogBox.confirm(
+    `Update ${e.version} is available! Would you like to update now?`,
     "Update Available"
-  ) && (await t.downloadAndInstall(), StatusMessage && StatusMessage.show && StatusMessage.show("Restarting..."), await v()));
+  ) && (await e.downloadAndInstall(), StatusMessage && StatusMessage.show && StatusMessage.show("Restarting..."), await v()));
 })();
-(async () => await A((t) => {
-  console.log("Received URL:", t), window.__TAURI__.window.appWindow.setFocus();
+(async () => await A((e) => {
+  console.log("Received URL:", e), window.__TAURI__.window.appWindow.setFocus();
 }))();
-const W = (t) => R(
-  `https://accounts.google.com/o/oauth2/auth?response_type=token&client_id=557148045075-52gu7aug421s9ju6hhqitpggmsgri5hh.apps.googleusercontent.com&redirect_uri=http%3A//localhost:${t}&scope=email%20profile%20openid&prompt=consent`
-), L = (t) => new Promise((e, a) => {
-  W(t).then(e).catch(a);
+const W = (e) => R(
+  `https://accounts.google.com/o/oauth2/auth?response_type=token&client_id=557148045075-52gu7aug421s9ju6hhqitpggmsgri5hh.apps.googleusercontent.com&redirect_uri=http%3A//localhost:${e}&scope=email%20profile%20openid&prompt=consent`
+), L = (e) => new Promise((t, a) => {
+  W(e).then(t).catch(a);
 });
-window.signInWithOAuth = function(t, e) {
+window.signInWithOAuth = function(e, t) {
   return new Promise((a, o) => {
     y("oauth://url", (r) => {
       try {
         const d = new URL(r.payload), u = new URLSearchParams(d.hash.substring(1)).get("access_token");
         if (!u)
           return o(new Error("No access token found in callback URL."));
-        const b = e.credential(null, u);
-        window.firebaseAuthFunctions.signInWithCredential(t, b).then((x) => {
+        const x = t.credential(null, u);
+        window.firebaseAuthFunctions.signInWithCredential(e, x).then((b) => {
           a({
             success: !0,
-            user: x.user
+            user: b.user
           });
         }).catch(o);
       } catch (d) {
