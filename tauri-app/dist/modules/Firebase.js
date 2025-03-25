@@ -103,7 +103,8 @@ const Firebase = (() => {
             getRedirectResult,
             signOut,
             getAuth,
-            GoogleAuthProvider
+            GoogleAuthProvider,
+            signInWithCredential
           };
           window.firebaseFirestoreFunctions = {
             collection,
