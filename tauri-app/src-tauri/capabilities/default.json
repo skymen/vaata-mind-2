@@ -11,6 +11,8 @@
     "updater:allow-download-and-install",
     "dialog:allow-ask",
     "process:allow-exit",
-    "process:allow-restart"
+    "process:allow-restart",
+    "os:default",
+    "os:allow-platform"
   ]
 }

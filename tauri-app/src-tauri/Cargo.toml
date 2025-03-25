@@ -1,6 +1,6 @@
 [package]
 name = "vaata-mind"
-version = "2.6.10"
+version = "2.6.11"
 description = "A minimalist todo app with task recommendation"
 authors = ["skymen"]
 edition = "2021"
@@ -24,6 +24,7 @@ serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 tauri-plugin-dialog = "2"
 tauri-plugin-process = "2"
+tauri-plugin-os = "2"
 
 [target.'cfg(not(any(target_os = "android", target_os = "ios")))'.dependencies]
 tauri-plugin-updater = "2"

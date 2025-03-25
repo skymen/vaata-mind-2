@@ -379,7 +379,7 @@ const Firebase = (() => {
       
       // Use redirect for Tauri on macOS, popup for everything else
       const isTauri = window.__TAURI__ !== undefined;
-      const isMacOS = isTauri ? await window.__TAURI__.os.platform() === "darwin" : false;
+      const isMacOS = isTauri ? await window.__TAURI__.os.platform() === "macos" : false;
       
       if (isTauri && isMacOS) {
         // Use redirect for Tauri on macOS
