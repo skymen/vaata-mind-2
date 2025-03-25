@@ -375,7 +375,7 @@ const Firebase = (() => {
       
       if (isTauri && isMacOS) {
         // Use redirect for Tauri on macOS
-        const result = await window.signInWithOAuth(auth, provider);
+        const result = await window.signInWithOAuth(auth, GoogleAuthProvider);
         currentUser = result.user;
         return {
           success: true,
