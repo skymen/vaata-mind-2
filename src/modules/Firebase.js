@@ -65,7 +65,7 @@ const Firebase = (() => {
         initScript.type = "module";
         initScript.textContent = `
           import { initializeApp } from 'https://www.gstatic.com/firebasejs/11.5.0/firebase-app.js';
-          import { getAuth, onAuthStateChanged, signInWithPopup, signInWithRedirect, getRedirectResult, GoogleAuthProvider, signOut } from 'https://www.gstatic.com/firebasejs/11.5.0/firebase-auth.js';
+          import { getAuth, onAuthStateChanged, signInWithPopup, signInWithRedirect, signInWithCredential, getRedirectResult, GoogleAuthProvider, signOut } from 'https://www.gstatic.com/firebasejs/11.5.0/firebase-auth.js';
           import { getFirestore, collection, doc, setDoc, getDoc, getDocs, updateDoc, deleteDoc, enableIndexedDbPersistence, query, where } from 'https://www.gstatic.com/firebasejs/11.5.0/firebase-firestore.js';
           import { getAnalytics } from 'https://www.gstatic.com/firebasejs/11.5.0/firebase-analytics.js';
 
@@ -101,7 +101,9 @@ const Firebase = (() => {
             signInWithPopup,
             signInWithRedirect,
             getRedirectResult,
-            signOut
+            signOut,
+            getAuth,
+            GoogleAuthProvider
           };
           window.firebaseFirestoreFunctions = {
             collection,
@@ -363,17 +365,7 @@ const Firebase = (() => {
       await loadFirebase();
     }
   
-    try {
-      // First check if we have a pending redirect result
-      const redirectResult = await window.firebaseAuthFunctions.getRedirectResult(auth);
-      if (redirectResult && redirectResult.user) {
-        currentUser = redirectResult.user;
-        return {
-          success: true,
-          user: currentUser,
-        };
-      }
-  
+    try {  
       // If no pending redirect result, start a new sign in flow
       const provider = new window.GoogleAuthProvider();
       
@@ -383,9 +375,12 @@ const Firebase = (() => {
       
       if (isTauri && isMacOS) {
         // Use redirect for Tauri on macOS
-        await window.firebaseAuthFunctions.signInWithRedirect(auth, provider);
-        // This line won't be reached as signInWithRedirect redirects the page
-        return { success: true };
+        const result = await window.signInWithOAuth(auth, provider);
+        currentUser = result.user;
+        return {
+          success: true,
+          user: currentUser,
+        };
       } else {
         // Use popup for all other platforms
         const result = await window.firebaseAuthFunctions.signInWithPopup(auth, provider);

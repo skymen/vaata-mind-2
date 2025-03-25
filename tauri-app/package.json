@@ -9,6 +9,7 @@
     "@tauri-apps/cli": "^2.3.1"
   },
   "dependencies": {
+    "@fabianlars/tauri-plugin-oauth": "^2.0.0",
     "@tauri-apps/plugin-dialog": "^2.2.0",
     "@tauri-apps/plugin-os": "^2.2.1",
     "@tauri-apps/plugin-process": "^2.2.0",
