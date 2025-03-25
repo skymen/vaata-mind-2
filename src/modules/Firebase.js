@@ -364,20 +364,22 @@ const Firebase = (() => {
     }
 
     try {
+      // First check if we have a pending redirect result
+      const redirectResult = await window.firebaseAuthFunctions.getRedirectResult(auth);
+      if (redirectResult && redirectResult.user) {
+        currentUser = redirectResult.user;
+        return {
+          success: true,
+          user: currentUser,
+        };
+      }
+
+      // If no pending redirect result, start a new sign in flow
       const provider = new window.GoogleAuthProvider();
-      const result = await window.firebaseAuthFunctions.signInWithPopup(
-        auth,
-        provider
-      );
-      // const result = await window.firebaseAuthFunctions.signInWithRedirect(
-      //   auth,
-      //   provider
-      // );
-      currentUser = result.user;
-      return {
-        success: true,
-        user: currentUser,
-      };
+      await window.firebaseAuthFunctions.signInWithRedirect(auth, provider);
+      
+      // This line won't be reached as signInWithRedirect redirects the page
+      return { success: true };
     } catch (error) {
       console.error("Google sign-in error:", error);
       return {
