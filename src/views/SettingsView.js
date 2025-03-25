@@ -1147,16 +1147,16 @@ window.SettingsView = (() => {
       const result = await Firebase.performSync("manual");
 
       if (result.success) {
-        StatusMessage.show("Successfully synced with cloud!", 2000, true);
+        // StatusMessage.show("Successfully synced with cloud!", 2000, true);
       } else {
-        StatusMessage.show("Sync failed: " + (result.error || "Unknown error"));
+        // StatusMessage.show("Sync failed: " + (result.error || "Unknown error"));
       }
 
       // Update UI with last sync time
       updateLastSyncTime();
     } catch (error) {
       console.error("Error syncing with Firebase:", error);
-      StatusMessage.show("Sync error: " + error.message);
+      // StatusMessage.show("Sync error: " + error.message);
     } finally {
       // Reset button state
       manualSyncButton.disabled = false;

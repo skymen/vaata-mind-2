@@ -34,6 +34,7 @@ const ASSETS = [
   "/components/ProgressMenu.js",
   "/components/StatusMessage.js",
   "/components/SubscriptionAnimation.js",
+  "/components/SyncBubble.js",
   "/views/MenuView.js",
   "/views/EditorView.js",
   "/views/ExploreView.js",

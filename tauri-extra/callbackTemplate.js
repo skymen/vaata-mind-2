@@ -276,7 +276,7 @@ export default `<!DOCTYPE html>
             <div class="logo-glow"></div>
         </div>
         
-        <h2>You can now open the app</h2>
+        <h2>You can now go back to the app</h2>
         
         <div class="success-message">
             <div class="checkmark-circle">

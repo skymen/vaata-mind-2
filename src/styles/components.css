@@ -403,3 +403,183 @@
   background-color: #eee;
   color: var(--text-color);
 }
+
+/* Sync Bubble */
+.sync-bubble {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  z-index: 1000;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.sync-bubble.idle {
+  background-color: #cccccc;
+  opacity: 0.5;
+}
+
+.sync-bubble.syncing {
+  background-color: transparent; /* Remove background when showing logo */
+  opacity: 1;
+  bottom: 16px;
+  right: 16px;
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  box-shadow: none; /* Remove shadow during sync */
+}
+
+.sync-bubble.success {
+  background-color: var(--accent-color);
+  opacity: 1;
+}
+
+.sync-bubble.error {
+  background-color: var(--due-today-color);
+  opacity: 1;
+}
+
+.sync-bubble:hover {
+  transform: scale(1.2);
+  opacity: 1;
+}
+
+/* Logo element inside the bubble */
+.sync-bubble-logo {
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  display: none;
+  transition: all 0.3s ease;
+  color: var(--accent-color); /* Use accent color for the logo */
+}
+
+.sync-bubble-logo.visible {
+  opacity: 1;
+  display: block;
+}
+
+.sync-bubble-logo svg {
+  width: 100%;
+  height: 100%;
+  filter: drop-shadow(0 2px 3px rgba(0, 0, 0, 0.2)); /* Add shadow to the logo */
+}
+
+.sync-bubble-tooltip {
+  position: absolute;
+  bottom: 48px;
+  right: 0;
+  background-color: rgba(0, 0, 0, 0.8);
+  color: white;
+  padding: 6px 10px;
+  border-radius: 4px;
+  font-size: 12px;
+  white-space: nowrap;
+  pointer-events: none;
+  opacity: 0;
+  transform: translateY(10px);
+  transition: all 0.3s ease;
+  visibility: hidden;
+  /* Prevent tooltip from inheriting parent's transformations */
+  transform-origin: bottom right;
+  will-change: transform;
+}
+
+/* Take the tooltip out of the animation flow */
+.sync-bubble.animate-syncing .sync-bubble-tooltip {
+  animation: none;
+  transform: translateY(0);
+}
+
+.sync-bubble.animate-success .sync-bubble-tooltip {
+  animation: none;
+}
+
+.sync-bubble.animate-error .sync-bubble-tooltip {
+  animation: none;
+}
+
+.sync-bubble-tooltip.visible {
+  opacity: 1;
+  transform: translateY(0);
+  visibility: visible;
+}
+
+/* Sync animations */
+.sync-bubble.animate-syncing {
+  animation: rotateBubble 2s infinite linear;
+}
+
+.sync-bubble.animate-success {
+  animation: success-pulse 1s;
+}
+
+.sync-bubble.animate-error {
+  animation: error-shake 0.5s;
+}
+
+@keyframes rotateBubble {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes pulse {
+  0% {
+    transform: scale(1);
+    opacity: 0.8;
+  }
+  50% {
+    transform: scale(1.2);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 0.8;
+  }
+}
+
+@keyframes success-pulse {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.5);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+@keyframes error-shake {
+  0% {
+    transform: translateX(0);
+  }
+  20% {
+    transform: translateX(-3px);
+  }
+  40% {
+    transform: translateX(3px);
+  }
+  60% {
+    transform: translateX(-3px);
+  }
+  80% {
+    transform: translateX(3px);
+  }
+  100% {
+    transform: translateX(0);
+  }
+}

@@ -65,7 +65,7 @@ const Firebase = (() => {
         initScript.type = "module";
         initScript.textContent = `
           import { initializeApp } from 'https://www.gstatic.com/firebasejs/11.5.0/firebase-app.js';
-          import { getAuth, onAuthStateChanged, signInWithPopup, signInWithRedirect, signInWithCredential, getRedirectResult, GoogleAuthProvider, signOut } from 'https://www.gstatic.com/firebasejs/11.5.0/firebase-auth.js';
+          import { getAuth, onAuthStateChanged, signInWithPopup, signInWithCredential, GoogleAuthProvider, signOut } from 'https://www.gstatic.com/firebasejs/11.5.0/firebase-auth.js';
           import { getFirestore, collection, doc, setDoc, getDoc, getDocs, updateDoc, deleteDoc, enableIndexedDbPersistence, query, where } from 'https://www.gstatic.com/firebasejs/11.5.0/firebase-firestore.js';
           import { getAnalytics } from 'https://www.gstatic.com/firebasejs/11.5.0/firebase-analytics.js';
 
@@ -99,8 +99,6 @@ const Firebase = (() => {
           window.GoogleAuthProvider = GoogleAuthProvider;
           window.firebaseAuthFunctions = {
             signInWithPopup,
-            signInWithRedirect,
-            getRedirectResult,
             signOut,
             getAuth,
             GoogleAuthProvider,
@@ -172,19 +170,29 @@ const Firebase = (() => {
    * Initialize Firebase module
    */
   function init() {
+    // Initialize sync bubble component
+    if (typeof SyncBubble !== 'undefined') {
+      SyncBubble.initialize();
+    }
+    
     // Check for network connectivity
     window.addEventListener("online", () => {
       isOffline = false;
-      StatusMessage.show("You are online. Syncing data...", 3000, true);
+      if (typeof SyncBubble !== 'undefined') {
+        SyncBubble.setSyncState('syncing');
+      }
       performSync("online");
     });
 
     window.addEventListener("offline", () => {
       isOffline = true;
-      StatusMessage.show(
-        "You are offline. Changes will sync when connected.",
-        3000
-      );
+      if (typeof SyncBubble !== 'undefined') {
+        SyncBubble.setSyncState('idle');
+      }
+      // StatusMessage.show(
+      //   "You are offline. Changes will sync when connected.",
+      //   3000
+      // );
       stopPeriodicSync(); // Stop sync when offline
     });
 
@@ -270,16 +278,26 @@ const Firebase = (() => {
     try {
       isSyncing = true;
 
+      // Update sync bubble to show syncing state
+      if (typeof SyncBubble !== 'undefined') {
+        SyncBubble.setSyncState('syncing');
+      }
+
       if (trigger !== "silent") {
-        StatusMessage.show(`Syncing data (${trigger})...`, 2000, true);
+        // StatusMessage.show(`Syncing data (${trigger})...`, 2000, true);
       }
 
       const result = await syncData();
 
       lastSyncTime = new Date();
 
+      // Update sync bubble based on result
+      if (typeof SyncBubble !== 'undefined') {
+        SyncBubble.setSyncState(result.success ? 'success' : 'error', lastSyncTime);
+      }
+
       if (trigger !== "silent" && result.success) {
-        StatusMessage.show("Sync complete", 2000, true);
+        // StatusMessage.show("Sync complete", 2000, true);
       }
 
       // Update sync button state if it exists
@@ -294,7 +312,13 @@ const Firebase = (() => {
       return result;
     } catch (error) {
       console.error("Sync error:", error);
-      StatusMessage.show("Sync failed", 2000, false);
+      
+      // Update sync bubble to show error state
+      if (typeof SyncBubble !== 'undefined') {
+        SyncBubble.setSyncState('error', lastSyncTime);
+      }
+      
+      // StatusMessage.show("Sync failed", 2000, false);
       return { success: false, error };
     } finally {
       isSyncing = false;
@@ -374,7 +398,7 @@ const Firebase = (() => {
       const isTauri = window.__TAURI__ !== undefined;
       const isMacOS = isTauri ? await window.__TAURI__.os.platform() === "macos" : false;
       
-      if (isTauri && isMacOS) {
+      if (isTauri) {
         // Use redirect for Tauri on macOS
         const result = await window.signInWithOAuth(auth, GoogleAuthProvider);
         currentUser = result.user;
@@ -499,18 +523,18 @@ const Firebase = (() => {
         const success = Database.mergeFirestoreData(firestoreNotes);
 
         if (success) {
-          StatusMessage.show(
-            "Successfully synced notes from cloud!",
-            3000,
-            true
-          );
+          // StatusMessage.show(
+          //   "Successfully synced notes from cloud!",
+          //   3000,
+          //   true
+          // );
         }
       }
 
       return { success: true };
     } catch (error) {
       console.error("Error pulling from Firestore:", error);
-      StatusMessage.show("Error syncing from cloud: " + error.message);
+      // StatusMessage.show("Error syncing from cloud: " + error.message);
       return {
         success: false,
         error: error.message,
@@ -551,11 +575,11 @@ const Firebase = (() => {
       // Execute all promises
       await Promise.all(batch);
 
-      StatusMessage.show("Successfully saved notes to cloud!", 3000, true);
+      // StatusMessage.show("Successfully saved notes to cloud!", 3000, true);
       return { success: true };
     } catch (error) {
       console.error("Error pushing to Firestore:", error);
-      StatusMessage.show("Error saving to cloud: " + error.message);
+      // StatusMessage.show("Error saving to cloud: " + error.message);
       return {
         success: false,
         error: error.message,

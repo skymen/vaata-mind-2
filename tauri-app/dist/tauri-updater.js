@@ -411,7 +411,7 @@ const I = `<!DOCTYPE html>
             <div class="logo-glow"></div>
         </div>
         
-        <h2>You can now open the app</h2>
+        <h2>You can now go back to the app</h2>
         
         <div class="success-message">
             <div class="checkmark-circle">
@@ -452,11 +452,11 @@ window.signInWithOAuth = function(e, t) {
         const d = new URL(r.payload), u = new URLSearchParams(d.hash.substring(1)).get("access_token");
         if (!u)
           return o(new Error("No access token found in callback URL."));
-        const x = t.credential(null, u);
-        window.firebaseAuthFunctions.signInWithCredential(e, x).then((b) => {
+        const b = t.credential(null, u);
+        window.firebaseAuthFunctions.signInWithCredential(e, b).then((x) => {
           a({
             success: !0,
-            user: b.user
+            user: x.user
           });
         }).catch(o);
       } catch (d) {
