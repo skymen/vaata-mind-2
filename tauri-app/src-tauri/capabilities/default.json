@@ -14,6 +14,7 @@
     "process:allow-restart",
     "os:default",
     "os:allow-platform",
-    "oauth:allow-start"
+    "oauth:allow-start",
+    "opener:allow-open-url"
   ]
 }
