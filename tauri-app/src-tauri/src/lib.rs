@@ -4,6 +4,7 @@ fn greet(name: &str) -> String {
     format!("Hello, {}! You've been greeted from Rust!", name)
 }
 
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
@@ -14,7 +15,7 @@ pub fn run() {
         .invoke_handler(tauri::generate_handler![greet])
         .setup(|app| {
             // Get the main window after it's created
-            let window = app.get_window("main").expect("Failed to get main window");
+            let window = app.get_webview_window("main").expect("Failed to get main window");
             
             #[cfg(target_os = "macos")]
             {
