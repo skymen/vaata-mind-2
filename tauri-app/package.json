@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@fabianlars/tauri-plugin-oauth": "^2.0.0",
+    "@tauri-apps/plugin-deep-link": "^2.2.0",
     "@tauri-apps/plugin-dialog": "^2.2.0",
     "@tauri-apps/plugin-opener": "^2.2.6",
     "@tauri-apps/plugin-os": "^2.2.1",

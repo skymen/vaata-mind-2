@@ -505,7 +505,9 @@ window.PomodoroView = (() => {
     if (timeRemaining <= 0) {
       clearInterval(timer);
       timer = null;
-      
+      if (window.__TAURI__) {
+        window.__TAURI__.window.appWindow.requestUserAttention(1);
+      }
       if (isBreak) {
         // Break is over
         playNotification(); // Simple notification for break endings

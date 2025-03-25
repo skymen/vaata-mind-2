@@ -3,6 +3,8 @@ import { relaunch } from "@tauri-apps/plugin-process";
 import { invoke } from '@tauri-apps/api/core';
 import { listen } from '@tauri-apps/api/event';
 import { openUrl } from '@tauri-apps/plugin-opener';
+import callbackTemplate from './callbackTemplate.js'; // Assuming you have this template in a separate file
+import { onOpenUrl } from '@tauri-apps/plugin-deep-link';
 
 (async () => {
   const update = await check();
@@ -22,31 +24,12 @@ import { openUrl } from '@tauri-apps/plugin-opener';
   }
 })();
 
-let callbackTemplate = `
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta http-equiv="X-UA-Compatible" content="IE=edge">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Open+Sans&display=swap" rel="stylesheet">
-  <title>My Notes</title>
-  <style>
-    body {
-      font-family: 'Open Sans', sans-serif;
-      margin: auto;
-      max-width: 640px;
-      text-align: center;
-    }
-  </style>
-</head>
-<body>
-  <h2>You can now open the app</h2>
-</body>
-</html>
-`
+(async () => {
+  await onOpenUrl((urls) => {
+    console.log("Received URL:", urls);
+    window.__TAURI__.window.appWindow.setFocus();
+  });
+})();
 
 const openBrowserToConsent = (port) => {
   // Replace CLIEN_ID_FROM_FIREBASE
