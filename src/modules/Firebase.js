@@ -362,7 +362,7 @@ const Firebase = (() => {
     if (!isInitialized) {
       await loadFirebase();
     }
-
+  
     try {
       // First check if we have a pending redirect result
       const redirectResult = await window.firebaseAuthFunctions.getRedirectResult(auth);
@@ -373,13 +373,28 @@ const Firebase = (() => {
           user: currentUser,
         };
       }
-
+  
       // If no pending redirect result, start a new sign in flow
       const provider = new window.GoogleAuthProvider();
-      await window.firebaseAuthFunctions.signInWithRedirect(auth, provider);
       
-      // This line won't be reached as signInWithRedirect redirects the page
-      return { success: true };
+      // Use redirect for Tauri on macOS, popup for everything else
+      const isTauri = window.__TAURI__ !== undefined;
+      const isMacOS = isTauri ? await window.__TAURI__.os.platform() === "darwin" : false;
+      
+      if (isTauri && isMacOS) {
+        // Use redirect for Tauri on macOS
+        await window.firebaseAuthFunctions.signInWithRedirect(auth, provider);
+        // This line won't be reached as signInWithRedirect redirects the page
+        return { success: true };
+      } else {
+        // Use popup for all other platforms
+        const result = await window.firebaseAuthFunctions.signInWithPopup(auth, provider);
+        currentUser = result.user;
+        return {
+          success: true,
+          user: currentUser,
+        };
+      }
     } catch (error) {
       console.error("Google sign-in error:", error);
       return {
