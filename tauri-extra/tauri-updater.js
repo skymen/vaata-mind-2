@@ -2,6 +2,7 @@ import { check } from "@tauri-apps/plugin-updater";
 import { relaunch } from "@tauri-apps/plugin-process";
 import { invoke } from '@tauri-apps/api/core';
 import { listen } from '@tauri-apps/api/event';
+import { openUrl } from '@tauri-apps/plugin-opener';
 
 (async () => {
   const update = await check();
@@ -50,7 +51,7 @@ let callbackTemplate = `
 const openBrowserToConsent = (port) => {
   // Replace CLIEN_ID_FROM_FIREBASE
   // Must allow localhost as redirect_uri for CLIENT_ID on GCP: https://console.cloud.google.com/apis/credentials
-  return open('https://accounts.google.com/o/oauth2/auth?' +
+  return openUrl('https://accounts.google.com/o/oauth2/auth?' +
     'response_type=token&' +
     'client_id=557148045075-52gu7aug421s9ju6hhqitpggmsgri5hh.apps.googleusercontent.com&' +
     `redirect_uri=http%3A//localhost:${port}&` +

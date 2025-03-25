@@ -1,10 +1,10 @@
-function a(t, e, n, s) {
+function a(t, e, s, n) {
   if (typeof e == "function" ? t !== e || !0 : !e.has(t)) throw new TypeError("Cannot read private member from an object whose class did not declare it");
-  return n === "m" ? s : n === "a" ? s.call(t) : s ? s.value : e.get(t);
+  return s === "m" ? n : s === "a" ? n.call(t) : n ? n.value : e.get(t);
 }
-function h(t, e, n, s, r) {
+function h(t, e, s, n, r) {
   if (typeof e == "function" ? t !== e || !0 : !e.has(t)) throw new TypeError("Cannot write private member to an object whose class did not declare it");
-  return e.set(t, n), n;
+  return e.set(t, s), s;
 }
 var l, o, c, u;
 const w = "__TAURI_TO_IPC_KEY__";
@@ -18,14 +18,14 @@ class _ {
       () => {
       }
       // the id is used as a mechanism to preserve message order
-    ), o.set(this, 0), c.set(this, []), this.id = y(({ message: e, id: n }) => {
-      if (n == a(this, o, "f"))
+    ), o.set(this, 0), c.set(this, []), this.id = y(({ message: e, id: s }) => {
+      if (s == a(this, o, "f"))
         for (a(this, l, "f").call(this, e), h(this, o, a(this, o, "f") + 1); a(this, o, "f") in a(this, c, "f"); ) {
-          const s = a(this, c, "f")[a(this, o, "f")];
-          a(this, l, "f").call(this, s), delete a(this, c, "f")[a(this, o, "f")], h(this, o, a(this, o, "f") + 1);
+          const n = a(this, c, "f")[a(this, o, "f")];
+          a(this, l, "f").call(this, n), delete a(this, c, "f")[a(this, o, "f")], h(this, o, a(this, o, "f") + 1);
         }
       else
-        a(this, c, "f")[n] = e;
+        a(this, c, "f")[s] = e;
     });
   }
   set onmessage(e) {
@@ -41,8 +41,8 @@ class _ {
     return this[w]();
   }
 }
-async function i(t, e = {}, n) {
-  return window.__TAURI_INTERNALS__.invoke(t, e, n);
+async function i(t, e = {}, s) {
+  return window.__TAURI_INTERNALS__.invoke(t, e, s);
 }
 class f {
   get rid() {
@@ -67,13 +67,13 @@ class E extends f {
     super(e.rid), this.available = e.available, this.currentVersion = e.currentVersion, this.version = e.version, this.date = e.date, this.body = e.body, this.rawJson = e.rawJson;
   }
   /** Download the updater package */
-  async download(e, n) {
-    const s = new _();
-    e && (s.onmessage = e);
+  async download(e, s) {
+    const n = new _();
+    e && (n.onmessage = e);
     const r = await i("plugin:updater|download", {
-      onEvent: s,
+      onEvent: n,
       rid: this.rid,
-      ...n
+      ...s
     });
     this.downloadedBytes = new f(r);
   }
@@ -87,12 +87,12 @@ class E extends f {
     }), this.downloadedBytes = void 0;
   }
   /** Downloads the updater package and installs it */
-  async downloadAndInstall(e, n) {
-    const s = new _();
-    e && (s.onmessage = e), await i("plugin:updater|download_and_install", {
-      onEvent: s,
+  async downloadAndInstall(e, s) {
+    const n = new _();
+    e && (n.onmessage = e), await i("plugin:updater|download_and_install", {
+      onEvent: n,
       rid: this.rid,
-      ...n
+      ...s
     });
   }
   async close() {
@@ -118,14 +118,20 @@ async function b(t, e) {
     eventId: e
   });
 }
-async function W(t, e, n) {
-  var s;
-  const r = (s = void 0) !== null && s !== void 0 ? s : { kind: "Any" };
+async function W(t, e, s) {
+  var n;
+  const r = (n = void 0) !== null && n !== void 0 ? n : { kind: "Any" };
   return i("plugin:event|listen", {
     event: t,
     target: r,
     handler: y(e)
   }).then((d) => async () => b(t, d));
+}
+async function D(t, e) {
+  await i("plugin:opener|open_url", {
+    url: t,
+    with: e
+  });
 }
 (async () => {
   const t = await A();
@@ -134,7 +140,7 @@ async function W(t, e, n) {
     "Update Available"
   ) && (await t.downloadAndInstall(), StatusMessage && StatusMessage.show && StatusMessage.show("Restarting..."), await I()));
 })();
-let D = `
+let C = `
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -159,35 +165,35 @@ let D = `
 </body>
 </html>
 `;
-const C = (t) => open(
+const N = (t) => D(
   `https://accounts.google.com/o/oauth2/auth?response_type=token&client_id=557148045075-52gu7aug421s9ju6hhqitpggmsgri5hh.apps.googleusercontent.com&redirect_uri=http%3A//localhost:${t}&scope=email%20profile%20openid&prompt=consent`
-), N = (t) => new Promise((e, n) => {
-  C(t).then(e).catch(n);
+), S = (t) => new Promise((e, s) => {
+  N(t).then(e).catch(s);
 });
 window.signInWithOAuth = function(t, e) {
-  return new Promise((n, s) => {
+  return new Promise((s, n) => {
     W("oauth://url", (r) => {
       try {
         const d = new URL(r.payload), p = new URLSearchParams(d.hash.substring(1)).get("access_token");
         if (!p)
-          return s(new Error("No access token found in callback URL."));
+          return n(new Error("No access token found in callback URL."));
         const m = e.credential(null, p);
         window.firebaseAuthFunctions.signInWithCredential(t, m).then((R) => {
-          n({
+          s({
             success: !0,
             user: R.user
           });
-        }).catch(s);
+        }).catch(n);
       } catch (d) {
-        s(d);
+        n(d);
       }
-    }).catch(s), i("plugin:oauth|start", {
+    }).catch(n), i("plugin:oauth|start", {
       config: {
         // Use a custom callback page/template for a friendlier experience.
-        response: D
+        response: C
       }
     }).then((r) => {
-      N(r).catch(s);
-    }).catch(s);
+      S(r).catch(n);
+    }).catch(n);
   });
 };
