@@ -1,4 +1,7 @@
 // Learn more about Tauri commands at https://tauri.app/develop/calling-rust/
+use tauri_plugin_oauth::start;
+use tauri_plugin_oauth::Window;
+
 #[command]
 async fn start_server(window: Window) -> Result<u16, String> {
     start(move |url| {
