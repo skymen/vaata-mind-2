@@ -455,23 +455,23 @@
 
 /* Logo element inside the bubble */
 .sync-bubble-logo {
-  width: 100%;
-  height: 100%;
+  width: 70%;
+  height: 70%;
   opacity: 0;
-  display: none;
   transition: all 0.3s ease;
   color: var(--accent-color); /* Use accent color for the logo */
+  display: flex;
 }
 
 .sync-bubble-logo.visible {
+  width: 100%;
+  height: 100%;
   opacity: 1;
-  display: block;
 }
 
 .sync-bubble-logo svg {
   width: 100%;
   height: 100%;
-  filter: drop-shadow(0 2px 3px rgba(0, 0, 0, 0.2)); /* Add shadow to the logo */
 }
 
 .sync-bubble-tooltip {
@@ -520,7 +520,7 @@
 }
 
 .sync-bubble.animate-success {
-  animation: success-pulse 1s;
+  animation: success-pulse 1s ease;
 }
 
 .sync-bubble.animate-error {
@@ -554,12 +554,19 @@
 @keyframes success-pulse {
   0% {
     transform: scale(1);
+    background-color: var(--accent-color);
+  }
+  15% {
+    transform: scale(0.7);
+    background-color: var(--accent-color);
   }
   50% {
     transform: scale(1.5);
+    background-color: var(--accent-color);
   }
   100% {
     transform: scale(1);
+    background-color: #cccccc;
   }
 }
 

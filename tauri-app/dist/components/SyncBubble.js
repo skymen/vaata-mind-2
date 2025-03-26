@@ -105,7 +105,7 @@ const SyncBubble = (() => {
           bubbleElement.className = 'sync-bubble idle';
           syncState = 'idle';
           updateTooltip();
-        }, 700);
+        }, 1000);
       } else if (state === 'error') {
         bubbleElement.classList.add('animate-error');
         
