@@ -12,6 +12,7 @@ const SyncBubble = (() => {
   let syncState = 'idle'; // idle, syncing, success, error
   let lastSyncTime = null;
   let animationTimeout = null;
+  let isVisible = false;
   
   /**
    * Initialize the component
@@ -22,6 +23,7 @@ const SyncBubble = (() => {
     // Create the bubble container
     bubbleElement = document.createElement('div');
     bubbleElement.className = 'sync-bubble idle';
+    bubbleElement.style.display = 'none'; // Hidden by default
     
     // Create the logo element (initially hidden)
     logoElement = document.createElement('div');
@@ -39,7 +41,7 @@ const SyncBubble = (() => {
     
     // Add elements to the DOM
     bubbleElement.appendChild(logoElement);
-    document.body.appendChild(tooltipElement);
+    bubbleElement.appendChild(tooltipElement);
     document.body.appendChild(bubbleElement);
     
     // Add event listeners for hover
@@ -58,7 +60,30 @@ const SyncBubble = (() => {
       }
     });
     
+    // Listen for Firebase enablement changes
+    window.addEventListener('firebase-enabled-changed', updateVisibility);
+    
+    // Initialize visibility based on current Firebase status
+    updateVisibility();
+    
     updateTooltip();
+  }
+  
+  /**
+   * Update visibility based on Firebase enabled status
+   */
+  function updateVisibility() {
+    if (!bubbleElement) return;
+    
+    const shouldBeVisible = typeof Database !== 'undefined' && 
+                           typeof Firebase !== 'undefined' && 
+                           Database.isFirebaseEnabled() && 
+                           Firebase.isSignedIn();
+    
+    if (shouldBeVisible !== isVisible) {
+      isVisible = shouldBeVisible;
+      bubbleElement.style.display = isVisible ? 'flex' : 'none';
+    }
   }
   
   /**
@@ -74,6 +99,12 @@ const SyncBubble = (() => {
     if (!bubbleElement) {
       initialize();
     }
+    
+    // Update visibility first
+    updateVisibility();
+    
+    // If bubble is not visible, don't bother with animations
+    if (!isVisible) return;
     
     // Clear any pending animations
     if (animationTimeout) {
@@ -173,6 +204,7 @@ const SyncBubble = (() => {
   // Public API
   return {
     initialize,
-    setSyncState
+    setSyncState,
+    updateVisibility
   };
 })();

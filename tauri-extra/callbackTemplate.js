@@ -166,8 +166,8 @@ export default `<!DOCTYPE html>
         }
         
         .checkmark-circle {
-            width: 80px;
-            height: 80px;
+            width: 70px;
+            height: 70px;
             border-radius: 50%;
             background-color: var(--success);
             display: flex;
@@ -193,6 +193,7 @@ export default `<!DOCTYPE html>
             stroke-dasharray: 100;
             stroke-dashoffset: 100;
             animation: drawCheck 1s forwards 0.8s;
+            z-index: 1;
         }
         
         .welcome-text {
@@ -251,7 +252,7 @@ export default `<!DOCTYPE html>
                 opacity: 0.3;
             }
             50% {
-                transform: scale(1.2);
+                transform: scale(1.7);
                 opacity: 0;
             }
             100% {
@@ -280,7 +281,7 @@ export default `<!DOCTYPE html>
         
         <div class="success-message">
             <div class="checkmark-circle">
-                <svg width="40" height="40" viewBox="0 0 40 40">
+                <svg width="50" height="50" viewBox="0 0 40 40">
                     <path class="checkmark" d="M10,20 L17,27 L30,13" fill="none" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" />
                 </svg>
             </div>

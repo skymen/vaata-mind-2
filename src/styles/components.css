@@ -407,7 +407,7 @@
 /* Sync Bubble */
 .sync-bubble {
   position: fixed;
-  bottom: 24px;
+  bottom: 16px;
   right: 24px;
   width: 16px;
   height: 16px;
@@ -430,7 +430,7 @@
 .sync-bubble.syncing {
   background-color: transparent; /* Remove background when showing logo */
   opacity: 1;
-  bottom: 16px;
+  bottom: 8px;
   right: 16px;
   width: 32px;
   height: 32px;
