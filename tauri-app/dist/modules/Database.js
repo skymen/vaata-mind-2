@@ -553,6 +553,11 @@ const Database = (() => {
       console.error('Error syncing with Firebase:', error);
     });
     
+    // Dispatch event for other components to respond to Firebase enablement
+    window.dispatchEvent(new CustomEvent('firebase-enabled-changed', { 
+      detail: { enabled: true }
+    }));
+    
     return true;
   }
   
@@ -562,6 +567,12 @@ const Database = (() => {
   function disableFirebase() {
     useFirebase = false;
     save(); // Save the preference
+    
+    // Dispatch event for other components to respond to Firebase disablement
+    window.dispatchEvent(new CustomEvent('firebase-enabled-changed', { 
+      detail: { enabled: false }
+    }));
+    
     return true;
   }
   

@@ -402,6 +402,12 @@ const Firebase = (() => {
         // Use redirect for Tauri on macOS
         const result = await window.signInWithOAuth(auth, GoogleAuthProvider);
         currentUser = result.user;
+        
+        // Update SyncBubble visibility if it exists
+        if (typeof SyncBubble !== 'undefined') {
+          SyncBubble.updateVisibility();
+        }
+        
         return {
           success: true,
           user: currentUser,
@@ -410,6 +416,12 @@ const Firebase = (() => {
         // Use popup for all other platforms
         const result = await window.firebaseAuthFunctions.signInWithPopup(auth, provider);
         currentUser = result.user;
+        
+        // Update SyncBubble visibility if it exists
+        if (typeof SyncBubble !== 'undefined') {
+          SyncBubble.updateVisibility();
+        }
+        
         return {
           success: true,
           user: currentUser,
