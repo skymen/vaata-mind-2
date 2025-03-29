@@ -6,6 +6,24 @@
   flex-direction: column;
 }
 
+.editor-header {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 20px;
+}
+
+.editor-title {
+  font-size: 24px;
+  border: none;
+  outline: none;
+  margin-bottom: 10px;
+  width: 100%;
+  background-color: transparent;
+  color: var(--text-color);
+  border-bottom: 1px solid var(--border-color);
+  padding: 5px 0;
+}
+
 .editor textarea {
   flex-grow: 1;
   border: none;
@@ -15,6 +33,7 @@
   font-size: 16px;
   line-height: 1.6;
   background-color: var(--bg-color);
+  color: var(--text-color);
   min-height: 300px;
 }
 
@@ -23,7 +42,7 @@
   justify-content: space-between;
   padding: 10px 20px;
   font-size: 12px;
-  color: #777;
+  color: var(--text-secondary-color);
 }
 
 #hashtags-display {
@@ -44,7 +63,7 @@
   justify-content: space-between;
   margin-bottom: 10px;
   padding: 10px;
-  background-color: #f5f5f5;
+  background-color: var(--bg-color-secondary);
   border-radius: 4px;
 }
 

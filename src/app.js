@@ -17,6 +17,9 @@ const App = (() => {
   async function initialize() {
     console.log("App: Initializing...");
 
+    // Initialize theme system
+    initializeTheme();
+
     // Set up loading screen
     setupLoadingScreen();
 
@@ -358,6 +361,37 @@ const App = (() => {
     }
   }
 
+  /**
+   * Initialize the theme system based on user preference
+   */
+  function initializeTheme() {
+    // Call the theme utility from SettingsView if it exists
+    if (typeof SettingsView !== "undefined" && typeof SettingsView.setTheme === "function") {
+      const savedTheme = localStorage.getItem('theme') || 'system';
+      SettingsView.setTheme(savedTheme);
+      return;
+    }
+    
+    // Fallback implementation if SettingsView isn't loaded yet
+    const savedTheme = localStorage.getItem('theme') || 'system';
+    
+    if (savedTheme === 'system') {
+      // Use system preference
+      const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+      document.documentElement.setAttribute('data-theme', prefersDark ? 'dark' : 'light');
+      
+      // Listen for system theme changes
+      window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', e => {
+        if (localStorage.getItem('theme') === 'system') {
+          document.documentElement.setAttribute('data-theme', e.matches ? 'dark' : 'light');
+        }
+      });
+    } else {
+      // Use user selected theme
+      document.documentElement.setAttribute('data-theme', savedTheme);
+    }
+  }
+
   // Initialize on DOMContentLoaded
   document.addEventListener("DOMContentLoaded", initialize);
 
@@ -367,5 +401,6 @@ const App = (() => {
     isCtrlPressed,
     getViewClassNameFromId,
     isInitialized,
+    initializeTheme,
   };
 })();

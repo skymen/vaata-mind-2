@@ -1,22 +1,59 @@
 :root {
+  /* Default theme is light */
+  /* Basic colors */
   --bg-color: #fafafa;
+  --bg-color-secondary: #ffffff;
   --text-color: #333;
+  --text-secondary-color: #666;
+  --border-color: #ddd;
   --accent-color: #6c63ff;
+  --accent-color-rgb: 108, 99, 255;  /* RGB values for rgba() functions */
+  --accent-hover-color: #5a52d2;
   --secondary-color: #03dac6;
   --error-color: #b00020;
   --shadow-color: rgba(0, 0, 0, 0.1);
+  
+  /* Status colors */
   --done-color: #aaaaaa;
   --not-started-color: #fff;
   --in-progress-color: #ffb74d;
   --completed-color: #66bb6a;
+  
+  /* Due date colors */
   --due-today-color: #f44336;
   --due-tomorrow-color: #ff9800;
   --due-week-color: #ffc107;
   --due-later-color: #4caf50;
   --important-color: #ff5252;
+}
 
-  --in-progress-color: #000;
-  --completed-color: #000;
+/* Dark theme */
+[data-theme="dark"] {
+  /* Basic colors */
+  --bg-color: #121212;
+  --bg-color-secondary: #1e1e1e;
+  --text-color: #e0e0e0;
+  --text-secondary-color: #aaaaaa;
+  --border-color: #333;
+  --accent-color: #6c63ff;
+  --accent-color-rgb: 108, 99, 255;  /* RGB values for rgba() functions */
+  --accent-hover-color: #5a52d2;
+  --secondary-color: #03dac6;
+  --error-color: #cf6679;
+  --shadow-color: rgba(0, 0, 0, 0.3);
+  
+  /* Status colors */
+  --done-color: #666666;
+  --not-started-color: #333;
+  --in-progress-color: #c87c2f;
+  --completed-color: #388e3c;
+  
+  /* Due date colors */
+  --due-today-color: #e57373;
+  --due-tomorrow-color: #ffb74d;
+  --due-week-color: #fff176;
+  --due-later-color: #81c784;
+  --important-color: #ff7676;
 }
 
 body {
@@ -51,7 +88,7 @@ body {
   position: absolute;
   top: 20px;
   left: 20px;
-  background-color: rgba(255, 255, 255, 0.8);
+  background-color: var(--bg-color-secondary);
   color: var(--accent-color);
   border: none;
   border-radius: 50%;
@@ -63,13 +100,13 @@ body {
   justify-content: center;
   cursor: pointer;
   z-index: 10;
-  box-shadow: 0 0 8px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 0 8px var(--shadow-color);
   transition: background-color 0.2s, box-shadow 0.2s, transform 0.2s ease-out;
 }
 
 .back-btn:hover {
-  background-color: white;
-  box-shadow: 0 0 12px 2px rgba(0, 0, 0, 0.3);
+  background-color: var(--bg-color-secondary);
+  box-shadow: 0 0 12px 2px var(--shadow-color);
   transform: translate(0, -3px);
 }
 

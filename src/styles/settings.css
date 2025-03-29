@@ -74,11 +74,11 @@
 }
 
 .settings-section {
-  background-color: white;
+  background-color: var(--bg-color-secondary);
   border-radius: 8px;
   padding: 20px;
   margin-bottom: 20px;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+  box-shadow: 0 2px 10px var(--shadow-color);
 }
 
 .settings-section h3 {
@@ -743,4 +743,116 @@ label.btn {
     transform: translateY(-100px) rotate(360deg);
     opacity: 0;
   }
+}
+
+/* Theme selector styles */
+.theme-selector {
+  margin-top: 10px;
+}
+
+.theme-options {
+  display: flex;
+  gap: 20px;
+  flex-wrap: wrap;
+  margin-top: 15px;
+}
+
+.theme-option {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  cursor: pointer;
+}
+
+.theme-option input[type="radio"] {
+  position: absolute;
+  opacity: 0;
+}
+
+.theme-preview {
+  width: 100px;
+  height: 80px;
+  border-radius: 8px;
+  overflow: hidden;
+  border: 2px solid var(--border-color);
+  margin-bottom: 8px;
+  position: relative;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.theme-option:hover .theme-preview {
+  transform: translateY(-3px);
+  box-shadow: 0 4px 8px var(--shadow-color);
+}
+
+.theme-option input[type="radio"]:checked + .theme-preview {
+  border-color: var(--accent-color);
+  box-shadow: 0 0 0 2px var(--accent-color);
+}
+
+.theme-preview-header {
+  height: 25%;
+  background-color: var(--bg-color-secondary);
+  border-bottom: 1px solid var(--border-color);
+  display: block;
+}
+
+.theme-preview-content {
+  height: 75%;
+  background-color: var(--bg-color);
+  padding: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.theme-preview-line {
+  height: 4px;
+  background-color: var(--border-color);
+  border-radius: 2px;
+  display: block;
+}
+
+.theme-preview-line:first-child {
+  width: 70%;
+}
+
+.light-preview {
+  --bg-color: #fafafa;
+  --bg-color-secondary: #ffffff;
+  --border-color: #ddd;
+}
+
+.dark-preview {
+  --bg-color: #121212;
+  --bg-color-secondary: #1e1e1e;
+  --border-color: #333;
+}
+
+.system-preview {
+  background: linear-gradient(to right, #fafafa 50%, #121212 50%);
+}
+
+.system-preview .theme-preview-header {
+  background: linear-gradient(to right, white 50%, #1e1e1e 50%);
+  border-bottom: none;
+}
+
+.system-preview .theme-preview-content {
+  background: none;
+}
+
+.system-preview::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 50%;
+  width: 1px;
+  height: 100%;
+  background-color: var(--accent-color);
+}
+
+.theme-name {
+  font-weight: 500;
+  margin-top: 5px;
 }

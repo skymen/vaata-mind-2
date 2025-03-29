@@ -142,6 +142,48 @@ window.SettingsView = (() => {
         </div>
 
         <div class="settings-section">
+          <h3>Appearance</h3>
+          <div class="theme-selector">
+            <h4>Theme</h4>
+            <div class="theme-options">
+              <label class="theme-option">
+                <input type="radio" name="theme" value="light" id="theme-light">
+                <span class="theme-preview light-preview">
+                  <span class="theme-preview-header"></span>
+                  <span class="theme-preview-content">
+                    <span class="theme-preview-line"></span>
+                    <span class="theme-preview-line"></span>
+                  </span>
+                </span>
+                <span class="theme-name">Light</span>
+              </label>
+              <label class="theme-option">
+                <input type="radio" name="theme" value="dark" id="theme-dark">
+                <span class="theme-preview dark-preview">
+                  <span class="theme-preview-header"></span>
+                  <span class="theme-preview-content">
+                    <span class="theme-preview-line"></span>
+                    <span class="theme-preview-line"></span>
+                  </span>
+                </span>
+                <span class="theme-name">Dark</span>
+              </label>
+              <label class="theme-option">
+                <input type="radio" name="theme" value="system" id="theme-system">
+                <span class="theme-preview system-preview">
+                  <span class="theme-preview-header"></span>
+                  <span class="theme-preview-content">
+                    <span class="theme-preview-line"></span>
+                    <span class="theme-preview-line"></span>
+                  </span>
+                </span>
+                <span class="theme-name">System</span>
+              </label>
+            </div>
+          </div>
+        </div>
+
+        <div class="settings-section">
           <h3>Local Storage</h3>
           <button id="request-storage-btn" class="btn btn-primary">
             Request Persistent Storage
@@ -210,6 +252,39 @@ window.SettingsView = (() => {
   }
 
   /**
+   * Handle theme change when user selects a different theme
+   * @param {Event} e - Change event from radio input
+   */
+  function handleThemeChange(e) {
+    const theme = e.target.value;
+    setTheme(theme);
+    localStorage.setItem('theme', theme);
+    StatusMessage.show(`Theme changed to ${theme}`, 2000, true);
+  }
+
+  /**
+   * Set the theme on the HTML element
+   * @param {string} theme - Theme to set ('light', 'dark', or 'system')
+   */
+  function setTheme(theme) {
+    if (theme === 'system') {
+      // Use system preference
+      const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+      document.documentElement.setAttribute('data-theme', prefersDark ? 'dark' : 'light');
+      
+      // Listen for system theme changes
+      window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', e => {
+        if (localStorage.getItem('theme') === 'system') {
+          document.documentElement.setAttribute('data-theme', e.matches ? 'dark' : 'light');
+        }
+      });
+    } else {
+      // Use user selected theme
+      document.documentElement.setAttribute('data-theme', theme);
+    }
+  }
+
+  /**
    * Attach event listeners to DOM elements
    */
   function attachEventListeners() {
@@ -218,6 +293,18 @@ window.SettingsView = (() => {
       backButton.addEventListener("click", () => {
         ViewManager.showView(Constants.VIEWS.MENU);
       });
+    }
+
+    // Theme selector
+    const themeRadios = document.querySelectorAll('input[name="theme"]');
+    if (themeRadios.length > 0) {
+      themeRadios.forEach(radio => {
+        radio.addEventListener('change', handleThemeChange);
+      });
+      
+      // Set the initial checked state based on current theme
+      const currentTheme = localStorage.getItem('theme') || 'system';
+      document.getElementById(`theme-${currentTheme}`).checked = true;
     }
 
     // Request persistent storage button
@@ -1229,6 +1316,8 @@ window.SettingsView = (() => {
     createSubscriptionSection,
     toggleSubscriptionSection,
     loadPricingOptions,
-    showUpgradePrompt
+    showUpgradePrompt,
+    handleThemeChange,
+    setTheme
   };
 })();

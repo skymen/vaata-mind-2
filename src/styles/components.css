@@ -151,10 +151,10 @@
 /* Progress Menu */
 .progress-menu {
   position: absolute;
-  background: white;
-  border: 1px solid #ddd;
+  background: var(--bg-color-secondary);
+  border: 1px solid var(--border-color);
   border-radius: 4px;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 2px 10px var(--shadow-color);
   z-index: 100;
   overflow: hidden;
 }
@@ -168,16 +168,16 @@
 }
 
 .progress-option:hover {
-  background-color: #f5f5f5;
+  background-color: var(--bg-color);
 }
 
 /* Autocomplete Container */
 .autocomplete-container {
   position: absolute;
-  background: white;
-  border: 1px solid #ddd;
+  background: var(--bg-color-secondary);
+  border: 1px solid var(--border-color);
   border-radius: 4px;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 2px 10px var(--shadow-color);
   max-height: 200px;
   overflow-y: auto;
   z-index: 1000;
@@ -191,7 +191,7 @@
 }
 
 .autocomplete-item:hover {
-  background-color: #f5f5f5;
+  background-color: var(--bg-color);
 }
 
 .autocomplete-item.selected {
@@ -202,9 +202,9 @@
 .autocomplete-info {
   padding: 4px 8px;
   font-style: italic;
-  color: #888;
+  color: var(--text-secondary-color);
   font-size: 10px;
-  border-bottom: 1px solid #eee;
+  border-bottom: 1px solid var(--border-color);
 }
 
 /* Buttons and Action Components */
@@ -237,7 +237,7 @@
 }
 
 .btn-secondary {
-  background-color: #eee;
+  background-color: var(--bg-color);
   color: var(--text-color);
 }
 
@@ -248,7 +248,7 @@
 
 .btn-icon {
   padding: 10px 10px;
-  border: 1px solid #ddd;
+  border: 1px solid var(--border-color);
   border-radius: 4px;
   cursor: pointer;
   font-weight: 500;
@@ -344,9 +344,9 @@
 }
 
 .dialog-box {
-  background-color: var(--bg-color);
+  background-color: var(--bg-color-secondary);
   border-radius: 8px;
-  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 4px 24px var(--shadow-color);
   padding: 24px;
   min-width: 320px;
   max-width: 90%;
